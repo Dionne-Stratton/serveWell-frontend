@@ -73,3 +73,22 @@ export function adminLogin(credentials) {
 export function fetchAdminMe() {
   return apiRequest('/api/admin/me', { authenticated: true })
 }
+
+export function fetchAdminSubmissions(filters = {}) {
+  const params = new URLSearchParams()
+
+  if (filters.status) params.set('status', filters.status)
+  if (filters.archived === true) params.set('archived', 'true')
+  if (filters.archived === false) params.set('archived', 'false')
+  if (filters.servingAreaId) params.set('servingAreaId', String(filters.servingAreaId))
+  if (filters.search) params.set('search', filters.search)
+
+  const query = params.toString()
+  const path = query ? `/api/admin/submissions?${query}` : '/api/admin/submissions'
+
+  return apiRequest(path, { authenticated: true })
+}
+
+export function fetchAdminSubmissionDetail(submissionId) {
+  return apiRequest(`/api/admin/submissions/${submissionId}`, { authenticated: true })
+}

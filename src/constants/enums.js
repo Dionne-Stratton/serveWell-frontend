@@ -29,6 +29,17 @@ export const experienceLevelOptions = [
   { value: 'not_sure', label: 'Not sure' }
 ]
 
+export const submissionStatusOptions = [
+  { value: 'new', label: 'New / needs review' },
+  { value: 'follow_up_needed', label: 'Follow-up needed' },
+  { value: 'background_check_needed', label: 'Background check needed' },
+  { value: 'training_needed', label: 'Training needed' },
+  { value: 'approved_ready_to_schedule', label: 'Approved / ready to schedule' },
+  { value: 'added_to_planning_center', label: 'Added to Planning Center' },
+  { value: 'archived_inactive', label: 'Archived / inactive' },
+  { value: 'not_a_fit', label: 'Not a fit' }
+]
+
 export const servingAreaCategoryLabels = {
   worship: 'Worship',
   media_tech: 'Media & tech',

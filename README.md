@@ -36,6 +36,13 @@ API default: `http://localhost:8787` (see `.env.example`). The server sets `FRON
 
 Unknown paths redirect to `/`.
 
+## Phase 9: admin dashboard
+
+1. API running; sign in at `/admin/login`.
+2. Open `/admin` — submission list loads (submit a test via `/serve` if empty).
+3. Use search / status / archived filters; open **View details** on a row.
+4. Detail page shows contact, areas, confirmations, and notes (status edit not wired until server PATCH exists).
+
 ## Phase 7: admin auth
 
 1. API running on port 8787.

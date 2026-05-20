@@ -6,7 +6,7 @@ export default function AdminLayout({ title, children }) {
   const { admin, logout } = useAdminAuth()
 
   return (
-    <PageShell title={title}>
+    <PageShell title={title} className="admin-page">
       <div className="admin-bar">
         <p className="admin-bar__user">
           Signed in as <strong>{admin?.email ?? 'Admin'}</strong>
