@@ -1,6 +1,9 @@
-import { experienceLevelOptions, frequencyOptions } from '../../constants/enums'
-import RequiredMark from './RequiredMark'
-import { confirmationKey } from './volunteerFormUtils'
+import {
+  experienceLevelOptions,
+  frequencyOptions,
+} from "../../constants/enums";
+import RequiredMark from "./RequiredMark";
+import { confirmationKey } from "./volunteerFormUtils";
 
 export default function ServingAreaInlineDetail({
   area,
@@ -8,31 +11,17 @@ export default function ServingAreaInlineDetail({
   confirmations,
   fieldErrors,
   onUpdateInterest,
-  onToggleConfirmation
+  onToggleConfirmation,
 }) {
   const acknowledgmentRequirements = area.requirements.filter(
-    (requirement) => requirement.requiresConfirmation
-  )
+    (requirement) => requirement.requiresConfirmation,
+  );
   const infoRequirements = area.requirements.filter(
-    (requirement) => !requirement.requiresConfirmation
-  )
+    (requirement) => !requirement.requiresConfirmation,
+  );
 
   return (
     <div className="serve-area-inline" id={`serve-area-${area.id}`}>
-      {area.publicNote ? <p className="serve-area-inline__note">{area.publicNote}</p> : null}
-
-      {(area.requiresBackgroundCheck ||
-        area.requiresTraining ||
-        area.requiresAuditionOrInterview) && (
-        <ul className="serve-area-inline__flags">
-          {area.requiresBackgroundCheck ? <li>Background check may be required</li> : null}
-          {area.requiresTraining ? <li>Training may be required</li> : null}
-          {area.requiresAuditionOrInterview ? (
-            <li>Audition or interview may be required</li>
-          ) : null}
-        </ul>
-      )}
-
       {infoRequirements.map((requirement) => (
         <p key={requirement.id} className="serve-info-note">
           <strong>{requirement.label}</strong>
@@ -41,7 +30,7 @@ export default function ServingAreaInlineDetail({
       ))}
 
       {acknowledgmentRequirements.map((requirement) => {
-        const errorKey = `confirmation-${area.id}-${requirement.id}`
+        const errorKey = `confirmation-${area.id}-${requirement.id}`;
         return (
           <div key={requirement.id} className="serve-ack">
             <p className="serve-ack__info">
@@ -51,9 +40,15 @@ export default function ServingAreaInlineDetail({
             <label className="serve-choice serve-ack__check">
               <input
                 type="checkbox"
-                checked={Boolean(confirmations[confirmationKey(area.id, requirement.id)])}
+                checked={Boolean(
+                  confirmations[confirmationKey(area.id, requirement.id)],
+                )}
                 onChange={(event) =>
-                  onToggleConfirmation(area.id, requirement.id, event.target.checked)
+                  onToggleConfirmation(
+                    area.id,
+                    requirement.id,
+                    event.target.checked,
+                  )
                 }
               />
               <span>
@@ -67,7 +62,7 @@ export default function ServingAreaInlineDetail({
               </p>
             ) : null}
           </div>
-        )
+        );
       })}
 
       <div className="serve-field serve-field--compact">
@@ -78,7 +73,9 @@ export default function ServingAreaInlineDetail({
             onChange={(event) =>
               onUpdateInterest(area.id, {
                 usesAreaSpecificFrequency: event.target.checked,
-                areaSpecificFrequency: event.target.checked ? detail.areaSpecificFrequency : ''
+                areaSpecificFrequency: event.target.checked
+                  ? detail.areaSpecificFrequency
+                  : "",
               })
             }
           />
@@ -97,7 +94,9 @@ export default function ServingAreaInlineDetail({
             className="serve-input serve-input--select"
             value={detail.areaSpecificFrequency}
             onChange={(event) =>
-              onUpdateInterest(area.id, { areaSpecificFrequency: event.target.value })
+              onUpdateInterest(area.id, {
+                areaSpecificFrequency: event.target.value,
+              })
             }
           >
             <option value="">Select…</option>
@@ -108,7 +107,10 @@ export default function ServingAreaInlineDetail({
             ))}
           </select>
           {fieldErrors[`areaFrequency-${area.id}`] ? (
-            <p className="serve-field-error" id={`error-areaFrequency-${area.id}`}>
+            <p
+              className="serve-field-error"
+              id={`error-areaFrequency-${area.id}`}
+            >
               {fieldErrors[`areaFrequency-${area.id}`]}
             </p>
           ) : null}
@@ -123,7 +125,9 @@ export default function ServingAreaInlineDetail({
           id={`experience-${area.id}`}
           className="serve-input serve-input--select"
           value={detail.experienceLevel}
-          onChange={(event) => onUpdateInterest(area.id, { experienceLevel: event.target.value })}
+          onChange={(event) =>
+            onUpdateInterest(area.id, { experienceLevel: event.target.value })
+          }
         >
           <option value="">Select…</option>
           {experienceLevelOptions.map((option) => (
@@ -143,9 +147,11 @@ export default function ServingAreaInlineDetail({
           className="serve-input serve-input--textarea"
           rows={2}
           value={detail.interestNotes}
-          onChange={(event) => onUpdateInterest(area.id, { interestNotes: event.target.value })}
+          onChange={(event) =>
+            onUpdateInterest(area.id, { interestNotes: event.target.value })
+          }
         />
       </div>
     </div>
-  )
+  );
 }
