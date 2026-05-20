@@ -1,3 +1,5 @@
+import { getAdminToken } from '../auth/token'
+
 const defaultBaseUrl = 'http://localhost:8787'
 
 export function getApiBaseUrl() {
@@ -22,12 +24,21 @@ async function parseJsonResponse(response) {
 }
 
 export async function apiRequest(path, options = {}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers ?? {})
+  }
+
+  if (options.authenticated) {
+    const token = getAdminToken()
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+  }
+
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers ?? {})
-    },
-    ...options
+    ...options,
+    headers
   })
 
   const body = await parseJsonResponse(response)
@@ -50,4 +61,15 @@ export function createVolunteerSubmission(payload) {
     method: 'POST',
     body: JSON.stringify(payload)
   })
+}
+
+export function adminLogin(credentials) {
+  return apiRequest('/api/admin/login', {
+    method: 'POST',
+    body: JSON.stringify(credentials)
+  })
+}
+
+export function fetchAdminMe() {
+  return apiRequest('/api/admin/me', { authenticated: true })
 }

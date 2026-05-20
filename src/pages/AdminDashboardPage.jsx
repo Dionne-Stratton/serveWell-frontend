@@ -1,16 +1,16 @@
 import { Link } from 'react-router-dom'
-import PageShell from '../components/PageShell'
+import AdminLayout from '../components/admin/AdminLayout'
 
 export default function AdminDashboardPage() {
   return (
-    <PageShell title="Admin dashboard">
+    <AdminLayout title="Admin dashboard">
       <p className="placeholder">
-        Submission list, filters, and search (Phase 9). Auth protection will be added
-        in Phase 7.
+        Submission list, filters, and search (Phase 9). You are signed in; volunteer data
+        will load here next.
       </p>
       <p>
         <Link to="/admin/submissions/1">Sample submission detail (id: 1)</Link>
       </p>
-    </PageShell>
+    </AdminLayout>
   )
 }

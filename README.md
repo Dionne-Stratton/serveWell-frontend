@@ -36,6 +36,15 @@ API default: `http://localhost:8787` (see `.env.example`). The server sets `FRON
 
 Unknown paths redirect to `/`.
 
+## Phase 7: admin auth
+
+1. API running on port 8787.
+2. Open `http://localhost:5173/admin` — should redirect to `/admin/login`.
+3. Sign in with seeded credentials from `docs/API-README.md` (`church@example.com` / `temporary-password`).
+4. Confirm dashboard loads and shows signed-in email; **Log out** returns to login.
+5. Visit `/admin/submissions/1` while logged out — should redirect to login, then return after sign-in.
+6. Refresh while logged in — session should persist.
+
 ## Phase 6: volunteer form (`/serve`)
 
 Requires the API at `VITE_API_URL` (default `http://localhost:8787`). Copy `.env.example` to `.env` if needed.

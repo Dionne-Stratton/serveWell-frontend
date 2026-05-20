@@ -1,0 +1,142 @@
+/* Admin UI — explicit light form colors (readable in OS dark mode too) */
+
+.admin-login-form {
+  max-width: 24rem;
+  padding: 1.5rem 1.35rem;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #111827;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.admin-login-form .lede {
+  margin-bottom: 1.25rem;
+  color: #374151;
+}
+
+.admin-field {
+  margin-bottom: 1.1rem;
+}
+
+.admin-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.admin-input {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 2px solid #4b5563;
+  border-radius: 8px;
+  background-color: #ffffff;
+  font: inherit;
+  font-size: 1rem;
+  color: #111827;
+  caret-color: #111827;
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.admin-input::placeholder {
+  color: #6b7280;
+  opacity: 1;
+}
+
+.admin-input:hover {
+  border-color: #1f2937;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: #1a5fb4;
+  background-color: #ffffff;
+  color: #111827;
+  box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.25);
+}
+
+/* Browser autofill often breaks contrast in dark mode */
+.admin-input:-webkit-autofill,
+.admin-input:-webkit-autofill:hover,
+.admin-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #111827;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  caret-color: #111827;
+}
+
+.admin-error {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #7f1d1d;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.admin-button {
+  display: inline-block;
+  width: 100%;
+  margin-top: 0.25rem;
+  padding: 0.7rem 1.25rem;
+  border: 2px solid #1a5fb4;
+  border-radius: 8px;
+  background: #1a5fb4;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  text-align: center;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.admin-button:hover:not(:disabled) {
+  background: #154a8f;
+  border-color: #154a8f;
+}
+
+.admin-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.35);
+}
+
+.admin-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.admin-loading {
+  margin: 0;
+  color: #4b5563;
+}
+
+.admin-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-bar__user {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.admin-bar__logout {
+  cursor: pointer;
+  font: inherit;
+}
