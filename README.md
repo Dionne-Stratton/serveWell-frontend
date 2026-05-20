@@ -36,6 +36,15 @@ API default: `http://localhost:8787` (see `.env.example`). The server sets `FRON
 
 Unknown paths redirect to `/`.
 
+## Phase 6: volunteer form (`/serve`)
+
+Requires the API at `VITE_API_URL` (default `http://localhost:8787`). Copy `.env.example` to `.env` if needed.
+
+1. Start `serveWell-server` (`npm run dev`) with local D1 migrations applied.
+2. Open `http://localhost:5173/serve`.
+3. Submit a test interest (select at least one serving area; confirm any required checkboxes for that area).
+4. Confirm success message and “Submit another response.”
+
 ## Docs
 
 Product and API details are in [`docs/`](./docs/), including `Implementation-Plan.md` and `API-Contract.md`.

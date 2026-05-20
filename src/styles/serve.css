@@ -1,0 +1,353 @@
+/* Church reference: light gray page, bold blue headings, pill inputs */
+
+.serve-page {
+  --serve-page-bg: #e3e3e3;
+  --serve-heading: #1a5fb4;
+  --serve-text: #1a1a1a;
+  --serve-input-bg: #ffffff;
+  --serve-input-border: #1a1a1a;
+
+  width: 100%;
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 0 1.25rem 2.5rem;
+  box-sizing: border-box;
+  background: var(--serve-page-bg);
+  min-height: 100svh;
+}
+
+.serve-page .page-shell {
+  margin: 0;
+  padding: 2rem 0 2rem;
+  background: transparent;
+}
+
+.serve-page .page-shell__brand {
+  color: var(--serve-heading);
+  letter-spacing: 0.12em;
+}
+
+.serve-page .page-shell__title {
+  color: var(--serve-heading);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 1.75rem;
+}
+
+.serve-loading,
+.serve-load-error {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--serve-text);
+}
+
+.serve-load-error {
+  padding: 1rem;
+  border-radius: 8px;
+  background: #fff3f3;
+  border: 1px solid #e8b4b4;
+}
+
+.serve-form {
+  width: 100%;
+}
+
+.serve-form__intro {
+  margin: 0 0 1.75rem;
+  color: var(--serve-text);
+  line-height: 1.55;
+}
+
+.serve-validation-summary {
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  background: #fff3f3;
+  border: 2px solid #c62828;
+  color: #7f1d1d;
+}
+
+.serve-validation-summary__title {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+}
+
+.serve-validation-summary ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.serve-validation-summary li {
+  margin-bottom: 0.25rem;
+}
+
+.serve-fieldset {
+  margin: 0 0 2rem;
+  padding: 0;
+  border: none;
+}
+
+.serve-fieldset__legend {
+  display: block;
+  width: 100%;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--serve-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.serve-field {
+  margin-bottom: 1rem;
+}
+
+.serve-field--compact {
+  margin-bottom: 0.75rem;
+}
+
+.serve-field-row--split {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 520px) {
+  .serve-field-row--split {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.serve-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--serve-text);
+}
+
+.serve-asterisk {
+  color: #c62828;
+  font-weight: 700;
+}
+
+.serve-required-legend {
+  margin: -0.75rem 0 1.5rem;
+  font-size: 0.9rem;
+  color: var(--serve-text);
+}
+
+.serve-input {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--serve-input-border);
+  border-radius: 999px;
+  background: var(--serve-input-bg);
+  font: inherit;
+  color: var(--serve-text);
+  box-sizing: border-box;
+}
+
+.serve-input--select {
+  appearance: auto;
+  border-radius: 999px;
+}
+
+.serve-input--textarea {
+  border-radius: 1rem;
+  resize: vertical;
+  min-height: 4.5rem;
+}
+
+.serve-input:focus {
+  outline: 2px solid var(--serve-heading);
+  outline-offset: 2px;
+}
+
+.serve-help {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--serve-text);
+}
+
+.serve-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--serve-text);
+  cursor: pointer;
+}
+
+.serve-choice input {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.serve-choice--area {
+  align-items: flex-start;
+  margin-bottom: 0.35rem;
+}
+
+.serve-area-group {
+  margin-bottom: 1.25rem;
+}
+
+.serve-area-group__title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--serve-heading);
+}
+
+.serve-area-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.serve-area-item {
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.serve-area-item:last-child {
+  border-bottom: none;
+}
+
+.serve-area-list__desc {
+  font-weight: 400;
+}
+
+.serve-area-inline {
+  margin: 0.5rem 0 0 1.75rem;
+  padding: 0.85rem 1rem;
+  border-left: 4px solid var(--serve-heading);
+  background: #ffffff;
+  border-radius: 0 8px 8px 0;
+  color: var(--serve-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.serve-area-inline__note {
+  margin: 0 0 0.65rem;
+  line-height: 1.45;
+  color: var(--serve-text);
+}
+
+.serve-area-inline__flags {
+  margin: 0 0 0.65rem;
+  padding-left: 1.1rem;
+  color: var(--serve-text);
+}
+
+.serve-area-inline__flags li {
+  margin-bottom: 0.25rem;
+}
+
+.serve-info-note {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--serve-text);
+}
+
+.serve-info-note strong {
+  color: var(--serve-heading);
+}
+
+.serve-ack {
+  margin: 0 0 0.85rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid var(--serve-heading);
+}
+
+.serve-ack__info {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--serve-text);
+}
+
+.serve-ack__info strong {
+  color: var(--serve-heading);
+}
+
+.serve-ack__check {
+  margin-bottom: 0;
+}
+
+.serve-field-error {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: #b42318;
+  font-weight: 600;
+}
+
+.serve-form-error {
+  margin: 0 0 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #fff3f3;
+  color: #b42318;
+  border: 1px solid #e8b4b4;
+}
+
+.serve-submit-bar {
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.serve-status {
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+  color: var(--serve-heading);
+}
+
+.serve-status--loading {
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.serve-button {
+  display: inline-block;
+  padding: 0.65rem 1.5rem;
+  border: 1px solid var(--serve-input-border);
+  border-radius: 999px;
+  background: var(--serve-input-bg);
+  font: inherit;
+  font-weight: 600;
+  color: var(--serve-text);
+  cursor: pointer;
+}
+
+.serve-button:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.serve-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.serve-success {
+  padding: 1.25rem 1.35rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid #2e7d32;
+}
+
+.serve-success__message {
+  margin: 0 0 1.25rem;
+  line-height: 1.55;
+  color: var(--serve-text);
+  font-size: 1.05rem;
+}

@@ -45,9 +45,17 @@ body {
 }
 
 #root {
+  width: 100%;
   max-width: 52rem;
   margin: 0 auto;
   min-height: 100svh;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+#root:has(.serve-page) {
+  max-width: none;
+  padding: 0;
 }
 
 a {
