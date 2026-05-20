@@ -1,60 +1,66 @@
-import { useEffect, useState } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { ApiError } from '../api/client'
-import { useAdminAuth } from '../auth/useAdminAuth'
-import PageShell from '../components/PageShell'
-import '../styles/admin.css'
+import { useEffect, useState } from "react";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { ApiError } from "../api/client";
+import { useAdminAuth } from "../auth/useAdminAuth";
+import PageShell from "../components/PageShell";
+import "../styles/admin.css";
 
 export default function AdminLoginPage() {
-  const { admin, loading, login } = useAdminAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  const { admin, loading, login } = useAdminAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const redirectTo = location.state?.from ?? '/admin'
+  const redirectTo = location.state?.from ?? "/admin";
 
   useEffect(() => {
     if (!loading && admin) {
-      navigate(redirectTo, { replace: true })
+      navigate(redirectTo, { replace: true });
     }
-  }, [admin, loading, navigate, redirectTo])
+  }, [admin, loading, navigate, redirectTo]);
 
   if (loading) {
     return (
       <PageShell title="Admin login" showHomeLink={false}>
         <p className="admin-loading">Checking your session…</p>
       </PageShell>
-    )
+    );
   }
 
   if (admin) {
-    return <Navigate to={redirectTo} replace />
+    return <Navigate to={redirectTo} replace />;
   }
 
   async function handleSubmit(event) {
-    event.preventDefault()
-    setError('')
-    setSubmitting(true)
+    event.preventDefault();
+    setError("");
+    setSubmitting(true);
 
     try {
-      await login(email.trim(), password)
-      navigate(redirectTo, { replace: true })
+      await login(email.trim(), password);
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : 'Unable to sign in. Please try again.'
-      )
+        err instanceof ApiError
+          ? err.message
+          : "Unable to sign in. Please try again.",
+      );
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
   return (
     <PageShell title="Admin login" showHomeLink>
       <form className="admin-login-form" onSubmit={handleSubmit}>
-        <p className="lede">Staff sign-in for reviewing volunteer submissions.</p>
+        <p className="lede">
+          Staff sign-in for reviewing volunteer submissions.
+        </p>
+        <p className="lede">Demo email: church@example.com</p>
+        <p className="lede">Demo password: temporary-password</p>
         <div className="admin-field">
           <label className="admin-label" htmlFor="admin-email">
             Email
@@ -85,9 +91,9 @@ export default function AdminLoginPage() {
         </div>
         {error ? <p className="admin-error">{error}</p> : null}
         <button type="submit" className="admin-button" disabled={submitting}>
-          {submitting ? 'Signing in…' : 'Sign in'}
+          {submitting ? "Signing in…" : "Sign in"}
         </button>
       </form>
     </PageShell>
-  )
+  );
 }
