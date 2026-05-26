@@ -4,7 +4,8 @@ import ProtectedAdminRoute from './components/admin/ProtectedAdminRoute'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminSubmissionDetailPage from './pages/AdminSubmissionDetailPage'
-import HomePage from './pages/HomePage'
+import DemoHomePage from './pages/DemoHomePage'
+import LandingPage from './pages/LandingPage'
 import ServePage from './pages/ServePage'
 import './App.css'
 
@@ -13,11 +14,12 @@ export default function App() {
     <BrowserRouter>
       <AdminAuthProvider>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/serve" element={<ServePage />} />
-          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/demo" element={<DemoHomePage />} />
+          <Route path="/demo/serve" element={<ServePage />} />
+          <Route path="/demo/admin/login" element={<AdminLoginPage />} />
           <Route
-            path="/admin"
+            path="/demo/admin"
             element={
               <ProtectedAdminRoute>
                 <AdminDashboardPage />
@@ -25,7 +27,7 @@ export default function App() {
             }
           />
           <Route
-            path="/admin/submissions/:id"
+            path="/demo/admin/submissions/:id"
             element={
               <ProtectedAdminRoute>
                 <AdminSubmissionDetailPage />

@@ -17,7 +17,7 @@ export default function SubmissionListItem({ submission }) {
     <article className="admin-submission-card">
       <header className="admin-submission-card__header">
         <h2 className="admin-submission-card__name">
-          <Link to={`/admin/submissions/${submission.id}`}>{name}</Link>
+          <Link to={`/demo/admin/submissions/${submission.id}`}>{name}</Link>
         </h2>
         <span className={`admin-status admin-status--${submission.status}`}>
           {labelSubmissionStatus(submission.status)}
@@ -59,7 +59,7 @@ export default function SubmissionListItem({ submission }) {
         </ul>
       )}
       <p className="admin-submission-card__action">
-        <Link to={`/admin/submissions/${submission.id}`} className="admin-link-button">
+        <Link to={`/demo/admin/submissions/${submission.id}`} className="admin-link-button">
           View details
         </Link>
       </p>

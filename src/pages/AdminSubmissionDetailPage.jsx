@@ -81,7 +81,7 @@ export default function AdminSubmissionDetailPage() {
       }
     >
       <p className="admin-back">
-        <Link to="/admin">← Back to dashboard</Link>
+        <Link to="/demo/admin">← Back to dashboard</Link>
       </p>
 
       {loading ? <p className="admin-loading">Loading submission…</p> : null}

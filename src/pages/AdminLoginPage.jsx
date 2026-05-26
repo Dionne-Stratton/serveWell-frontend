@@ -14,7 +14,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const redirectTo = location.state?.from ?? "/admin";
+  const redirectTo = location.state?.from ?? "/demo/admin";
 
   useEffect(() => {
     if (!loading && admin) {

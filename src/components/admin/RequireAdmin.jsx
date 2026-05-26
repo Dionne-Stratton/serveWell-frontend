@@ -11,7 +11,7 @@ export default function RequireAdmin({ children }) {
   }
 
   if (!admin) {
-    return <Navigate to="/admin/login" replace state={{ from: location.pathname }} />
+    return <Navigate to="/demo/admin/login" replace state={{ from: location.pathname }} />
   }
 
   return children
