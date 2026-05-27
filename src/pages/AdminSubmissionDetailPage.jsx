@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ApiError, fetchAdminSubmissionDetail } from '../api/client'
+import { ApiError, getAdminSubmissionDetail } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import {
   formatAvailabilityList,
@@ -43,7 +43,7 @@ export default function AdminSubmissionDetailPage() {
       setError('')
 
       try {
-        const data = await fetchAdminSubmissionDetail(id)
+        const data = await getAdminSubmissionDetail(id)
         if (!cancelled) {
           setDetail(data)
         }

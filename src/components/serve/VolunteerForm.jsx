@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
-import { ApiError, createVolunteerSubmission } from '../../api/client'
+import { ApiError, submitVolunteerForm } from '../../api/client'
+import { DEMO_FORM_SLUG, DEMO_ORGANIZATION_SLUG } from '../../constants/demo'
 import {
   availabilityOptions,
   frequencyOptions,
@@ -159,7 +160,11 @@ export default function VolunteerForm({ servingAreas }) {
 
     try {
       const payload = buildSubmissionPayload(form, servingAreas)
-      const data = await createVolunteerSubmission(payload)
+      const data = await submitVolunteerForm(
+        DEMO_ORGANIZATION_SLUG,
+        DEMO_FORM_SLUG,
+        payload,
+      )
       setSuccessMessage(
         data.message ??
           'Thank you! Your interest has been submitted. Someone from the church will follow up with you soon.'

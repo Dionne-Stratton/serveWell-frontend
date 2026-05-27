@@ -1,38 +1,47 @@
 /* eslint-disable react-refresh/only-export-components -- context is consumed via useAdminAuth */
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
-import { ApiError, adminLogin, fetchAdminMe } from '../api/client'
+import { ApiError, adminLogin, getCurrentAdmin } from '../api/client'
 import { clearAdminToken, getAdminToken, setAdminToken } from './token'
 
 export const AdminAuthContext = createContext(null)
 
 export function AdminAuthProvider({ children }) {
   const [admin, setAdmin] = useState(null)
+  const [organization, setOrganization] = useState(null)
   const [loading, setLoading] = useState(true)
 
   const logout = useCallback(() => {
     clearAdminToken()
     setAdmin(null)
+    setOrganization(null)
+  }, [])
+
+  const applySession = useCallback((data) => {
+    setAdmin(data.admin ?? null)
+    setOrganization(data.organization ?? null)
   }, [])
 
   const refreshSession = useCallback(async () => {
     const token = getAdminToken()
     if (!token) {
       setAdmin(null)
+      setOrganization(null)
       return false
     }
 
     try {
-      const data = await fetchAdminMe()
-      setAdmin(data.admin ?? null)
+      const data = await getCurrentAdmin()
+      applySession(data)
       return true
     } catch (error) {
       if (error instanceof ApiError && error.code === 'UNAUTHORIZED') {
         clearAdminToken()
       }
       setAdmin(null)
+      setOrganization(null)
       return false
     }
-  }, [])
+  }, [applySession])
 
   useEffect(() => {
     let cancelled = false
@@ -42,15 +51,16 @@ export function AdminAuthProvider({ children }) {
       if (!token) {
         if (!cancelled) {
           setAdmin(null)
+          setOrganization(null)
           setLoading(false)
         }
         return
       }
 
       try {
-        const data = await fetchAdminMe()
+        const data = await getCurrentAdmin()
         if (!cancelled) {
-          setAdmin(data.admin ?? null)
+          applySession(data)
         }
       } catch (error) {
         if (error instanceof ApiError && error.code === 'UNAUTHORIZED') {
@@ -58,6 +68,7 @@ export function AdminAuthProvider({ children }) {
         }
         if (!cancelled) {
           setAdmin(null)
+          setOrganization(null)
         }
       } finally {
         if (!cancelled) {
@@ -71,25 +82,29 @@ export function AdminAuthProvider({ children }) {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [applySession])
 
-  const login = useCallback(async (email, password) => {
-    const data = await adminLogin({ email, password })
-    setAdminToken(data.token)
-    setAdmin(data.admin)
-    return data.admin
-  }, [])
+  const login = useCallback(
+    async (email, password) => {
+      const data = await adminLogin({ email, password })
+      setAdminToken(data.token)
+      applySession(data)
+      return data.admin
+    },
+    [applySession],
+  )
 
   const value = useMemo(
     () => ({
       admin,
+      organization,
       loading,
       isAuthenticated: Boolean(admin),
       login,
       logout,
-      refreshSession
+      refreshSession,
     }),
-    [admin, loading, login, logout, refreshSession]
+    [admin, organization, loading, login, logout, refreshSession],
   )
 
   return <AdminAuthContext.Provider value={value}>{children}</AdminAuthContext.Provider>

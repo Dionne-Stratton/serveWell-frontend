@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ApiError, fetchAdminSubmissions } from '../api/client'
+import { ApiError, getAdminSubmissions } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import SubmissionListItem from '../components/admin/SubmissionListItem'
 import { submissionStatusOptions } from '../constants/enums'
@@ -17,7 +17,7 @@ export default function AdminDashboardPage() {
     setError('')
 
     try {
-      const data = await fetchAdminSubmissions({
+      const data = await getAdminSubmissions({
         search: searchInput.trim() || undefined,
         status: statusFilter || undefined,
         archived: includeArchived ? undefined : false
@@ -43,7 +43,7 @@ export default function AdminDashboardPage() {
       setError('')
 
       try {
-        const data = await fetchAdminSubmissions({
+        const data = await getAdminSubmissions({
           search: searchInput.trim() || undefined,
           status: statusFilter || undefined,
           archived: includeArchived ? undefined : false

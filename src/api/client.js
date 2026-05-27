@@ -55,15 +55,26 @@ export async function apiRequest(path, options = {}) {
   return body.data;
 }
 
-export function fetchServingAreas() {
-  return apiRequest("/api/serving-areas");
+export function getPublicVolunteerForm(organizationSlug) {
+  return apiRequest(
+    `/api/organizations/${encodeURIComponent(organizationSlug)}/volunteer-form`,
+  );
 }
 
-export function createVolunteerSubmission(payload) {
-  return apiRequest("/api/volunteer-submissions", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+export function getPublicFormBySlug(organizationSlug, formSlug) {
+  return apiRequest(
+    `/api/organizations/${encodeURIComponent(organizationSlug)}/forms/${encodeURIComponent(formSlug)}`,
+  );
+}
+
+export function submitVolunteerForm(organizationSlug, formSlug, payload) {
+  return apiRequest(
+    `/api/organizations/${encodeURIComponent(organizationSlug)}/forms/${encodeURIComponent(formSlug)}/submissions`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    },
+  );
 }
 
 export function adminLogin(credentials) {
@@ -73,13 +84,14 @@ export function adminLogin(credentials) {
   });
 }
 
-export function fetchAdminMe() {
+export function getCurrentAdmin() {
   return apiRequest("/api/admin/me", { authenticated: true });
 }
 
-export function fetchAdminSubmissions(filters = {}) {
+export function getAdminSubmissions(filters = {}) {
   const params = new URLSearchParams();
 
+  if (filters.formId) params.set("formId", String(filters.formId));
   if (filters.status) params.set("status", filters.status);
   if (filters.archived === true) params.set("archived", "true");
   if (filters.archived === false) params.set("archived", "false");
@@ -95,8 +107,23 @@ export function fetchAdminSubmissions(filters = {}) {
   return apiRequest(path, { authenticated: true });
 }
 
-export function fetchAdminSubmissionDetail(submissionId) {
+export function getAdminSubmissionDetail(submissionId) {
   return apiRequest(`/api/admin/submissions/${submissionId}`, {
+    authenticated: true,
+  });
+}
+
+export function updateAdminSubmission(submissionId, payload) {
+  return apiRequest(`/api/admin/submissions/${submissionId}`, {
+    method: "PATCH",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteAdminSubmission(submissionId) {
+  return apiRequest(`/api/admin/submissions/${submissionId}`, {
+    method: "DELETE",
     authenticated: true,
   });
 }

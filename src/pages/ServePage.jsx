@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
-import { ApiError, fetchServingAreas } from '../api/client'
+import { ApiError, getPublicVolunteerForm } from '../api/client'
+import { DEMO_ORGANIZATION_SLUG } from '../constants/demo'
 import PageShell from '../components/PageShell'
 import VolunteerForm from '../components/serve/VolunteerForm'
 import '../styles/serve.css'
 
 export default function ServePage() {
   const [servingAreas, setServingAreas] = useState(null)
+  const [formMeta, setFormMeta] = useState(null)
   const [loadError, setLoadError] = useState('')
 
   useEffect(() => {
@@ -13,16 +15,17 @@ export default function ServePage() {
 
     async function load() {
       try {
-        const data = await fetchServingAreas()
+        const data = await getPublicVolunteerForm(DEMO_ORGANIZATION_SLUG)
         if (!cancelled) {
           setServingAreas(data.servingAreas ?? [])
+          setFormMeta(data.form ?? null)
         }
       } catch (error) {
         if (!cancelled) {
           setLoadError(
             error instanceof ApiError
               ? error.message
-              : 'Unable to load serving areas. Is the API running on localhost:8787?'
+              : 'Unable to load the volunteer form. Is the API running?',
           )
         }
       }
@@ -35,9 +38,11 @@ export default function ServePage() {
     }
   }, [])
 
+  const title = formMeta?.name ?? 'Volunteer interest'
+
   return (
     <div className="serve-page">
-      <PageShell title="Volunteer interest" showHomeLink={false}>
+      <PageShell title={title} showHomeLink={false}>
         {loadError ? (
           <p className="serve-load-error">{loadError}</p>
         ) : servingAreas === null ? (
