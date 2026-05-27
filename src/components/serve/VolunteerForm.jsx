@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
 import { ApiError, submitVolunteerForm } from '../../api/client'
-import { DEMO_FORM_SLUG, DEMO_ORGANIZATION_SLUG } from '../../constants/demo'
 import {
   availabilityOptions,
   frequencyOptions,
@@ -44,7 +43,7 @@ function scrollToElement(elementId) {
   }
 }
 
-export default function VolunteerForm({ servingAreas }) {
+export default function VolunteerForm({ servingAreas, organizationSlug, formSlug }) {
   const [form, setForm] = useState(initialFormState)
   const [fieldErrors, setFieldErrors] = useState({})
   const [validationSummary, setValidationSummary] = useState([])
@@ -160,11 +159,7 @@ export default function VolunteerForm({ servingAreas }) {
 
     try {
       const payload = buildSubmissionPayload(form, servingAreas)
-      const data = await submitVolunteerForm(
-        DEMO_ORGANIZATION_SLUG,
-        DEMO_FORM_SLUG,
-        payload,
-      )
+      const data = await submitVolunteerForm(organizationSlug, formSlug, payload)
       setSuccessMessage(
         data.message ??
           'Thank you! Your interest has been submitted. Someone from the church will follow up with you soon.'

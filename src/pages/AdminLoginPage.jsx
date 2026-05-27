@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
+import { organizationAdminPath } from "../utils/organizationPaths";
 import { ApiError } from "../api/client";
 import { useAdminAuth } from "../auth/useAdminAuth";
 import PageShell from "../components/PageShell";
 import "../styles/admin.css";
 
 export default function AdminLoginPage() {
+  const { organizationSlug } = useParams();
   const { admin, loading, login } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -14,7 +16,9 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const redirectTo = location.state?.from ?? "/demo/admin";
+  const redirectTo =
+    location.state?.from ??
+    (organizationSlug ? organizationAdminPath(organizationSlug) : "/demo/admin");
 
   useEffect(() => {
     if (!loading && admin) {
@@ -59,8 +63,6 @@ export default function AdminLoginPage() {
         <p className="lede">
           Staff sign-in for reviewing volunteer submissions.
         </p>
-        <p className="lede">Demo email: church@example.com</p>
-        <p className="lede">Demo password: temporary-password</p>
         <div className="admin-field">
           <label className="admin-label" htmlFor="admin-email">
             Email
