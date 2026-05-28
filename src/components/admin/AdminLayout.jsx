@@ -1,6 +1,7 @@
-import { useLocation } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../../auth/useAdminAuth'
 import PageShell from '../PageShell'
+import { resolveAdminPageBackLink } from '../../utils/pageBackLink'
 import '../../styles/admin.css'
 
 function isDemoAdminRoute(pathname) {
@@ -8,12 +9,14 @@ function isDemoAdminRoute(pathname) {
 }
 
 export default function AdminLayout({ title, children }) {
-  const { admin, logout } = useAdminAuth()
+  const { admin, logout, organization } = useAdminAuth()
   const { pathname } = useLocation()
+  const { organizationSlug } = useParams()
   const showStaffBar = !isDemoAdminRoute(pathname)
+  const backLink = resolveAdminPageBackLink(pathname, organizationSlug, organization)
 
   return (
-    <PageShell title={title} className="admin-page">
+    <PageShell title={title} className="admin-page" backLink={backLink}>
       {showStaffBar ? (
         <div className="admin-bar">
           <p className="admin-bar__user">

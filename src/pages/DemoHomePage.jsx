@@ -7,7 +7,10 @@ import {
 
 export default function DemoHomePage() {
   return (
-    <PageShell title="Demo organization" showHomeLink={false}>
+    <PageShell
+      title="Demo organization"
+      backLink={{ to: '/', label: '← Home' }}
+    >
       <p className="lede">
         A simple place for people to share serving interest and for church staff to
         review submissions.

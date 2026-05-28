@@ -23,7 +23,7 @@ export default function RequireAdmin({ children, organizationSlug }) {
 
   if (organizationSlug && organization?.slug && organization.slug !== organizationSlug) {
     return (
-      <PageShell title="Admin access" showHomeLink>
+      <PageShell title="Admin access" showHomeLink={false}>
         <p className="lede">
           You are signed in for {organization.name}, not this organization&apos;s dashboard.
         </p>

@@ -3,14 +3,19 @@ import { Link } from "react-router-dom";
 export default function PageShell({
   title,
   children,
-  showHomeLink = true,
+  showHomeLink = false,
+  backLink = null,
   className = "",
 }) {
   const shellClass = className ? `page-shell ${className}` : "page-shell";
 
   return (
     <div className={shellClass}>
-      {showHomeLink ? (
+      {backLink ? (
+        <p className="page-shell__back">
+          <Link to={backLink.to}>{backLink.label}</Link>
+        </p>
+      ) : showHomeLink ? (
         <p className="page-shell__back">
           <Link to="/">ServeWell home</Link>
         </p>

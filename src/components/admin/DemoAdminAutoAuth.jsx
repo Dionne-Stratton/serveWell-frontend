@@ -7,6 +7,7 @@ import {
   DEMO_ORGANIZATION_SLUG,
 } from '../../constants/demo'
 import PageShell from '../PageShell'
+import { demoHomeBackLink } from '../../utils/pageBackLink'
 import AdminRouteGuard from './AdminRouteGuard'
 import '../../styles/admin.css'
 
@@ -57,7 +58,7 @@ export default function DemoAdminAutoAuth({ children }) {
 
   if (!admin) {
     return (
-      <PageShell title="Demo dashboard" showHomeLink>
+      <PageShell title="Demo dashboard" backLink={demoHomeBackLink()}>
         <p className="serve-load-error">{autoError}</p>
       </PageShell>
     )

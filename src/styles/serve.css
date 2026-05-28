@@ -35,6 +35,17 @@
   font-size: 1.75rem;
 }
 
+.serve-page .page-shell__back a {
+  color: #0f172a;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.serve-page .page-shell__back a:hover {
+  color: var(--serve-heading);
+}
+
 .serve-loading,
 .serve-load-error {
   margin: 0;
@@ -305,6 +316,17 @@
   border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
 
+.serve-demo-notice {
+  margin: 0 0 0.85rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: var(--serve-text);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
 .serve-status {
   margin: 0 0 0.75rem;
   font-weight: 600;
@@ -335,6 +357,10 @@
 
 .serve-button:disabled {
   opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.serve-button.serve-button--busy:disabled {
   cursor: wait;
 }
 

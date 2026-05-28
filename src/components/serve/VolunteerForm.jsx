@@ -43,7 +43,12 @@ function scrollToElement(elementId) {
   }
 }
 
-export default function VolunteerForm({ servingAreas, organizationSlug, formSlug }) {
+export default function VolunteerForm({
+  servingAreas,
+  organizationSlug,
+  formSlug,
+  previewOnly = false,
+}) {
   const [form, setForm] = useState(initialFormState)
   const [fieldErrors, setFieldErrors] = useState({})
   const [validationSummary, setValidationSummary] = useState([])
@@ -143,6 +148,10 @@ export default function VolunteerForm({ servingAreas, organizationSlug, formSlug
 
   async function handleSubmit(event) {
     event.preventDefault()
+
+    if (previewOnly) {
+      return
+    }
     setSubmitError('')
     setValidationSummary([])
 
@@ -465,13 +474,23 @@ export default function VolunteerForm({ servingAreas, organizationSlug, formSlug
       </fieldset>
 
       <div className="serve-submit-bar" ref={statusRef}>
+        {previewOnly ? (
+          <p className="serve-demo-notice" role="status">
+            This form is for demo purposes only. You can explore the fields, but responses are not
+            saved. Sample submissions are available in the demo admin dashboard.
+          </p>
+        ) : null}
         {submitting ? (
           <p className="serve-status serve-status--loading" role="status" aria-live="polite">
             Submitting your response…
           </p>
         ) : null}
         {submitError ? <p className="serve-form-error">{submitError}</p> : null}
-        <button type="submit" className="serve-button" disabled={submitting}>
+        <button
+          type="submit"
+          className={`serve-button${submitting ? ' serve-button--busy' : ''}`}
+          disabled={previewOnly || submitting}
+        >
           {submitting ? 'Submitting…' : 'Submit'}
         </button>
       </div>
