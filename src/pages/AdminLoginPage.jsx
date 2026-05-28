@@ -93,7 +93,11 @@ export default function AdminLoginPage({ organizationSlug: organizationSlugProp 
           />
         </div>
         {error ? <p className="admin-error">{error}</p> : null}
-        <button type="submit" className="admin-button" disabled={submitting}>
+        <button
+          type="submit"
+          className={`admin-button${submitting ? ' admin-button--busy' : ''}`}
+          disabled={submitting}
+        >
           {submitting ? "Signing in…" : "Sign in"}
         </button>
       </form>

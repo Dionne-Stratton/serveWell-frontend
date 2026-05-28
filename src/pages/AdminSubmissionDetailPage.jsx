@@ -1,8 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../auth/useAdminAuth'
 import { adminDashboardPath } from '../utils/organizationPaths'
-import { ApiError, getAdminSubmissionDetail } from '../api/client'
+import {
+  ApiError,
+  createAdminSubmissionNote,
+  deleteAdminNote,
+  getAdminSubmissionDetail,
+} from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import {
   formatAvailabilityList,
@@ -39,41 +44,74 @@ export default function AdminSubmissionDetailPage() {
   const [detail, setDetail] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [noteDraft, setNoteDraft] = useState('')
+  const [noteError, setNoteError] = useState('')
+  const [noteSubmitting, setNoteSubmitting] = useState(false)
+  const [deletingNoteId, setDeletingNoteId] = useState(null)
 
-  useEffect(() => {
-    let cancelled = false
+  const loadDetail = useCallback(async () => {
+    setLoading(true)
+    setError('')
 
-    async function load() {
-      setLoading(true)
-      setError('')
-
-      try {
-        const data = await getAdminSubmissionDetail(id)
-        if (!cancelled) {
-          setDetail(data)
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setDetail(null)
-          setError(
-            err instanceof ApiError
-              ? err.message
-              : 'Unable to load this submission.'
-          )
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      }
-    }
-
-    load()
-
-    return () => {
-      cancelled = true
+    try {
+      const data = await getAdminSubmissionDetail(id)
+      setDetail(data)
+    } catch (err) {
+      setDetail(null)
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'Unable to load this submission.',
+      )
+    } finally {
+      setLoading(false)
     }
   }, [id])
+
+  useEffect(() => {
+    loadDetail()
+  }, [loadDetail])
+
+  async function handleAddNote(event) {
+    event.preventDefault()
+    const text = noteDraft.trim()
+    if (!text) {
+      return
+    }
+
+    setNoteError('')
+    setNoteSubmitting(true)
+
+    try {
+      await createAdminSubmissionNote(id, text)
+      setNoteDraft('')
+      const data = await getAdminSubmissionDetail(id)
+      setDetail(data)
+    } catch (err) {
+      setNoteError(
+        err instanceof ApiError ? err.message : 'Unable to save that note.',
+      )
+    } finally {
+      setNoteSubmitting(false)
+    }
+  }
+
+  async function handleDeleteNote(noteId) {
+    setNoteError('')
+    setDeletingNoteId(noteId)
+
+    try {
+      await deleteAdminNote(noteId)
+      const data = await getAdminSubmissionDetail(id)
+      setDetail(data)
+    } catch (err) {
+      setNoteError(
+        err instanceof ApiError ? err.message : 'Unable to delete that note.',
+      )
+    } finally {
+      setDeletingNoteId(null)
+    }
+  }
 
   const submission = detail?.submission
 
@@ -189,22 +227,55 @@ export default function AdminSubmissionDetailPage() {
             </dl>
           </DetailSection>
 
-          {detail.adminNotes?.length ? (
-            <DetailSection title="Staff notes">
+          <DetailSection title="Staff notes">
+            <p className="admin-notes-intro">
+              Internal notes for your team. Volunteers do not see these.
+            </p>
+            <form className="admin-note-form" onSubmit={handleAddNote}>
+              <label className="admin-label" htmlFor="staff-note">
+                Add a note
+              </label>
+              <textarea
+                id="staff-note"
+                className="admin-textarea"
+                rows={3}
+                value={noteDraft}
+                onChange={(event) => setNoteDraft(event.target.value)}
+                placeholder="Follow-up, conversation summary, etc."
+                disabled={noteSubmitting}
+              />
+              <button
+                type="submit"
+                className={`admin-button${noteSubmitting ? ' admin-button--busy' : ''}`}
+                disabled={noteSubmitting || !noteDraft.trim()}
+              >
+                {noteSubmitting ? 'Saving…' : 'Add note'}
+              </button>
+            </form>
+            {noteError ? <p className="admin-error">{noteError}</p> : null}
+            {detail.adminNotes?.length ? (
               <ul className="admin-notes-list">
                 {detail.adminNotes.map((note) => (
-                  <li key={note.id}>
+                  <li key={note.id} className="admin-notes-list__item">
                     <p>{note.note}</p>
-                    <p className="admin-notes-list__meta">{formatDateTime(note.createdAt)}</p>
+                    <p className="admin-notes-list__meta">
+                      {formatDateTime(note.createdAt)}
+                    </p>
+                    <button
+                      type="button"
+                      className="admin-link-button admin-notes-list__delete"
+                      onClick={() => handleDeleteNote(note.id)}
+                      disabled={deletingNoteId === note.id}
+                    >
+                      {deletingNoteId === note.id ? 'Deleting…' : 'Delete'}
+                    </button>
                   </li>
                 ))}
               </ul>
-            </DetailSection>
-          ) : null}
-
-          <p className="admin-readonly-note">
-            Status updates will be available after the server supports submission updates.
-          </p>
+            ) : (
+              <p className="admin-notes-empty">No staff notes yet.</p>
+            )}
+          </DetailSection>
         </>
       ) : null}
     </AdminLayout>

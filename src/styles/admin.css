@@ -112,6 +112,10 @@
 
 .admin-button:disabled {
   opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.admin-button:disabled.admin-button--busy {
   cursor: wait;
 }
 
@@ -424,6 +428,43 @@
   margin: 0.25rem 0 0;
   font-size: 0.85rem;
   color: #6b7280;
+}
+
+.admin-notes-intro {
+  margin: 0 0 0.75rem;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.admin-note-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  max-width: 36rem;
+}
+
+.admin-textarea {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+  resize: vertical;
+}
+
+.admin-notes-list__item {
+  margin-bottom: 0.75rem;
+}
+
+.admin-notes-list__delete {
+  margin-top: 0.35rem;
+}
+
+.admin-notes-empty {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.95rem;
 }
 
 .admin-readonly-note {

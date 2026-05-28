@@ -127,3 +127,18 @@ export function deleteAdminSubmission(submissionId) {
     authenticated: true,
   });
 }
+
+export function createAdminSubmissionNote(submissionId, note) {
+  return apiRequest(`/api/admin/submissions/${submissionId}/notes`, {
+    method: "POST",
+    authenticated: true,
+    body: JSON.stringify({ note }),
+  });
+}
+
+export function deleteAdminNote(noteId) {
+  return apiRequest(`/api/admin/notes/${noteId}`, {
+    method: "DELETE",
+    authenticated: true,
+  });
+}
