@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
-import { organizationAdminPath } from "../utils/organizationPaths";
+import { adminDashboardPath } from "../utils/organizationPaths";
 import { ApiError } from "../api/client";
 import { useAdminAuth } from "../auth/useAdminAuth";
 import PageShell from "../components/PageShell";
 import "../styles/admin.css";
 
-export default function AdminLoginPage() {
-  const { organizationSlug } = useParams();
+export default function AdminLoginPage({ organizationSlug: organizationSlugProp }) {
+  const { organizationSlug: organizationSlugParam } = useParams();
+  const organizationSlug = organizationSlugProp ?? organizationSlugParam;
   const { admin, loading, login } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,7 +19,7 @@ export default function AdminLoginPage() {
 
   const redirectTo =
     location.state?.from ??
-    (organizationSlug ? organizationAdminPath(organizationSlug) : "/demo/admin");
+    adminDashboardPath(organizationSlug);
 
   useEffect(() => {
     if (!loading && admin) {

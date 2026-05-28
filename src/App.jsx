@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AdminAuthProvider } from './auth/AdminAuthContext'
 import AdminRouteGuard from './components/admin/AdminRouteGuard'
-import ProtectedAdminRoute from './components/admin/ProtectedAdminRoute'
+import DemoAdminAutoAuth from './components/admin/DemoAdminAutoAuth'
 import { DEMO_ORGANIZATION_SLUG } from './constants/demo'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminLoginPage from './pages/AdminLoginPage'
@@ -21,27 +21,30 @@ export default function App() {
           <Route path="/demo" element={<DemoHomePage />} />
           <Route
             path="/demo/serve"
-            element={<ServePage organizationSlug={DEMO_ORGANIZATION_SLUG} />}
+            element={<Navigate to="/demo/volunteer" replace />}
           />
           <Route
             path="/demo/volunteer"
             element={<ServePage organizationSlug={DEMO_ORGANIZATION_SLUG} />}
           />
-          <Route path="/demo/admin/login" element={<AdminLoginPage />} />
+          <Route
+            path="/demo/admin/login"
+            element={<Navigate to="/demo/admin" replace />}
+          />
           <Route
             path="/demo/admin"
             element={
-              <ProtectedAdminRoute>
+              <DemoAdminAutoAuth>
                 <AdminDashboardPage />
-              </ProtectedAdminRoute>
+              </DemoAdminAutoAuth>
             }
           />
           <Route
             path="/demo/admin/submissions/:id"
             element={
-              <ProtectedAdminRoute>
+              <DemoAdminAutoAuth>
                 <AdminSubmissionDetailPage />
-              </ProtectedAdminRoute>
+              </DemoAdminAutoAuth>
             }
           />
           <Route path="/:organizationSlug/volunteer" element={<ServePage />} />

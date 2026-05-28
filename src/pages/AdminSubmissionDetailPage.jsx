@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { organizationAdminPath } from '../utils/organizationPaths'
+import { useAdminAuth } from '../auth/useAdminAuth'
+import { adminDashboardPath } from '../utils/organizationPaths'
 import { ApiError, getAdminSubmissionDetail } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import {
@@ -31,10 +32,10 @@ function DetailRow({ label, value }) {
 }
 
 export default function AdminSubmissionDetailPage() {
-  const { id, organizationSlug } = useParams()
-  const adminDashboardPath = organizationSlug
-    ? organizationAdminPath(organizationSlug)
-    : '/demo/admin'
+  const { id, organizationSlug: organizationSlugParam } = useParams()
+  const { organization } = useAdminAuth()
+  const organizationSlug = organizationSlugParam ?? organization?.slug
+  const dashboardPath = adminDashboardPath(organizationSlug)
   const [detail, setDetail] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -85,7 +86,7 @@ export default function AdminSubmissionDetailPage() {
       }
     >
       <p className="admin-back">
-        <Link to={adminDashboardPath}>← Back to dashboard</Link>
+        <Link to={dashboardPath}>← Back to dashboard</Link>
       </p>
 
       {loading ? <p className="admin-loading">Loading submission…</p> : null}

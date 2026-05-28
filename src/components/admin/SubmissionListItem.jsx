@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
-import { organizationAdminSubmissionPath } from '../../utils/organizationPaths'
+import { useAdminAuth } from '../../auth/useAdminAuth'
+import { adminSubmissionDetailPath } from '../../utils/organizationPaths'
 import {
   formatAvailabilityList,
   formatDateTime,
@@ -9,10 +10,10 @@ import {
 } from '../../constants/labels'
 
 export default function SubmissionListItem({ submission }) {
-  const { organizationSlug } = useParams()
-  const detailPath = organizationSlug
-    ? organizationAdminSubmissionPath(organizationSlug, submission.id)
-    : `/demo/admin/submissions/${submission.id}`
+  const { organizationSlug: organizationSlugParam } = useParams()
+  const { organization } = useAdminAuth()
+  const organizationSlug = organizationSlugParam ?? organization?.slug
+  const detailPath = adminSubmissionDetailPath(organizationSlug, submission.id)
   const name = `${submission.firstName} ${submission.lastName}`.trim()
   const areas = submission.servingAreas?.length
     ? submission.servingAreas.join(', ')

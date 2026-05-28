@@ -1,8 +1,8 @@
 import { Link, Navigate, useLocation } from 'react-router-dom'
 import { useAdminAuth } from '../../auth/useAdminAuth'
 import {
-  organizationAdminLoginPath,
-  organizationAdminPath,
+  adminDashboardPath,
+  adminLoginPath,
 } from '../../utils/organizationPaths'
 import PageShell from '../PageShell'
 import '../../styles/admin.css'
@@ -11,9 +11,7 @@ export default function RequireAdmin({ children, organizationSlug }) {
   const { admin, organization, loading } = useAdminAuth()
   const location = useLocation()
 
-  const loginPath = organizationSlug
-    ? organizationAdminLoginPath(organizationSlug)
-    : '/demo/admin/login'
+  const loginPath = adminLoginPath(organizationSlug)
 
   if (loading) {
     return <p className="admin-loading">Checking your session…</p>
@@ -30,7 +28,10 @@ export default function RequireAdmin({ children, organizationSlug }) {
           You are signed in for {organization.name}, not this organization&apos;s dashboard.
         </p>
         <p>
-          <Link className="button button--secondary" to={organizationAdminPath(organization.slug)}>
+          <Link
+            className="button button--secondary"
+            to={adminDashboardPath(organization.slug)}
+          >
             Go to {organization.name} admin
           </Link>
         </p>
