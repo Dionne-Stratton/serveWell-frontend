@@ -10,6 +10,8 @@ import DemoHomePage from './pages/DemoHomePage'
 import LandingPage from './pages/LandingPage'
 import OrganizationLandingPage from './pages/OrganizationLandingPage'
 import ServePage from './pages/ServePage'
+import SignupPage from './pages/SignupPage'
+import StaffLoginPage from './pages/StaffLoginPage'
 import './App.css'
 
 export default function App() {
@@ -18,6 +20,8 @@ export default function App() {
       <AdminAuthProvider>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/login" element={<StaffLoginPage />} />
           <Route path="/demo" element={<DemoHomePage />} />
           <Route
             path="/demo/serve"

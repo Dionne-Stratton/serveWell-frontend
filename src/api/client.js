@@ -84,6 +84,13 @@ export function adminLogin(credentials) {
   });
 }
 
+export function registerOrganization(payload) {
+  return apiRequest("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function getCurrentAdmin() {
   return apiRequest("/api/admin/me", { authenticated: true });
 }

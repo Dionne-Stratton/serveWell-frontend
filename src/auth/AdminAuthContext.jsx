@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- context is consumed via useAdminAuth */
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
-import { ApiError, adminLogin, getCurrentAdmin } from '../api/client'
+import { ApiError, adminLogin, getCurrentAdmin, registerOrganization } from '../api/client'
 import { clearAdminToken, getAdminToken, setAdminToken } from './token'
 
 export const AdminAuthContext = createContext(null)
@@ -89,7 +89,17 @@ export function AdminAuthProvider({ children }) {
       const data = await adminLogin({ email, password })
       setAdminToken(data.token)
       applySession(data)
-      return data.admin
+      return { admin: data.admin, organization: data.organization }
+    },
+    [applySession],
+  )
+
+  const register = useCallback(
+    async (payload) => {
+      const data = await registerOrganization(payload)
+      setAdminToken(data.token)
+      applySession(data)
+      return { admin: data.admin, organization: data.organization }
     },
     [applySession],
   )
@@ -101,10 +111,11 @@ export function AdminAuthProvider({ children }) {
       loading,
       isAuthenticated: Boolean(admin),
       login,
+      register,
       logout,
       refreshSession,
     }),
-    [admin, organization, loading, login, logout, refreshSession],
+    [admin, organization, loading, login, register, logout, refreshSession],
   )
 
   return <AdminAuthContext.Provider value={value}>{children}</AdminAuthContext.Provider>

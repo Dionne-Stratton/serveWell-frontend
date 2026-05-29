@@ -6,9 +6,16 @@ export default function LandingPage() {
     <PageShell title="ServeWell" showHomeLink={false}>
       <p className="lede">
         ServeWell helps churches connect people with meaningful serving opportunities.
-        This site is under construction; explore the working demo below.
+        Create a workspace for your church or explore the product demo.
       </p>
       <div className="action-cards">
+        <section className="action-card">
+          <h2>Get started</h2>
+          <p>Create your church workspace and admin account.</p>
+          <Link className="button button--secondary" to="/signup">
+            Sign up your church
+          </Link>
+        </section>
         <section className="action-card">
           <h2>Product demo</h2>
           <p>Volunteer intake and admin tools used in development.</p>
@@ -17,6 +24,9 @@ export default function LandingPage() {
           </Link>
         </section>
       </div>
+      <p className="landing-signin">
+        Already registered? <Link to="/login">Staff sign in</Link>
+      </p>
     </PageShell>
   )
 }
