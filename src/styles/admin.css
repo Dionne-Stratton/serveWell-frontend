@@ -48,6 +48,20 @@
   font-weight: 600;
 }
 
+.admin-save-success {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #14532d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.admin-back {
+  margin: 0 0 1rem;
+}
+
 .admin-field {
   margin-bottom: 1.1rem;
 }
@@ -288,6 +302,10 @@
 
 .admin-submission-card__action {
   margin: 0.75rem 0 0;
+}
+
+.admin-dashboard-tools {
+  margin: 0 0 1.25rem;
 }
 
 .admin-link-button {

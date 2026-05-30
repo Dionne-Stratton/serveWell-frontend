@@ -92,8 +92,8 @@ export default function SignupPage() {
     <PageShell title="Create your church workspace" backLink={{ to: '/', label: '← Home' }}>
       <form className="admin-login-form admin-signup-form" onSubmit={handleSubmit}>
         <p className="lede">
-          Set up your organization and the first admin account. You can configure
-          your volunteer form in a later step.
+          Set up your organization and the first admin account. A default volunteer
+          form is created automatically from the church template.
         </p>
 
         <fieldset className="admin-fieldset">

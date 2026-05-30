@@ -48,6 +48,7 @@ export default function VolunteerForm({
   organizationSlug,
   formSlug,
   previewOnly = false,
+  introText,
 }) {
   const [form, setForm] = useState(initialFormState)
   const [fieldErrors, setFieldErrors] = useState({})
@@ -61,6 +62,10 @@ export default function VolunteerForm({
     () => groupServingAreasByCategory(servingAreas),
     [servingAreas]
   )
+
+  const introCopy =
+    introText?.trim() ||
+    "Thank you for wanting to serve. Share a little about yourself and where you'd like to help — we'll follow up with you soon."
 
   function showValidationFailures(errors) {
     const messages = [...new Set(Object.values(errors))]
@@ -226,10 +231,7 @@ export default function VolunteerForm({
         </div>
       ) : null}
 
-      <p className="serve-form__intro">
-        Thank you for wanting to serve. Share a little about yourself and where you&apos;d like
-        to help — we&apos;ll follow up with you soon.
-      </p>
+      <p className="serve-form__intro">{introCopy}</p>
       <p className="serve-required-legend">
         <span className="serve-asterisk">*</span> Required field
       </p>

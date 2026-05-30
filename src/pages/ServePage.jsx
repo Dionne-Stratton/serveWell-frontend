@@ -91,6 +91,7 @@ export default function ServePage({ organizationSlug: organizationSlugProp }) {
             organizationSlug={organizationSlug}
             formSlug={formSlug}
             previewOnly={organizationSlug === DEMO_ORGANIZATION_SLUG}
+            introText={formMeta?.introText}
           />
         )}
       </PageShell>

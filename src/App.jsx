@@ -4,6 +4,7 @@ import AdminRouteGuard from './components/admin/AdminRouteGuard'
 import DemoAdminAutoAuth from './components/admin/DemoAdminAutoAuth'
 import { DEMO_ORGANIZATION_SLUG } from './constants/demo'
 import AdminDashboardPage from './pages/AdminDashboardPage'
+import AdminFormSettingsPage from './pages/AdminFormSettingsPage'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminSubmissionDetailPage from './pages/AdminSubmissionDetailPage'
 import DemoHomePage from './pages/DemoHomePage'
@@ -53,6 +54,14 @@ export default function App() {
           />
           <Route path="/:organizationSlug/volunteer" element={<ServePage />} />
           <Route path="/:organizationSlug/admin/login" element={<AdminLoginPage />} />
+          <Route
+            path="/:organizationSlug/admin/form"
+            element={
+              <AdminRouteGuard>
+                <AdminFormSettingsPage />
+              </AdminRouteGuard>
+            }
+          />
           <Route
             path="/:organizationSlug/admin"
             element={

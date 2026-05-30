@@ -149,3 +149,15 @@ export function deleteAdminNote(noteId) {
     authenticated: true,
   });
 }
+
+export function getAdminForms() {
+  return apiRequest("/api/admin/forms", { authenticated: true });
+}
+
+export function patchAdminForm(formId, payload) {
+  return apiRequest(`/api/admin/forms/${formId}`, {
+    method: "PATCH",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
