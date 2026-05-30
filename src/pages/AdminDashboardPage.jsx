@@ -1,84 +1,95 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { ApiError, getAdminSubmissions } from '../api/client'
+import { ApiError, getAdminForms, getAdminSubmissions } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import SubmissionListItem from '../components/admin/SubmissionListItem'
 import { submissionStatusOptions } from '../constants/enums'
 
+const emptyFilters = {
+  search: '',
+  status: '',
+  formId: '',
+  includeArchived: false,
+}
+
+function filtersToQuery(filters) {
+  return {
+    search: filters.search.trim() || undefined,
+    status: filters.status || undefined,
+    formId: filters.formId ? Number(filters.formId) : undefined,
+    archived: filters.includeArchived ? undefined : false,
+  }
+}
+
 export default function AdminDashboardPage() {
-  const { organizationSlug } = useParams()
   const [submissions, setSubmissions] = useState([])
+  const [forms, setForms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [searchInput, setSearchInput] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
-  const [includeArchived, setIncludeArchived] = useState(false)
+  const [draftFilters, setDraftFilters] = useState(emptyFilters)
+  const [appliedFilters, setAppliedFilters] = useState(emptyFilters)
 
-  const loadSubmissions = useCallback(async () => {
+  const fetchSubmissions = useCallback(async (filters) => {
     setLoading(true)
     setError('')
 
     try {
-      const data = await getAdminSubmissions({
-        search: searchInput.trim() || undefined,
-        status: statusFilter || undefined,
-        archived: includeArchived ? undefined : false
-      })
+      const data = await getAdminSubmissions(filtersToQuery(filters))
       setSubmissions(data.submissions ?? [])
     } catch (err) {
       setSubmissions([])
       setError(
         err instanceof ApiError
           ? err.message
-          : 'Unable to load submissions. Is the API running?'
+          : 'Unable to load submissions. Is the API running?',
       )
     } finally {
       setLoading(false)
     }
-  }, [searchInput, statusFilter, includeArchived])
+  }, [])
+
+  useEffect(() => {
+    fetchSubmissions(appliedFilters)
+  }, [appliedFilters, fetchSubmissions])
 
   useEffect(() => {
     let cancelled = false
 
-    async function load() {
-      setLoading(true)
-      setError('')
-
+    async function loadForms() {
       try {
-        const data = await getAdminSubmissions({
-          search: searchInput.trim() || undefined,
-          status: statusFilter || undefined,
-          archived: includeArchived ? undefined : false
-        })
+        const data = await getAdminForms()
         if (!cancelled) {
-          setSubmissions(data.submissions ?? [])
+          setForms(data.forms ?? [])
         }
-      } catch (err) {
+      } catch {
         if (!cancelled) {
-          setSubmissions([])
-          setError(
-            err instanceof ApiError
-              ? err.message
-              : 'Unable to load submissions. Is the API running?'
-          )
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
+          setForms([])
         }
       }
     }
 
-    load()
+    loadForms()
 
     return () => {
       cancelled = true
     }
-  }, [searchInput, statusFilter, includeArchived])
+  }, [])
 
   function handleFilterSubmit(event) {
     event.preventDefault()
-    loadSubmissions()
+    setAppliedFilters({ ...draftFilters })
+  }
+
+  function handleSubmissionStatusUpdated(submissionId, nextStatus) {
+    setSubmissions((current) =>
+      current.map((item) =>
+        item.id === submissionId ? { ...item, status: nextStatus } : item,
+      ),
+    )
+  }
+
+  function handleClearFilters() {
+    setDraftFilters(emptyFilters)
+    setAppliedFilters(emptyFilters)
   }
 
   return (
@@ -94,9 +105,37 @@ export default function AdminDashboardPage() {
               className="admin-input"
               type="search"
               placeholder="Name, email, or phone"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
+              value={draftFilters.search}
+              onChange={(event) =>
+                setDraftFilters((current) => ({
+                  ...current,
+                  search: event.target.value,
+                }))
+              }
             />
+          </div>
+          <div className="admin-field">
+            <label className="admin-label" htmlFor="submission-form">
+              Form
+            </label>
+            <select
+              id="submission-form"
+              className="admin-input admin-input--select"
+              value={draftFilters.formId}
+              onChange={(event) =>
+                setDraftFilters((current) => ({
+                  ...current,
+                  formId: event.target.value,
+                }))
+              }
+            >
+              <option value="">All forms</option>
+              {forms.map((form) => (
+                <option key={form.id} value={String(form.id)}>
+                  {form.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="admin-field">
             <label className="admin-label" htmlFor="submission-status">
@@ -105,8 +144,13 @@ export default function AdminDashboardPage() {
             <select
               id="submission-status"
               className="admin-input admin-input--select"
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
+              value={draftFilters.status}
+              onChange={(event) =>
+                setDraftFilters((current) => ({
+                  ...current,
+                  status: event.target.value,
+                }))
+              }
             >
               <option value="">All statuses</option>
               {submissionStatusOptions.map((option) => (
@@ -120,8 +164,13 @@ export default function AdminDashboardPage() {
         <label className="admin-choice">
           <input
             type="checkbox"
-            checked={includeArchived}
-            onChange={(event) => setIncludeArchived(event.target.checked)}
+            checked={draftFilters.includeArchived}
+            onChange={(event) =>
+              setDraftFilters((current) => ({
+                ...current,
+                includeArchived: event.target.checked,
+              }))
+            }
           />
           <span>Include archived submissions</span>
         </label>
@@ -132,11 +181,7 @@ export default function AdminDashboardPage() {
           <button
             type="button"
             className="admin-button admin-button--secondary"
-            onClick={() => {
-              setSearchInput('')
-              setStatusFilter('')
-              setIncludeArchived(false)
-            }}
+            onClick={handleClearFilters}
           >
             Clear
           </button>
@@ -155,7 +200,11 @@ export default function AdminDashboardPage() {
           </p>
           <div className="admin-submission-list">
             {submissions.map((submission) => (
-              <SubmissionListItem key={submission.id} submission={submission} />
+              <SubmissionListItem
+                key={submission.id}
+                submission={submission}
+                onStatusUpdated={handleSubmissionStatusUpdated}
+              />
             ))}
           </div>
         </>

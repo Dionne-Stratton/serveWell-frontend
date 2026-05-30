@@ -5,20 +5,31 @@ export default function PageShell({
   children,
   showHomeLink = false,
   backLink = null,
+  headerEnd = null,
   className = "",
 }) {
   const shellClass = className ? `page-shell ${className}` : "page-shell";
+  const hasTopRow = Boolean(backLink || showHomeLink || headerEnd);
 
   return (
     <div className={shellClass}>
-      {backLink ? (
-        <p className="page-shell__back">
-          <Link to={backLink.to}>{backLink.label}</Link>
-        </p>
-      ) : showHomeLink ? (
-        <p className="page-shell__back">
-          <Link to="/">ServeWell home</Link>
-        </p>
+      {hasTopRow ? (
+        <div className="page-shell__top">
+          <div className="page-shell__top-start">
+            {backLink ? (
+              <p className="page-shell__back">
+                <Link to={backLink.to}>{backLink.label}</Link>
+              </p>
+            ) : showHomeLink ? (
+              <p className="page-shell__back">
+                <Link to="/">ServeWell home</Link>
+              </p>
+            ) : null}
+          </div>
+          {headerEnd ? (
+            <div className="page-shell__top-end">{headerEnd}</div>
+          ) : null}
+        </div>
       ) : null}
       <header className="page-shell__header">
         {/* <p className="page-shell__brand">ServeWell</p> */}

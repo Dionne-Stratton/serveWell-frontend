@@ -17,22 +17,30 @@ export default function AdminLayout({ title, children }) {
   const backLink = resolveAdminPageBackLink(pathname, organizationSlug, organization)
 
   return (
-    <PageShell title={title} className="admin-page" backLink={backLink}>
-      {showStaffBar ? (
-        <div className="admin-bar">
-          <div className="admin-bar__start">
-            <AdminNav />
+    <PageShell
+      title={title}
+      className="admin-page"
+      backLink={backLink}
+      headerEnd={
+        showStaffBar ? (
+          <div className="admin-top-account">
             <p className="admin-bar__user">
               Signed in as <strong>{admin?.email ?? 'Admin'}</strong>
             </p>
+            <button
+              type="button"
+              className="admin-bar__logout button button--secondary"
+              onClick={logout}
+            >
+              Log out
+            </button>
           </div>
-          <button
-            type="button"
-            className="admin-bar__logout button button--secondary"
-            onClick={logout}
-          >
-            Log out
-          </button>
+        ) : null
+      }
+    >
+      {showStaffBar ? (
+        <div className="admin-bar admin-bar--nav">
+          <AdminNav />
         </div>
       ) : null}
       {children}

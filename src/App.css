@@ -4,8 +4,26 @@
 }
 
 .page-shell__back {
-  margin: 0 0 1.5rem;
+  margin: 0;
   font-size: 0.95rem;
+}
+
+.page-shell__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-shell__top-start {
+  min-width: 0;
+}
+
+.page-shell__top-end {
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .page-shell__brand {

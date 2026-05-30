@@ -9,13 +9,13 @@ import {
   getAdminSubmissionDetail,
 } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
+import AdminSubmissionStatusSelect from '../components/admin/AdminSubmissionStatusSelect'
 import {
   formatAvailabilityList,
   formatDateTime,
   labelExperience,
   labelFrequency,
   labelPreferredContact,
-  labelSubmissionStatus
 } from '../constants/labels'
 
 function DetailSection({ title, children }) {
@@ -132,17 +132,55 @@ export default function AdminSubmissionDetailPage() {
 
       {submission ? (
         <>
-          <p className="admin-detail-meta">
-            <span className={`admin-status admin-status--${submission.status}`}>
-              {labelSubmissionStatus(submission.status)}
-            </span>
+          <div className="admin-detail-meta">
+            <AdminSubmissionStatusSelect
+              submissionId={submission.id}
+              status={submission.status}
+              label="Status"
+              inline
+              autosavedHint="below"
+              onUpdated={(nextStatus) =>
+                setDetail((current) =>
+                  current
+                    ? {
+                        ...current,
+                        submission: { ...current.submission, status: nextStatus },
+                      }
+                    : current,
+                )
+              }
+            />
             {submission.isArchived ? (
               <span className="admin-tag admin-tag--muted">Archived</span>
             ) : null}
-            <span className="admin-detail-meta__date">
-              Submitted {formatDateTime(submission.createdAt)}
-            </span>
-          </p>
+            <div className="admin-detail-meta__aside">
+              <div className="admin-planning-center-row">
+                <button
+                  type="button"
+                  className="admin-button admin-button--secondary admin-button--inline admin-button--planning-center"
+                  disabled
+                  aria-disabled="true"
+                >
+                  Add to Planning Center
+                </button>
+                <span className="admin-info-tip">
+                  <button
+                    type="button"
+                    className="admin-info-mark"
+                    aria-label="Planning Center needs to be connected first."
+                  >
+                    i
+                  </button>
+                  <span className="admin-info-tip__bubble" role="tooltip">
+                    Planning Center needs to be connected first.
+                  </span>
+                </span>
+              </div>
+              <span className="admin-detail-meta__date">
+                Submitted {formatDateTime(submission.createdAt)}
+              </span>
+            </div>
+          </div>
 
           <DetailSection title="Contact">
             <dl className="admin-dl">

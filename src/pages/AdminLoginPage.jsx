@@ -4,7 +4,7 @@ import { DEMO_ORGANIZATION_SLUG } from "../constants/demo";
 import { adminDashboardPath } from "../utils/organizationPaths";
 import {
   demoHomeBackLink,
-  organizationHomeBackLink,
+  serveWellHomeBackLink,
 } from "../utils/pageBackLink";
 import { ApiError } from "../api/client";
 import { useAdminAuth } from "../auth/useAdminAuth";
@@ -30,7 +30,7 @@ export default function AdminLoginPage({ organizationSlug: organizationSlugProp 
     organizationSlug === DEMO_ORGANIZATION_SLUG
       ? demoHomeBackLink()
       : organizationSlug
-        ? organizationHomeBackLink(organizationSlug)
+        ? serveWellHomeBackLink()
         : null;
 
   useEffect(() => {

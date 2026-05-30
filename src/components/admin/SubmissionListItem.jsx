@@ -1,15 +1,15 @@
 import { Link, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../../auth/useAdminAuth'
 import { adminSubmissionDetailPath } from '../../utils/organizationPaths'
+import AdminSubmissionStatusSelect from './AdminSubmissionStatusSelect'
 import {
   formatAvailabilityList,
   formatDateTime,
   labelFrequency,
   labelPreferredContact,
-  labelSubmissionStatus
 } from '../../constants/labels'
 
-export default function SubmissionListItem({ submission }) {
+export default function SubmissionListItem({ submission, onStatusUpdated }) {
   const { organizationSlug: organizationSlugParam } = useParams()
   const { organization } = useAdminAuth()
   const organizationSlug = organizationSlugParam ?? organization?.slug
@@ -25,9 +25,13 @@ export default function SubmissionListItem({ submission }) {
         <h2 className="admin-submission-card__name">
           <Link to={detailPath}>{name}</Link>
         </h2>
-        <span className={`admin-status admin-status--${submission.status}`}>
-          {labelSubmissionStatus(submission.status)}
-        </span>
+        <AdminSubmissionStatusSelect
+          submissionId={submission.id}
+          status={submission.status}
+          inline
+          autosavedHint="below"
+          onUpdated={(nextStatus) => onStatusUpdated?.(submission.id, nextStatus)}
+        />
       </header>
       <dl className="admin-dl admin-dl--compact">
         <div>

@@ -17,7 +17,7 @@ import AdminLoginPage from './pages/AdminLoginPage'
 import AdminSubmissionDetailPage from './pages/AdminSubmissionDetailPage'
 import DemoHomePage from './pages/DemoHomePage'
 import LandingPage from './pages/LandingPage'
-import OrganizationLandingPage from './pages/OrganizationLandingPage'
+import OrganizationRootRedirect from './pages/OrganizationRootRedirect'
 import ServePage from './pages/ServePage'
 import SignupPage from './pages/SignupPage'
 import StaffLoginPage from './pages/StaffLoginPage'
@@ -124,7 +124,7 @@ const router = createBrowserRouter([
           </AdminRouteGuard>
         ),
       },
-      { path: ':organizationSlug', element: <OrganizationLandingPage /> },
+      { path: ':organizationSlug', element: <OrganizationRootRedirect /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
