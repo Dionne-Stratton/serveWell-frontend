@@ -34,13 +34,29 @@ function cloneSections(sections) {
   return JSON.parse(JSON.stringify(sections ?? []))
 }
 
-function buildSnapshot(name, introText, successMessage, isActive, sections) {
+const EMPTY_DELETES = {
+  deletedSectionIds: [],
+  deletedAreaIds: [],
+  deletedRequirementIds: [],
+}
+
+function buildSnapshot(
+  name,
+  introText,
+  successMessage,
+  isActive,
+  sections,
+  deletes = EMPTY_DELETES,
+) {
   return JSON.stringify({
     name,
     introText,
     successMessage,
     isActive,
     sections,
+    deletedSectionIds: deletes.deletedSectionIds,
+    deletedAreaIds: deletes.deletedAreaIds,
+    deletedRequirementIds: deletes.deletedRequirementIds,
   })
 }
 
@@ -51,6 +67,9 @@ function applySnapshot(snapshot, setters) {
   setters.setSuccessMessage(data.successMessage ?? '')
   setters.setIsActive(data.isActive !== false)
   setters.setSections(cloneSections(data.sections))
+  setters.setDeletedSectionIds(data.deletedSectionIds ?? [])
+  setters.setDeletedAreaIds(data.deletedAreaIds ?? [])
+  setters.setDeletedRequirementIds(data.deletedRequirementIds ?? [])
 }
 
 function deriveAreaFlagsFromRequirements(requirements) {
@@ -60,6 +79,36 @@ function deriveAreaFlagsFromRequirements(requirements) {
     requiresTraining: types.has('training'),
     requiresAuditionOrInterview: types.has('audition_or_interview'),
   }
+}
+
+function isPersistedId(id) {
+  return typeof id === 'number' && id > 0
+}
+
+function addRequirementToSections(sections, areaId, requirement) {
+  return sections.map((section) => ({
+    ...section,
+    servingAreas: section.servingAreas.map((area) =>
+      area.id === areaId
+        ? {
+            ...area,
+            requirements: [...(area.requirements ?? []), requirement],
+          }
+        : area,
+    ),
+  }))
+}
+
+function removeRequirementFromSections(sections, requirementId) {
+  return sections.map((section) => ({
+    ...section,
+    servingAreas: section.servingAreas.map((area) => ({
+      ...area,
+      requirements: (area.requirements ?? []).filter(
+        (req) => req.id !== requirementId,
+      ),
+    })),
+  }))
 }
 
 export default function AdminFormEditPage() {
@@ -89,9 +138,38 @@ export default function AdminFormEditPage() {
   const [newRequirementLabels, setNewRequirementLabels] = useState({})
   const [newRequirementTypes, setNewRequirementTypes] = useState({})
 
+  const [deletedSectionIds, setDeletedSectionIds] = useState([])
+  const [deletedAreaIds, setDeletedAreaIds] = useState([])
+  const [deletedRequirementIds, setDeletedRequirementIds] = useState([])
+
+  const nextTempIdRef = useRef(-1)
+
+  function allocateTempId() {
+    const id = nextTempIdRef.current
+    nextTempIdRef.current -= 1
+    return id
+  }
+
+  const pendingDeletes = useMemo(
+    () => ({
+      deletedSectionIds,
+      deletedAreaIds,
+      deletedRequirementIds,
+    }),
+    [deletedSectionIds, deletedAreaIds, deletedRequirementIds],
+  )
+
   const snapshot = useMemo(
-    () => buildSnapshot(name, introText, successMessage, isActive, sections),
-    [name, introText, successMessage, isActive, sections],
+    () =>
+      buildSnapshot(
+        name,
+        introText,
+        successMessage,
+        isActive,
+        sections,
+        pendingDeletes,
+      ),
+    [name, introText, successMessage, isActive, sections, pendingDeletes],
   )
 
   const isDirty = baseline !== null && snapshot !== baseline
@@ -123,16 +201,16 @@ export default function AdminFormEditPage() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [isDirty])
 
-  const syncBaselineFromCurrent = useCallback(() => {
-    setBaseline(buildSnapshot(name, introText, successMessage, isActive, sections))
-  }, [name, introText, successMessage, isActive, sections])
+  const loadForm = useCallback(async (options = {}) => {
+    const { silent = false } = options
 
-  const loadForm = useCallback(async () => {
     if (!formSlug) {
       return
     }
 
-    setLoading(true)
+    if (!silent) {
+      setLoading(true)
+    }
     setError('')
 
     try {
@@ -160,13 +238,25 @@ export default function AdminFormEditPage() {
       setIntroText(nextIntro)
       setSuccessMessage(nextSuccess)
       setIsActive(nextActive)
+      setDeletedSectionIds([])
+      setDeletedAreaIds([])
+      setDeletedRequirementIds([])
       setBaseline(
-        buildSnapshot(nextName, nextIntro, nextSuccess, nextActive, nextSections),
+        buildSnapshot(
+          nextName,
+          nextIntro,
+          nextSuccess,
+          nextActive,
+          nextSections,
+          EMPTY_DELETES,
+        ),
       )
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Unable to load form.')
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
   }, [formSlug])
 
@@ -234,28 +324,94 @@ export default function AdminFormEditPage() {
       isActive,
     })
 
+    for (const requirementId of deletedRequirementIds) {
+      await deleteAdminRequirement(requirementId)
+    }
+
+    for (const areaId of deletedAreaIds) {
+      await deleteAdminServingArea(areaId)
+    }
+
+    for (const sectionId of deletedSectionIds) {
+      await deleteAdminFormSection(sectionId)
+    }
+
+    const sectionIdMap = new Map()
+    const areaIdMap = new Map()
+
     for (const section of sections) {
-      await patchAdminFormSection(section.id, { title: section.title.trim() })
+      if (!isPersistedId(section.id)) {
+        const { section: created } = await createAdminFormSection(formId, {
+          title: section.title.trim(),
+        })
+        sectionIdMap.set(section.id, created.id)
+      }
+    }
+
+    for (const section of sections) {
+      const resolvedSectionId = isPersistedId(section.id)
+        ? section.id
+        : sectionIdMap.get(section.id)
 
       for (const area of section.servingAreas) {
+        if (!isPersistedId(area.id)) {
+          const flags = deriveAreaFlagsFromRequirements(area.requirements)
+          const { servingArea } = await createAdminServingArea(formId, {
+            sectionId: resolvedSectionId,
+            name: area.name.trim(),
+            description: area.description?.trim() || null,
+            publicNote: area.publicNote?.trim() || null,
+            requiresBackgroundCheck: flags.requiresBackgroundCheck,
+            requiresTraining: flags.requiresTraining,
+            requiresAuditionOrInterview: flags.requiresAuditionOrInterview,
+            isActive: area.isActive,
+          })
+          areaIdMap.set(area.id, servingArea.id)
+        }
+      }
+    }
+
+    for (const section of sections) {
+      const sectionId = isPersistedId(section.id)
+        ? section.id
+        : sectionIdMap.get(section.id)
+
+      if (isPersistedId(section.id)) {
+        await patchAdminFormSection(sectionId, { title: section.title.trim() })
+      }
+
+      for (const area of section.servingAreas) {
+        const areaId = isPersistedId(area.id) ? area.id : areaIdMap.get(area.id)
         const flags = deriveAreaFlagsFromRequirements(area.requirements)
-        await patchAdminServingArea(area.id, {
-          name: area.name.trim(),
-          description: area.description?.trim() || null,
-          publicNote: area.publicNote?.trim() || null,
-          requiresBackgroundCheck: flags.requiresBackgroundCheck,
-          requiresTraining: flags.requiresTraining,
-          requiresAuditionOrInterview: flags.requiresAuditionOrInterview,
-          isActive: area.isActive,
-        })
+
+        if (isPersistedId(area.id)) {
+          await patchAdminServingArea(areaId, {
+            name: area.name.trim(),
+            description: area.description?.trim() || null,
+            publicNote: area.publicNote?.trim() || null,
+            requiresBackgroundCheck: flags.requiresBackgroundCheck,
+            requiresTraining: flags.requiresTraining,
+            requiresAuditionOrInterview: flags.requiresAuditionOrInterview,
+            isActive: area.isActive,
+          })
+        }
 
         for (const req of area.requirements ?? []) {
-          await patchAdminRequirement(req.id, {
-            label: req.label.trim(),
-            requirementType: req.type,
-            requiresConfirmation: req.requiresConfirmation,
-            isMandatory: req.isMandatory,
-          })
+          if (!isPersistedId(req.id)) {
+            await createAdminRequirement(areaId, {
+              requirementType: req.type,
+              label: req.label.trim(),
+              requiresConfirmation: req.requiresConfirmation !== false,
+              isMandatory: req.isMandatory === true,
+            })
+          } else {
+            await patchAdminRequirement(req.id, {
+              label: req.label.trim(),
+              requirementType: req.type,
+              requiresConfirmation: req.requiresConfirmation,
+              isMandatory: req.isMandatory,
+            })
+          }
         }
       }
     }
@@ -269,14 +425,7 @@ export default function AdminFormEditPage() {
 
     try {
       await persistChanges()
-      const nextBaseline = buildSnapshot(
-        name.trim(),
-        introText.trim() || '',
-        successMessage.trim() || '',
-        isActive,
-        sections,
-      )
-      setBaseline(nextBaseline)
+      await loadForm({ silent: true })
       setSaveSuccess('Changes saved.')
       return true
     } catch (err) {
@@ -299,6 +448,9 @@ export default function AdminFormEditPage() {
       setSuccessMessage,
       setIsActive,
       setSections,
+      setDeletedSectionIds,
+      setDeletedAreaIds,
+      setDeletedRequirementIds,
     })
     setSaveError('')
     setSaveSuccess('')
@@ -350,7 +502,7 @@ export default function AdminFormEditPage() {
     setLeaveDialogOpen(true)
   }
 
-  async function handleAddSection(event) {
+  function handleAddSection(event) {
     event.preventDefault()
     const title = newSectionTitle.trim()
 
@@ -358,55 +510,73 @@ export default function AdminFormEditPage() {
       return
     }
 
-    try {
-      await createAdminFormSection(formId, { title })
-      setNewSectionTitle('')
-      await loadForm()
-    } catch (err) {
-      window.alert(
-        err instanceof ApiError ? err.message : 'Unable to add section.',
-      )
-    }
+    setSections((current) => [
+      ...current,
+      {
+        id: allocateTempId(),
+        title,
+        sortOrder: current.length,
+        servingAreas: [],
+      },
+    ])
+    setNewSectionTitle('')
   }
 
-  async function handleDeleteSection(section) {
-    const confirmed = window.confirm(
-      `Remove section “${section.title}”? Move or delete its serving areas first.`,
-    )
+  function handleDeleteSection(section) {
+    if (section.servingAreas.length > 0) {
+      window.alert(
+        `Remove serving areas in “${section.title}” first, then you can remove this section.`,
+      )
+      return
+    }
+
+    const confirmed = window.confirm(`Remove section “${section.title}”?`)
 
     if (!confirmed) {
       return
     }
 
-    try {
-      await deleteAdminFormSection(section.id)
-      await loadForm()
-    } catch (err) {
-      window.alert(
-        err instanceof ApiError ? err.message : 'Unable to remove section.',
-      )
+    if (isPersistedId(section.id)) {
+      setDeletedSectionIds((current) => [...current, section.id])
     }
+
+    setSections((current) => current.filter((entry) => entry.id !== section.id))
   }
 
-  async function handleAddArea(sectionId) {
+  function handleAddArea(sectionId) {
     const areaName = (newAreaNames[sectionId] ?? '').trim()
 
     if (!areaName) {
       return
     }
 
-    try {
-      await createAdminServingArea(formId, { sectionId, name: areaName })
-      setNewAreaNames((current) => ({ ...current, [sectionId]: '' }))
-      await loadForm()
-    } catch (err) {
-      window.alert(
-        err instanceof ApiError ? err.message : 'Unable to add serving area.',
-      )
+    const newArea = {
+      id: allocateTempId(),
+      sectionId,
+      name: areaName,
+      description: null,
+      publicNote: null,
+      requiresBackgroundCheck: false,
+      requiresTraining: false,
+      requiresAuditionOrInterview: false,
+      isActive: true,
+      requirements: [],
     }
+
+    setSections((current) =>
+      current.map((section) =>
+        section.id === sectionId
+          ? {
+              ...section,
+              servingAreas: [...section.servingAreas, newArea],
+            }
+          : section,
+      ),
+    )
+    setNewAreaNames((current) => ({ ...current, [sectionId]: '' }))
   }
 
-  async function handleDeleteArea(area) {
+  function handleDeleteArea(area) {
     const confirmed = window.confirm(
       `Delete “${area.name}”? Past volunteer submissions keep their history.`,
     )
@@ -415,54 +585,52 @@ export default function AdminFormEditPage() {
       return
     }
 
-    try {
-      await deleteAdminServingArea(area.id)
-      await loadForm()
-    } catch (err) {
-      window.alert(
-        err instanceof ApiError ? err.message : 'Unable to delete serving area.',
-      )
+    if (isPersistedId(area.id)) {
+      setDeletedAreaIds((current) => [...current, area.id])
     }
+
+    setSections((current) =>
+      current.map((section) => ({
+        ...section,
+        servingAreas: section.servingAreas.filter((entry) => entry.id !== area.id),
+      })),
+    )
   }
 
-  async function handleAddRequirement(areaId) {
+  function handleAddRequirement(areaId) {
     const label = (newRequirementLabels[areaId] ?? '').trim()
 
     if (!label) {
       return
     }
 
-    try {
-      await createAdminRequirement(areaId, {
-        requirementType: newRequirementTypes[areaId] ?? 'custom',
-        label,
-        requiresConfirmation: true,
-      })
-      setNewRequirementLabels((current) => ({ ...current, [areaId]: '' }))
-      setNewRequirementTypes((current) => ({ ...current, [areaId]: 'custom' }))
-      await loadForm()
-    } catch (err) {
-      window.alert(
-        err instanceof ApiError ? err.message : 'Unable to add requirement.',
-      )
+    const requirement = {
+      id: allocateTempId(),
+      type: newRequirementTypes[areaId] ?? 'custom',
+      label,
+      requiresConfirmation: true,
+      isMandatory: false,
     }
+
+    setSections((current) => addRequirementToSections(current, areaId, requirement))
+    setNewRequirementLabels((current) => ({ ...current, [areaId]: '' }))
+    setNewRequirementTypes((current) => ({ ...current, [areaId]: 'custom' }))
   }
 
-  async function handleDeleteRequirement(requirement) {
-    const confirmed = window.confirm(`Delete requirement “${requirement.label}”?`)
+  function handleDeleteRequirement(requirement) {
+    const confirmed = window.confirm(`Remove requirement “${requirement.label}”?`)
 
     if (!confirmed) {
       return
     }
 
-    try {
-      await deleteAdminRequirement(requirement.id)
-      await loadForm()
-    } catch (err) {
-      window.alert(
-        err instanceof ApiError ? err.message : 'Unable to delete requirement.',
-      )
+    if (isPersistedId(requirement.id)) {
+      setDeletedRequirementIds((current) => [...current, requirement.id])
     }
+
+    setSections((current) =>
+      removeRequirementFromSections(current, requirement.id),
+    )
   }
 
   const actionBar = (
