@@ -161,3 +161,85 @@ export function patchAdminForm(formId, payload) {
     body: JSON.stringify(payload),
   });
 }
+
+export function getAdminFormDetail(formId) {
+  return apiRequest(`/api/admin/forms/${formId}`, {
+    authenticated: true,
+  });
+}
+
+export function deleteAdminForm(formId) {
+  return apiRequest(`/api/admin/forms/${formId}`, {
+    method: "DELETE",
+    authenticated: true,
+  });
+}
+
+export function createAdminFormSection(formId, payload) {
+  return apiRequest(`/api/admin/forms/${formId}/sections`, {
+    method: "POST",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function patchAdminFormSection(sectionId, payload) {
+  return apiRequest(`/api/admin/form-sections/${sectionId}`, {
+    method: "PATCH",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteAdminFormSection(sectionId) {
+  return apiRequest(`/api/admin/form-sections/${sectionId}`, {
+    method: "DELETE",
+    authenticated: true,
+  });
+}
+
+export function createAdminServingArea(formId, payload) {
+  return apiRequest(`/api/admin/forms/${formId}/serving-areas`, {
+    method: "POST",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function patchAdminServingArea(servingAreaId, payload) {
+  return apiRequest(`/api/admin/serving-areas/${servingAreaId}`, {
+    method: "PATCH",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteAdminServingArea(servingAreaId) {
+  return apiRequest(`/api/admin/serving-areas/${servingAreaId}`, {
+    method: "DELETE",
+    authenticated: true,
+  });
+}
+
+export function createAdminRequirement(servingAreaId, payload) {
+  return apiRequest(`/api/admin/serving-areas/${servingAreaId}/requirements`, {
+    method: "POST",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function patchAdminRequirement(requirementId, payload) {
+  return apiRequest(`/api/admin/requirements/${requirementId}`, {
+    method: "PATCH",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteAdminRequirement(requirementId) {
+  return apiRequest(`/api/admin/requirements/${requirementId}`, {
+    method: "DELETE",
+    authenticated: true,
+  });
+}

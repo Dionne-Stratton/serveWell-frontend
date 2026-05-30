@@ -1,6 +1,7 @@
 import { useLocation, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../../auth/useAdminAuth'
 import PageShell from '../PageShell'
+import AdminNav from './AdminNav'
 import { resolveAdminPageBackLink } from '../../utils/pageBackLink'
 import '../../styles/admin.css'
 
@@ -19,9 +20,12 @@ export default function AdminLayout({ title, children }) {
     <PageShell title={title} className="admin-page" backLink={backLink}>
       {showStaffBar ? (
         <div className="admin-bar">
-          <p className="admin-bar__user">
-            Signed in as <strong>{admin?.email ?? 'Admin'}</strong>
-          </p>
+          <div className="admin-bar__start">
+            <AdminNav />
+            <p className="admin-bar__user">
+              Signed in as <strong>{admin?.email ?? 'Admin'}</strong>
+            </p>
+          </div>
           <button
             type="button"
             className="admin-bar__logout button button--secondary"

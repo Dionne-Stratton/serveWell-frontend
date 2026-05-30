@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { ApiError, getPublicVolunteerForm } from '../api/client'
+import { ApiError, getPublicFormBySlug, getPublicVolunteerForm } from '../api/client'
 import { DEMO_FORM_SLUG, DEMO_ORGANIZATION_SLUG } from '../constants/demo'
 import { demoHomeBackLink } from '../utils/pageBackLink'
 import PageShell from '../components/PageShell'
@@ -9,9 +9,10 @@ import OrganizationNotFoundPage from './OrganizationNotFoundPage'
 import '../styles/serve.css'
 
 export default function ServePage({ organizationSlug: organizationSlugProp }) {
-  const { organizationSlug: organizationSlugParam } = useParams()
+  const { organizationSlug: organizationSlugParam, formSlug: formSlugParam } = useParams()
   const organizationSlug = organizationSlugProp ?? organizationSlugParam
 
+  const [sections, setSections] = useState(null)
   const [servingAreas, setServingAreas] = useState(null)
   const [formMeta, setFormMeta] = useState(null)
   const [notFound, setNotFound] = useState(false)
@@ -28,10 +29,15 @@ export default function ServePage({ organizationSlug: organizationSlugProp }) {
       setLoadError('')
       setNotFound(false)
       setServingAreas(null)
+      setSections(null)
 
       try {
-        const data = await getPublicVolunteerForm(organizationSlug)
+        const data = formSlugParam
+          ? await getPublicFormBySlug(organizationSlug, formSlugParam)
+          : await getPublicVolunteerForm(organizationSlug)
+
         if (!cancelled) {
+          setSections(data.sections ?? [])
           setServingAreas(data.servingAreas ?? [])
           setFormMeta(data.form ?? null)
         }
@@ -55,7 +61,7 @@ export default function ServePage({ organizationSlug: organizationSlugProp }) {
     return () => {
       cancelled = true
     }
-  }, [organizationSlug])
+  }, [organizationSlug, formSlugParam])
 
   if (!organizationSlug) {
     return (
@@ -70,8 +76,9 @@ export default function ServePage({ organizationSlug: organizationSlugProp }) {
   }
 
   const title = formMeta?.name ?? 'Volunteer interest'
-  const formSlug = formMeta?.slug ?? DEMO_FORM_SLUG
+  const formSlug = formMeta?.slug ?? formSlugParam ?? DEMO_FORM_SLUG
   const isDemoForm = organizationSlug === DEMO_ORGANIZATION_SLUG
+  const formInactive = formMeta && formMeta.isActive === false
 
   return (
     <div className="serve-page">
@@ -83,11 +90,17 @@ export default function ServePage({ organizationSlug: organizationSlugProp }) {
           <p className="serve-load-error">{loadError}</p>
         ) : servingAreas === null ? (
           <p className="serve-loading">Loading form…</p>
+        ) : formInactive ? (
+          <p className="serve-inactive-notice">
+            This form is not currently accepting new submissions. Please check
+            back later or contact the church office.
+          </p>
         ) : servingAreas.length === 0 ? (
           <p className="serve-load-error">No serving areas are available right now.</p>
         ) : (
           <VolunteerForm
             servingAreas={servingAreas}
+            sections={sections}
             organizationSlug={organizationSlug}
             formSlug={formSlug}
             previewOnly={organizationSlug === DEMO_ORGANIZATION_SLUG}

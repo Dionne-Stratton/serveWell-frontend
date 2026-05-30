@@ -60,6 +60,16 @@
   border: 1px solid #e8b4b4;
 }
 
+.serve-inactive-notice {
+  margin: 0;
+  padding: 1.25rem 1.35rem;
+  border-radius: 8px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  color: var(--serve-text);
+  line-height: 1.5;
+}
+
 .serve-form {
   width: 100%;
 }

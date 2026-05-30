@@ -45,6 +45,7 @@ function scrollToElement(elementId) {
 
 export default function VolunteerForm({
   servingAreas,
+  sections = null,
   organizationSlug,
   formSlug,
   previewOnly = false,
@@ -58,10 +59,12 @@ export default function VolunteerForm({
   const [successMessage, setSuccessMessage] = useState('')
   const statusRef = useRef(null)
 
-  const groupedAreas = useMemo(
-    () => groupServingAreasByCategory(servingAreas),
-    [servingAreas]
-  )
+  const groupedAreas = useMemo(() => {
+    if (sections?.length) {
+      return sections.map((section) => [section.title, section.servingAreas])
+    }
+    return groupServingAreasByCategory(servingAreas)
+  }, [sections, servingAreas])
 
   const introCopy =
     introText?.trim() ||
@@ -390,10 +393,10 @@ export default function VolunteerForm({
         {fieldErrors.servingAreas ? (
           <p className="serve-field-error">{fieldErrors.servingAreas}</p>
         ) : null}
-        {[...groupedAreas.entries()].map(([category, areas]) => (
-          <div key={category} className="serve-area-group">
+        {groupedAreas.map(([groupTitle, areas]) => (
+          <div key={groupTitle} className="serve-area-group">
             <h3 className="serve-area-group__title">
-              {servingAreaCategoryLabels[category] ?? category}
+              {sections?.length ? groupTitle : (servingAreaCategoryLabels[groupTitle] ?? groupTitle)}
             </h3>
             <ul className="serve-area-list">
               {areas.map((area) => {

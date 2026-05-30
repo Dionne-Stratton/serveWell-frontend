@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { ApiError, getAdminSubmissions } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import SubmissionListItem from '../components/admin/SubmissionListItem'
-import { DEMO_ORGANIZATION_SLUG } from '../constants/demo'
 import { submissionStatusOptions } from '../constants/enums'
-import { organizationAdminFormSettingsPath } from '../utils/organizationPaths'
 
 export default function AdminDashboardPage() {
   const { organizationSlug } = useParams()
-  const showFormSettings =
-    organizationSlug && organizationSlug !== DEMO_ORGANIZATION_SLUG
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -87,16 +83,6 @@ export default function AdminDashboardPage() {
 
   return (
     <AdminLayout title="Admin dashboard">
-      {showFormSettings ? (
-        <p className="admin-dashboard-tools">
-          <Link
-            className="admin-link-button"
-            to={organizationAdminFormSettingsPath(organizationSlug)}
-          >
-            Volunteer form settings
-          </Link>
-        </p>
-      ) : null}
       <form className="admin-filters" onSubmit={handleFilterSubmit}>
         <div className="admin-filters__row">
           <div className="admin-field">

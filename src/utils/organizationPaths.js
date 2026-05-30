@@ -35,8 +35,20 @@ export function organizationAdminPath(organizationSlug) {
   return `/${organizationSlug}/admin`
 }
 
+export function organizationAdminFormsPath(organizationSlug) {
+  return `/${organizationSlug}/admin/forms`
+}
+
+export function organizationAdminFormEditPath(organizationSlug, formSlug) {
+  return `/${organizationSlug}/admin/forms/${encodeURIComponent(formSlug)}/edit`
+}
+
+export function organizationPublicFormPath(organizationSlug, formSlug) {
+  return `/${organizationSlug}/forms/${formSlug}`
+}
+
 export function organizationAdminFormSettingsPath(organizationSlug) {
-  return `/${organizationSlug}/admin/form`
+  return organizationAdminFormsPath(organizationSlug)
 }
 
 export function organizationAdminSubmissionPath(organizationSlug, submissionId) {
