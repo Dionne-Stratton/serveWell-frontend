@@ -154,6 +154,14 @@ export function getAdminForms() {
   return apiRequest("/api/admin/forms", { authenticated: true });
 }
 
+export function createAdminForm(payload) {
+  return apiRequest("/api/admin/forms", {
+    method: "POST",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
 export function patchAdminForm(formId, payload) {
   return apiRequest(`/api/admin/forms/${formId}`, {
     method: "PATCH",

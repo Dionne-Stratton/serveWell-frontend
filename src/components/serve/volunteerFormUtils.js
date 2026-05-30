@@ -51,8 +51,8 @@ export function buildSubmissionPayload(form, servingAreas) {
   return {
     firstName: form.firstName.trim(),
     lastName: form.lastName.trim(),
-    email: form.email.trim() || null,
-    phone: form.phone.trim() || null,
+    email: form.email.trim(),
+    phone: form.phone.trim(),
     preferredContactMethod: form.preferredContactMethod,
     overallFrequency: form.overallFrequency,
     availability: [...form.availability],
@@ -75,11 +75,13 @@ export function validateVolunteerForm(form, servingAreas) {
 
   if (!form.firstName.trim()) errors.firstName = 'First name is required.'
   if (!form.lastName.trim()) errors.lastName = 'Last name is required.'
-  if (!form.email.trim() && !form.phone.trim()) {
-    errors.contact = 'Please provide an email address or phone number.'
-  }
-  if (form.email.trim() && !isValidEmail(form.email)) {
+  if (!form.email.trim()) {
+    errors.email = 'Email is required.'
+  } else if (!isValidEmail(form.email)) {
     errors.email = 'Please enter a valid email address.'
+  }
+  if (!form.phone.trim()) {
+    errors.phone = 'Phone number is required.'
   }
   if (!form.preferredContactMethod) {
     errors.preferredContactMethod = 'Please choose a preferred contact method.'
@@ -125,6 +127,7 @@ export function firstErrorScrollTarget(errors) {
     'lastName',
     'contact-section',
     'email',
+    'phone',
     'preferredContactMethod',
     'overallFrequency',
     'serving-areas-section'

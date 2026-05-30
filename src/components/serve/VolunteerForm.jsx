@@ -85,7 +85,8 @@ export default function VolunteerForm({
     setFieldErrors((current) => {
       const next = { ...current }
       delete next[field]
-      if (field === 'email' || field === 'phone') delete next.contact
+      if (field === 'email') delete next.email
+      if (field === 'phone') delete next.phone
       return next
     })
     setValidationSummary([])
@@ -284,17 +285,17 @@ export default function VolunteerForm({
           Contact
           <RequiredMark />
         </legend>
-        <p className="serve-help">Provide an email, a phone number, or both.</p>
-        {fieldErrors.contact ? <p className="serve-field-error">{fieldErrors.contact}</p> : null}
         <div className="serve-field">
           <label className="serve-label" htmlFor="email">
             Email
+            <RequiredMark />
           </label>
           <input
             id="email"
             className="serve-input"
             type="email"
             autoComplete="email"
+            required
             value={form.email}
             onChange={(event) => updateField('email', event.target.value)}
           />
@@ -303,15 +304,18 @@ export default function VolunteerForm({
         <div className="serve-field">
           <label className="serve-label" htmlFor="phone">
             Phone
+            <RequiredMark />
           </label>
           <input
             id="phone"
             className="serve-input"
             type="tel"
             autoComplete="tel"
+            required
             value={form.phone}
             onChange={(event) => updateField('phone', event.target.value)}
           />
+          {fieldErrors.phone ? <p className="serve-field-error">{fieldErrors.phone}</p> : null}
         </div>
         <div className="serve-field" id="preferredContactMethod">
           <span className="serve-label">

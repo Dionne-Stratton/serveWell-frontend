@@ -10,6 +10,7 @@ import AdminRouteGuard from './components/admin/AdminRouteGuard'
 import DemoAdminAutoAuth from './components/admin/DemoAdminAutoAuth'
 import { DEMO_ORGANIZATION_SLUG } from './constants/demo'
 import AdminDashboardPage from './pages/AdminDashboardPage'
+import AdminFormCreatePage from './pages/AdminFormCreatePage'
 import AdminFormEditPage from './pages/AdminFormEditPage'
 import AdminFormsListPage from './pages/AdminFormsListPage'
 import AdminLoginPage from './pages/AdminLoginPage'
@@ -88,6 +89,14 @@ const router = createBrowserRouter([
         element: (
           <AdminRouteGuard>
             <AdminFormsListPage />
+          </AdminRouteGuard>
+        ),
+      },
+      {
+        path: ':organizationSlug/admin/forms/new',
+        element: (
+          <AdminRouteGuard>
+            <AdminFormCreatePage />
           </AdminRouteGuard>
         ),
       },

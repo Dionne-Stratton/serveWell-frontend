@@ -5,13 +5,19 @@ import {
   deleteAdminForm,
   getAdminForms,
 } from '../api/client'
+import { useAdminAuth } from '../auth/useAdminAuth'
 import AdminLayout from '../components/admin/AdminLayout'
-import { organizationAdminFormEditPath } from '../utils/organizationPaths'
+import { DEMO_ORGANIZATION_SLUG } from '../constants/demo'
+import {
+  organizationAdminFormEditPath,
+  organizationAdminFormNewPath,
+} from '../utils/organizationPaths'
 import { publicVolunteerFormUrl } from '../utils/publicSiteUrl'
 import '../styles/admin.css'
 
 export default function AdminFormsListPage() {
   const { organizationSlug } = useParams()
+  const { organization } = useAdminAuth()
   const [forms, setForms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -79,8 +85,22 @@ export default function AdminFormsListPage() {
     }
   }
 
+  const isDemoOrg =
+    organizationSlug === DEMO_ORGANIZATION_SLUG ||
+    organization?.slug === DEMO_ORGANIZATION_SLUG
+
   return (
     <AdminLayout title="Volunteer forms">
+      {!isDemoOrg ? (
+        <p className="admin-inline-actions">
+          <Link
+            className="admin-button admin-button--inline"
+            to={organizationAdminFormNewPath(organizationSlug)}
+          >
+            New form
+          </Link>
+        </p>
+      ) : null}
       {copyMessage ? <p className="admin-success">{copyMessage}</p> : null}
       {loading ? <p className="admin-loading">Loading forms…</p> : null}
       {error ? <p className="admin-error">{error}</p> : null}
