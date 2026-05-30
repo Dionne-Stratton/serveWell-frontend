@@ -1,6 +1,8 @@
 # ServeWell Frontend
 
-React + Vite app for the ServeWell volunteer intake prototype.
+React + Vite app for ServeWell: marketing site, public volunteer forms, and organization-scoped admin.
+
+**Active SaaS branch:** `saas-foundation` (org routes, forms admin, signup). `main` may lag until merge.
 
 ## Prerequisites
 
@@ -14,6 +16,10 @@ npm install
 cp .env.example .env
 ```
 
+Set `VITE_API_URL` to your local Worker (default `http://localhost:8787` in `.env.example`). The server sets `FRONTEND_ORIGIN=http://localhost:5173` for CORS.
+
+Optional: `VITE_DEMO_ADMIN_EMAIL` / `VITE_DEMO_ADMIN_PASSWORD` for silent sign-in on `/demo/admin` (defaults match demo seed).
+
 ## Scripts
 
 | Command           | Purpose                          |
@@ -22,45 +28,49 @@ cp .env.example .env
 | `npm run build`   | Production build                 |
 | `npm run preview` | Preview production build         |
 
-API default: `http://localhost:8787` (see `.env.example`). The server sets `FRONTEND_ORIGIN=http://localhost:5173` for CORS.
+## Docs
 
-## Routes (Phase 2 shell)
+Product and API details live in the parent folder:
 
-| Path | Page |
-|------|------|
-| `/` | Staff landing |
-| `/serve` | Public volunteer form (placeholder) |
-| `/admin/login` | Admin login (placeholder) |
-| `/admin` | Admin dashboard (placeholder) |
-| `/admin/submissions/:id` | Submission detail (placeholder) |
+- [Implementation plan](../docs/Implementation-Plan.md)
+- [API contract](../docs/API-Contract.md)
+- [Progress checklist](../docs/Implementation-Progress-Checklist.md)
+
+## Routes
+
+| Path | Purpose |
+|------|---------|
+| `/` | Marketing landing |
+| `/signup` | Church registration (creates org + admin + default form) |
+| `/login` | Staff login (redirects into org admin after sign-in) |
+| `/demo` | Demo sandbox hub |
+| `/demo/volunteer` | Demo public form (`/demo/serve` redirects here) |
+| `/demo/admin` | Demo dashboard (silent sign-in; no login screen) |
+| `/demo/admin/submissions/:id` | Demo submission detail |
+| `/:organizationSlug` | Redirect: admin session → `/:slug/admin`, else `/` (no public org landing) |
+| `/:organizationSlug/volunteer` | Org default volunteer form |
+| `/:organizationSlug/forms/:formSlug` | Specific volunteer form |
+| `/:organizationSlug/admin/login` | Org admin login |
+| `/:organizationSlug/admin` | Submissions dashboard (filters apply on **Apply filters**) |
+| `/:organizationSlug/admin/submissions/:id` | Submission detail (status autosaves; staff notes) |
+| `/:organizationSlug/admin/forms` | Forms list + links to public URLs |
+| `/:organizationSlug/admin/forms/new` | Create form (template or blank) |
+| `/:organizationSlug/admin/forms/:formSlug/edit` | Edit form (sections, areas, acknowledgements; **Save changes** persists) |
+| `/:organizationSlug/admin/form` | Legacy redirect → `/admin/forms` |
 
 Unknown paths redirect to `/`.
 
-## Phase 9: admin dashboard
+## Local smoke test
 
-1. API running; sign in at `/admin/login`.
-2. Open `/admin` — submission list loads (submit a test via `/serve` if empty).
-3. Use search / status / archived filters; open **View details** on a row.
-4. Detail page shows contact, areas, confirmations, and notes (status edit not wired until server PATCH exists).
+1. Apply local D1 migrations and start the API (`serveWell-server`: `npm run dev`).
+2. **Demo:** open `/demo/volunteer`, submit a response (email and phone required). Open `/demo/admin` for the dashboard.
+3. **Real org:** register at `/signup` or use seed admin `church@example.com` / `temporary-password` at `/:slug/admin/login` (slug `demo` for seeded demo org).
+4. Dashboard: set search/status/form/archived filters, click **Apply filters**. Change status on a row or detail page (saves immediately).
+5. Forms (non-demo orgs): list → **New form** → edit → **Save changes**. Share `/:slug/forms/:formSlug` from the forms list.
 
-## Phase 7: admin auth
+Demo org forms are read-only on the API; the UI still shows forms for browsing.
 
-1. API running on port 8787.
-2. Open `http://localhost:5173/admin` — should redirect to `/admin/login`.
-3. Sign in with seeded credentials from `docs/API-README.md` (`church@example.com` / `temporary-password`).
-4. Confirm dashboard loads and shows signed-in email; **Log out** returns to login.
-5. Visit `/admin/submissions/1` while logged out — should redirect to login, then return after sign-in.
-6. Refresh while logged in — session should persist.
+## Not implemented (UI placeholders)
 
-## Phase 6: volunteer form (`/serve`)
-
-Requires the API at `VITE_API_URL` (default `http://localhost:8787`). Copy `.env.example` to `.env` if needed.
-
-1. Start `serveWell-server` (`npm run dev`) with local D1 migrations applied.
-2. Open `http://localhost:5173/serve`.
-3. Submit a test interest (select at least one serving area; confirm any required checkboxes for that area).
-4. Confirm success message and “Submit another response.”
-
-## Docs
-
-Product and API details are in [`docs/`](./docs/), including `Implementation-Plan.md` and `API-Contract.md`.
+- Planning Center export on submission detail (disabled button; hover **i** for message)
+- Broader polish pass (Phase 15 in checklist)
