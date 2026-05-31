@@ -4,7 +4,7 @@ import { demoAdminPath } from '../utils/organizationPaths'
 
 export default function LandingPage() {
   return (
-    <PageShell title="ServeWell" showHomeLink={false}>
+    <PageShell title="ServeWell" titleLogo showHomeLink={false}>
       <p className="lede">
         ServeWell helps churches connect people with meaningful serving opportunities.
         Create a workspace for your church or explore the product demo.

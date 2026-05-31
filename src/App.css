@@ -8,6 +8,26 @@
   font-size: 0.95rem;
 }
 
+.page-shell__home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.page-shell__home-link:hover {
+  color: var(--accent-hover);
+}
+
+.page-shell__home-logo {
+  height: 1.75rem;
+  width: auto;
+  max-width: 1.75rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .page-shell__top {
   display: flex;
   flex-wrap: wrap;
@@ -41,6 +61,25 @@
   font-weight: 600;
   line-height: 1.2;
   color: var(--text-h);
+}
+
+.page-shell__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+.page-shell__title-row .page-shell__title {
+  margin: 0;
+}
+
+.page-shell__title-logo {
+  height: 2.25rem;
+  width: auto;
+  max-width: 2.75rem;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .page-shell__main {
