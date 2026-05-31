@@ -1,3 +1,5 @@
+import softBtn from '../../styles/adminSoftButtons.module.css'
+
 export default function UnsavedChangesDialog({
   open,
   saving,
@@ -28,7 +30,7 @@ export default function UnsavedChangesDialog({
         <div className="admin-dialog__actions">
           <button
             type="button"
-            className="admin-button admin-button--inline"
+            className={`${softBtn.saveBtn}${saving ? ` ${softBtn.saveBtnBusy}` : ''}`}
             disabled={saving}
             onClick={onSave}
           >
@@ -36,7 +38,7 @@ export default function UnsavedChangesDialog({
           </button>
           <button
             type="button"
-            className="admin-button admin-button--secondary admin-button--inline"
+            className={softBtn.softBtnDanger}
             disabled={saving}
             onClick={onDiscard}
           >
@@ -44,7 +46,7 @@ export default function UnsavedChangesDialog({
           </button>
           <button
             type="button"
-            className="admin-btn-text"
+            className={softBtn.softBtn}
             disabled={saving}
             onClick={onStay}
           >

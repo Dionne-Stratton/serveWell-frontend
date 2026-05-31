@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../../auth/useAdminAuth'
 import { adminSubmissionDetailPath } from '../../utils/organizationPaths'
+import softBtn from '../../styles/adminSoftButtons.module.css'
 import AdminSubmissionStatusSelect from './AdminSubmissionStatusSelect'
 import {
   formatAvailabilityList,
@@ -18,6 +19,10 @@ export default function SubmissionListItem({ submission, onStatusUpdated }) {
   const areas = submission.servingAreas?.length
     ? submission.servingAreas.join(', ')
     : '—'
+
+  const staffNotes = submission.staffNotes ?? []
+  const hasRequirementTags =
+    submission.requiresBackgroundCheck || submission.requiresTraining
 
   return (
     <article className="admin-submission-card">
@@ -61,15 +66,34 @@ export default function SubmissionListItem({ submission, onStatusUpdated }) {
           <dt>Submitted</dt>
           <dd>{formatDateTime(submission.createdAt)}</dd>
         </div>
+        {hasRequirementTags ? (
+          <div>
+            <dt>Requirements</dt>
+            <dd>
+              <ul className="admin-submission-requirements">
+                {submission.requiresBackgroundCheck ? <li>Background check</li> : null}
+                {submission.requiresTraining ? <li>Training</li> : null}
+              </ul>
+            </dd>
+          </div>
+        ) : null}
+        {staffNotes.length > 0 ? (
+          <div>
+            <dt>Staff notes</dt>
+            <dd>
+              {staffNotes.map((note, index) => (
+                <span key={note.id}>
+                  {index > 0 ? <br /> : null}
+                  {index > 0 ? <br /> : null}
+                  {note.note}
+                </span>
+              ))}
+            </dd>
+          </div>
+        ) : null}
       </dl>
-      {(submission.requiresBackgroundCheck || submission.requiresTraining) && (
-        <ul className="admin-flags">
-          {submission.requiresBackgroundCheck ? <li>Background check</li> : null}
-          {submission.requiresTraining ? <li>Training</li> : null}
-        </ul>
-      )}
       <p className="admin-submission-card__action">
-        <Link to={detailPath} className="admin-link-button">
+        <Link to={detailPath} className={softBtn.softBtn}>
           View details
         </Link>
       </p>

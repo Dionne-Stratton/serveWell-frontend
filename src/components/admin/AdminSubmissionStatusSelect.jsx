@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ApiError, updateAdminSubmission } from '../../api/client'
 import { submissionStatusOptions } from '../../constants/enums'
+import { normalizeSubmissionStatus } from '../../constants/submissionStatus'
 
 export default function AdminSubmissionStatusSelect({
   submissionId,
@@ -10,18 +11,21 @@ export default function AdminSubmissionStatusSelect({
   autosavedHint,
   onUpdated,
 }) {
-  const [value, setValue] = useState(status)
+  const [value, setValue] = useState(() => normalizeSubmissionStatus(status))
+
+  useEffect(() => {
+    setValue(normalizeSubmissionStatus(status))
+  }, [status])
+
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    setValue(status)
-  }, [status])
+  const normalizedStatus = normalizeSubmissionStatus(status)
 
   async function handleChange(event) {
     const nextStatus = event.target.value
 
-    if (nextStatus === status) {
+    if (nextStatus === normalizedStatus) {
       return
     }
 
@@ -33,7 +37,7 @@ export default function AdminSubmissionStatusSelect({
       setValue(nextStatus)
       onUpdated?.(nextStatus)
     } catch (err) {
-      setValue(status)
+      setValue(normalizedStatus)
       setError(err instanceof ApiError ? err.message : 'Could not update status.')
     } finally {
       setSaving(false)

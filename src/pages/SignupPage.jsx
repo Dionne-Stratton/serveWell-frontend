@@ -13,6 +13,17 @@ const ORGANIZATION_TYPES = [
   { value: 'other', label: 'Other' },
 ]
 
+function RequiredMark() {
+  return (
+    <>
+      {' '}
+      <span className="admin-label-required" aria-hidden="true">
+        *
+      </span>
+    </>
+  )
+}
+
 export default function SignupPage() {
   const { register } = useAdminAuth()
   const navigate = useNavigate()
@@ -89,7 +100,11 @@ export default function SignupPage() {
   }
 
   return (
-    <PageShell title="Create your church workspace" backLink={{ to: '/', label: '← Home' }}>
+    <PageShell
+      title="Create your church workspace"
+      className="admin-auth-page"
+      backLink={{ to: '/', label: '← Home' }}
+    >
       <form className="admin-login-form admin-signup-form" onSubmit={handleSubmit}>
         <p className="lede">
           Set up your organization and the first admin account. A default volunteer
@@ -101,6 +116,7 @@ export default function SignupPage() {
           <div className="admin-field">
             <label className="admin-label" htmlFor="organization-name">
               Church or organization name
+              <RequiredMark />
             </label>
             <input
               id="organization-name"
@@ -115,6 +131,7 @@ export default function SignupPage() {
           <div className="admin-field">
             <label className="admin-label" htmlFor="organization-slug">
               Public URL slug
+              <RequiredMark />
             </label>
             <input
               id="organization-slug"
@@ -183,6 +200,7 @@ export default function SignupPage() {
           <div className="admin-field">
             <label className="admin-label" htmlFor="admin-display-name">
               Your name
+              <RequiredMark />
             </label>
             <input
               id="admin-display-name"
@@ -197,6 +215,7 @@ export default function SignupPage() {
           <div className="admin-field">
             <label className="admin-label" htmlFor="signup-admin-email">
               Work email
+              <RequiredMark />
             </label>
             <input
               id="signup-admin-email"
@@ -211,6 +230,7 @@ export default function SignupPage() {
           <div className="admin-field">
             <label className="admin-label" htmlFor="signup-admin-password">
               Password
+              <RequiredMark />
             </label>
             <input
               id="signup-admin-password"
@@ -226,6 +246,7 @@ export default function SignupPage() {
           <div className="admin-field">
             <label className="admin-label" htmlFor="signup-admin-password-confirm">
               Confirm password
+              <RequiredMark />
             </label>
             <input
               id="signup-admin-password-confirm"

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ApiError, getAdminForms, getAdminSubmissions } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
+import softBtn from '../styles/adminSoftButtons.module.css'
 import SubmissionListItem from '../components/admin/SubmissionListItem'
 import { submissionStatusOptions } from '../constants/enums'
 
@@ -204,14 +205,10 @@ export default function AdminVolunteersPage() {
           <span>Include archived submissions</span>
         </label>
         <div className="admin-filters__actions">
-          <button type="submit" className="admin-button admin-button--secondary">
+          <button type="submit" className={softBtn.softBtn}>
             Apply filters
           </button>
-          <button
-            type="button"
-            className="admin-button admin-button--secondary"
-            onClick={handleClearFilters}
-          >
+          <button type="button" className={softBtn.softBtn} onClick={handleClearFilters}>
             Clear
           </button>
         </div>

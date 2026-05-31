@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { ApiError, getAdminForms, getAdminSubmissions } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
+import softBtn from '../styles/adminSoftButtons.module.css'
 import {
   adminVolunteersFilteredPath,
   organizationAdminFormsPath,
@@ -127,10 +128,7 @@ export default function AdminDashboardPage() {
             <span className="admin-integration-row__name">Planning Center</span>
             <span className="admin-integration-row__status">Not connected</span>
           </div>
-          <Link
-            to={integrationPath}
-            className="admin-button admin-button--secondary admin-button--inline admin-button--compact"
-          >
+          <Link to={integrationPath} className={softBtn.softBtn}>
             Manage Integration
           </Link>
         </div>

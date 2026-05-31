@@ -18,6 +18,7 @@ import {
 import AdminLayout from '../components/admin/AdminLayout'
 import AdminAreaHideToggle from '../components/admin/AdminAreaHideToggle'
 import UnsavedChangesDialog from '../components/admin/UnsavedChangesDialog'
+import softBtn from '../styles/adminSoftButtons.module.css'
 import { organizationAdminFormsPath } from '../utils/organizationPaths'
 import '../styles/admin.css'
 
@@ -637,14 +638,14 @@ export default function AdminFormEditPage() {
     <div className="admin-save-bar">
       <button
         type="submit"
-        className={`admin-button admin-button--inline${saving ? ' admin-button--busy' : ''}`}
+        className={`${softBtn.saveBtn}${saving ? ` ${softBtn.saveBtnBusy}` : ''}`}
         disabled={saving}
       >
         {saving ? 'Saving…' : 'Save changes'}
       </button>
       <button
         type="button"
-        className="admin-button admin-button--secondary admin-button--inline"
+        className={softBtn.softBtn}
         disabled={saving}
         onClick={handleCancel}
       >
@@ -763,7 +764,7 @@ export default function AdminFormEditPage() {
                   <div className="admin-section-footer">
                     <button
                       type="button"
-                      className="admin-btn-text admin-btn-text--danger"
+                      className={softBtn.softBtnDanger}
                       onClick={() => handleDeleteSection(section)}
                     >
                       Remove this section
@@ -864,7 +865,7 @@ export default function AdminFormEditPage() {
                                 className="admin-label"
                                 htmlFor={`req-type-${req.id}`}
                               >
-                                Kind
+                                Type
                               </label>
                               <select
                                 id={`req-type-${req.id}`}
@@ -898,7 +899,7 @@ export default function AdminFormEditPage() {
                               </label>
                               <button
                                 type="button"
-                                className="admin-btn-text admin-btn-text--danger"
+                                className={softBtn.softBtnDanger}
                                 onClick={() => handleDeleteRequirement(req)}
                               >
                                 Remove
@@ -912,7 +913,10 @@ export default function AdminFormEditPage() {
                               className="admin-label"
                               htmlFor={`req-new-${area.id}`}
                             >
-                              Add acknowledgement
+                              Add acknowledgement{' '}
+                              <span className="admin-label-required" aria-hidden="true">
+                                *
+                              </span>
                             </label>
                             <input
                               id={`req-new-${area.id}`}
@@ -932,7 +936,7 @@ export default function AdminFormEditPage() {
                               className="admin-label"
                               htmlFor={`req-new-type-${area.id}`}
                             >
-                              Kind
+                              Type
                             </label>
                             <select
                               id={`req-new-type-${area.id}`}
@@ -954,7 +958,8 @@ export default function AdminFormEditPage() {
                           </div>
                           <button
                             type="button"
-                            className="admin-button admin-button--secondary admin-button--inline admin-requirement-add__btn"
+                            className={`${softBtn.softBtn} ${softBtn.matchFieldInput}`}
+                            disabled={!(newRequirementLabels[area.id] ?? '').trim()}
                             onClick={() => handleAddRequirement(area.id)}
                           >
                             Add
@@ -965,7 +970,7 @@ export default function AdminFormEditPage() {
                       <div className="admin-area-footer">
                         <button
                           type="button"
-                          className="admin-btn-text admin-btn-text--danger"
+                          className={softBtn.softBtnDanger}
                           onClick={() => handleDeleteArea(area)}
                         >
                           Delete this serving area
@@ -997,7 +1002,7 @@ export default function AdminFormEditPage() {
                     </div>
                     <button
                       type="button"
-                      className="admin-button admin-button--secondary admin-button--inline"
+                      className={`${softBtn.softBtn} ${softBtn.matchFieldInput}`}
                       onClick={() => handleAddArea(section.id)}
                     >
                       Add
@@ -1022,7 +1027,7 @@ export default function AdminFormEditPage() {
               </div>
               <button
                 type="button"
-                className="admin-button admin-button--secondary admin-button--inline"
+                className={`${softBtn.softBtn} ${softBtn.matchFieldInput}`}
                 onClick={handleAddSection}
               >
                 Add

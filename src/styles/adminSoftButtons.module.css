@@ -1,0 +1,117 @@
+.softBtn,
+.softBtnDanger,
+.saveBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.32rem 0.55rem;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.softBtn,
+.softBtn:visited {
+  background-color: #eff6ff !important;
+  color: #1a5fb4 !important;
+  border-color: #93c5fd !important;
+}
+
+.softBtn:hover:not(:disabled) {
+  background-color: #dbeafe !important;
+  color: #154a8f !important;
+  border-color: #60a5fa !important;
+  text-decoration: none;
+}
+
+.softBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.softBtnDanger {
+  background-color: #fef2f2 !important;
+  color: #b91c1c !important;
+  border-color: #fca5a5 !important;
+}
+
+.softBtnDanger:hover:not(:disabled) {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+  border-color: #f87171 !important;
+}
+
+.softBtnDanger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.saveBtn,
+.saveBtn:visited {
+  background-color: #1a5fb4 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  border-color: #1a5fb4 !important;
+}
+
+.saveBtn:hover:not(:disabled) {
+  background-color: #154a8f !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  border-color: #154a8f !important;
+  text-decoration: none;
+}
+
+.saveBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.saveBtn:disabled.saveBtnBusy {
+  cursor: wait;
+}
+
+/* Same height as compact form-editor inputs (0.81rem / 0.48rem padding) */
+.matchFieldInput {
+  padding: 0.48rem 0.75rem;
+  font-size: 0.81rem;
+  line-height: 1.35;
+}
+
+@media (prefers-color-scheme: dark) {
+  .softBtn,
+  .softBtn:visited {
+    background-color: rgba(37, 99, 235, 0.22) !important;
+    color: #bfdbfe !important;
+    border-color: rgba(96, 165, 250, 0.55) !important;
+  }
+
+  .softBtn:hover:not(:disabled) {
+    background-color: rgba(37, 99, 235, 0.34) !important;
+    color: #dbeafe !important;
+    border-color: rgba(147, 197, 253, 0.65) !important;
+  }
+
+  .softBtnDanger {
+    background-color: rgba(220, 38, 38, 0.2) !important;
+    color: #fecaca !important;
+    border-color: rgba(248, 113, 113, 0.5) !important;
+  }
+
+  .softBtnDanger:hover:not(:disabled) {
+    background-color: rgba(220, 38, 38, 0.32) !important;
+    color: #fee2e2 !important;
+    border-color: rgba(252, 165, 165, 0.65) !important;
+  }
+}

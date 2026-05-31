@@ -3,8 +3,9 @@ import {
   experienceLevelOptions,
   frequencyOptions,
   preferredContactMethodOptions,
-  submissionStatusOptions
+  submissionStatusOptions,
 } from './enums'
+import { normalizeSubmissionStatus } from './submissionStatus'
 
 function labelFromOptions(options, value) {
   if (!value) return '—'
@@ -28,7 +29,7 @@ export function labelExperience(value) {
 }
 
 export function labelSubmissionStatus(value) {
-  return labelFromOptions(submissionStatusOptions, value)
+  return labelFromOptions(submissionStatusOptions, normalizeSubmissionStatus(value))
 }
 
 export function formatAvailabilityList(keys) {
