@@ -4,6 +4,7 @@ import {
   ApiError,
   deleteAdminForm,
   getAdminForms,
+  patchAdminForm,
 } from '../api/client'
 import { useAdminAuth } from '../auth/useAdminAuth'
 import AdminLayout from '../components/admin/AdminLayout'
@@ -13,7 +14,49 @@ import {
   organizationAdminFormNewPath,
 } from '../utils/organizationPaths'
 import { publicVolunteerFormUrl } from '../utils/publicSiteUrl'
+import styles from './AdminFormsListPage.module.css'
 import '../styles/admin.css'
+
+const COPY_FEEDBACK_MS = 2000
+
+function CopyLinkIcon() {
+  return (
+    <svg
+      className="admin-copy-link-btn__icon"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  )
+}
+
+function CopiedIcon() {
+  return (
+    <svg
+      className="admin-copy-link-btn__icon admin-copy-link-btn__icon--check"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  )
+}
 
 export default function AdminFormsListPage() {
   const { organizationSlug } = useParams()
@@ -21,7 +64,7 @@ export default function AdminFormsListPage() {
   const [forms, setForms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [copyMessage, setCopyMessage] = useState('')
+  const [copiedFormId, setCopiedFormId] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -58,10 +101,44 @@ export default function AdminFormsListPage() {
   async function handleCopy(form, url) {
     try {
       await navigator.clipboard.writeText(url)
-      setCopyMessage(`Copied link for “${form.name}”.`)
-      setTimeout(() => setCopyMessage(''), 3000)
+      setCopiedFormId(form.id)
+      setTimeout(() => {
+        setCopiedFormId((current) => (current === form.id ? null : current))
+      }, COPY_FEEDBACK_MS)
     } catch {
-      setCopyMessage('Could not copy to clipboard.')
+      window.alert('Could not copy to clipboard.')
+    }
+  }
+
+  async function handleSetFormActive(form, nextActive) {
+    const url = publicVolunteerFormUrl(organizationSlug, form.slug)
+
+    if (nextActive) {
+      const confirmed = window.confirm(
+        `Activate “${form.name}”?\n\nThis link will accept new volunteer submissions again:\n${url}`,
+      )
+      if (!confirmed) return
+    } else {
+      const confirmed = window.confirm(
+        `Deactivate “${form.name}”?\n\nIf this link is on your church website, visitors will see that the form is not accepting submissions:\n${url}\n\nYou can turn the form back on here or from Edit. Submissions you already received stay in Volunteers.`,
+      )
+      if (!confirmed) return
+    }
+
+    try {
+      const data = await patchAdminForm(form.id, { isActive: nextActive })
+      const updated = data.form
+      setForms((current) =>
+        current.map((item) => (item.id === form.id ? { ...item, ...updated } : item)),
+      )
+    } catch (err) {
+      window.alert(
+        err instanceof ApiError
+          ? err.message
+          : nextActive
+            ? 'Unable to activate this form.'
+            : 'Unable to deactivate this form.',
+      )
     }
   }
 
@@ -89,19 +166,21 @@ export default function AdminFormsListPage() {
     organizationSlug === DEMO_ORGANIZATION_SLUG ||
     organization?.slug === DEMO_ORGANIZATION_SLUG
 
+  const cardButtonClass = styles.cardBtn
+  const deleteButtonClass = styles.cardBtnDanger
+
   return (
     <AdminLayout title="Volunteer forms">
       {!isDemoOrg ? (
         <p className="admin-inline-actions">
           <Link
-            className="admin-button admin-button--inline"
+            className="admin-button admin-button--inline admin-button--compact admin-form-card__add-link"
             to={organizationAdminFormNewPath(organizationSlug)}
           >
-            New form
+            + Add New
           </Link>
         </p>
       ) : null}
-      {copyMessage ? <p className="admin-success">{copyMessage}</p> : null}
       {loading ? <p className="admin-loading">Loading forms…</p> : null}
       {error ? <p className="admin-error">{error}</p> : null}
 
@@ -113,6 +192,7 @@ export default function AdminFormsListPage() {
             forms.map((form) => {
               const publicUrl = publicVolunteerFormUrl(organizationSlug, form.slug)
               const volunteerViewPath = `/${organizationSlug}/forms/${form.slug}`
+              const linkCopied = copiedFormId === form.id
 
               return (
                 <article key={form.id} className="admin-form-card">
@@ -123,20 +203,24 @@ export default function AdminFormsListPage() {
                     ) : null}
                   </header>
 
-                  <div className="admin-form-card__url">
-                    <span className="admin-form-card__url-text">{publicUrl}</span>
-                    <button
-                      type="button"
-                      className="admin-button admin-button--secondary admin-button--inline"
-                      onClick={() => handleCopy(form, publicUrl)}
-                    >
-                      Copy link
-                    </button>
-                  </div>
+                  <p className="admin-form-card__url">
+                    <span className="admin-form-card__url-line">
+                      <span className="admin-form-card__url-text">{publicUrl}</span>
+                      <button
+                        type="button"
+                        className="admin-copy-link-btn"
+                        aria-label={linkCopied ? 'Copied' : 'Copy link'}
+                        title={linkCopied ? 'Copied' : 'Copy link'}
+                        onClick={() => handleCopy(form, publicUrl)}
+                      >
+                        {linkCopied ? <CopiedIcon /> : <CopyLinkIcon />}
+                      </button>
+                    </span>
+                  </p>
 
-                  <div className="admin-form-card__actions">
+                  <div className={styles.actions}>
                     <a
-                      className="admin-button admin-button--secondary admin-button--inline"
+                      className={cardButtonClass}
                       href={volunteerViewPath}
                       target="_blank"
                       rel="noreferrer"
@@ -144,18 +228,29 @@ export default function AdminFormsListPage() {
                       View
                     </a>
                     <Link
-                      className="admin-button admin-button--secondary admin-button--inline"
+                      className={cardButtonClass}
                       to={organizationAdminFormEditPath(organizationSlug, form.slug)}
                     >
                       Edit
                     </Link>
-                    <button
-                      type="button"
-                      className="admin-button admin-button--danger-inline"
-                      onClick={() => handleDelete(form)}
-                    >
-                      Delete
-                    </button>
+                    {!isDemoOrg ? (
+                      <button
+                        type="button"
+                        className={cardButtonClass}
+                        onClick={() => handleSetFormActive(form, !form.isActive)}
+                      >
+                        {form.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                    ) : null}
+                    {!isDemoOrg ? (
+                      <button
+                        type="button"
+                        className={deleteButtonClass}
+                        onClick={() => handleDelete(form)}
+                      >
+                        Delete
+                      </button>
+                    ) : null}
                   </div>
                 </article>
               )

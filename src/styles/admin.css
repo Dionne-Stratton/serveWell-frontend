@@ -1202,26 +1202,204 @@
 }
 
 .admin-form-card__url {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin: 0 0 1rem;
+  margin: 0 0 0.85rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.admin-form-card__url-line {
+  display: inline;
+  max-width: 100%;
 }
 
 .admin-form-card__url-text {
-  flex: 1 1 12rem;
-  min-width: 0;
-  font-size: 0.9rem;
-  color: #374151;
+  color: var(--text);
   word-break: break-all;
+}
+
+.admin-copy-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: baseline;
+  margin: 0 0 0 0.2rem;
+  padding: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: none;
+  border-radius: 2px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--muted);
+  line-height: 0;
+}
+
+.admin-copy-link-btn__icon {
+  display: block;
+}
+
+.admin-copy-link-btn__icon--check {
+  color: #047857;
+}
+
+.admin-copy-link-btn:hover {
+  color: var(--text-h);
+}
+
+.admin-copy-link-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .admin-form-card__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.4rem;
   align-items: center;
+}
+
+.admin-form-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.32rem 0.55rem;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.admin-form-card-btn--primary {
+  background: #eff6ff;
+  color: #1a5fb4;
+  border-color: #bfdbfe;
+}
+
+.admin-form-card-btn--primary:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #154a8f;
+}
+
+.admin-form-card-btn--danger {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.admin-form-card-btn--danger:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.admin-page .admin-form-card__actions a.admin-form-card-btn--primary,
+.admin-page .admin-form-card__actions a.admin-form-card-btn--primary:visited {
+  color: #1a5fb4;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.admin-page .admin-form-card__actions a.admin-form-card-btn--primary:hover {
+  color: #154a8f;
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.admin-form-card__actions .admin-button--compact {
+  padding: 0.32rem 0.55rem;
+  font-size: 0.78rem;
+}
+
+.admin-form-card__actions .admin-button.admin-button--soft-blue {
+  background: #eff6ff;
+  color: #1a5fb4;
+  border: 2px solid #bfdbfe;
+}
+
+.admin-form-card__actions .admin-button.admin-button--soft-blue:hover:not(:disabled) {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #154a8f;
+}
+
+.admin-form-card__actions .admin-button.admin-button--danger-soft {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 2px solid #fecaca;
+}
+
+.admin-form-card__actions .admin-button.admin-button--danger-soft:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.admin-button--soft-blue {
+  background: #eff6ff;
+  color: #1a5fb4;
+  border-color: #bfdbfe;
+}
+
+.admin-button--soft-blue:hover:not(:disabled) {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #154a8f;
+}
+
+.admin-button--danger-soft {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.admin-button--danger-soft:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.admin-page .admin-inline-actions a.admin-form-card__add-link,
+.admin-page .admin-inline-actions a.admin-form-card__add-link:visited {
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  background: #1a5fb4;
+  border: 2px solid #1a5fb4;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.32rem 0.55rem;
+  font-size: 0.78rem;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.admin-page .admin-inline-actions a.admin-form-card__add-link:hover {
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  background: #154a8f;
+  border-color: #154a8f;
+  text-decoration: none;
+}
+
+.admin-page .admin-inline-actions a.admin-form-card__add-link:focus-visible {
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  background: #154a8f;
+  border-color: #154a8f;
+  text-decoration: none;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26, 95, 180, 0.35);
 }
 
 .admin-form-card__meta {

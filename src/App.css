@@ -122,7 +122,7 @@
   color: var(--accent);
 }
 
-.page-shell__main a:not(.button):hover {
+.page-shell__main a:not(.button):not(.admin-button):hover {
   text-decoration: underline;
 }
 

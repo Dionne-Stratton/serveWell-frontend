@@ -92,8 +92,8 @@ export default function ServePage({ organizationSlug: organizationSlugProp }) {
           <p className="serve-loading">Loading form…</p>
         ) : formInactive ? (
           <p className="serve-inactive-notice">
-            This form is not currently accepting new submissions. Please check
-            back later or contact the church office.
+            This form is not accepting submissions right now. Please check back
+            later or contact the church office.
           </p>
         ) : servingAreas.length === 0 ? (
           <p className="serve-load-error">No serving areas are available right now.</p>
