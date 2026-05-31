@@ -9,7 +9,10 @@ import { AdminAuthProvider } from './auth/AdminAuthContext'
 import AdminRouteGuard from './components/admin/AdminRouteGuard'
 import DemoAdminAutoAuth from './components/admin/DemoAdminAutoAuth'
 import { DEMO_ORGANIZATION_SLUG } from './constants/demo'
+import AdminDashboardDemoPage from './pages/AdminDashboardDemoPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
+import AdminPlanningCenterIntegrationPage from './pages/AdminPlanningCenterIntegrationPage'
+import AdminVolunteersPage from './pages/AdminVolunteersPage'
 import AdminFormCreatePage from './pages/AdminFormCreatePage'
 import AdminFormEditPage from './pages/AdminFormEditPage'
 import AdminFormsListPage from './pages/AdminFormsListPage'
@@ -61,7 +64,15 @@ const router = createBrowserRouter([
         path: 'demo/admin',
         element: (
           <DemoAdminAutoAuth>
-            <AdminDashboardPage />
+            <AdminDashboardDemoPage />
+          </DemoAdminAutoAuth>
+        ),
+      },
+      {
+        path: 'demo/admin/volunteers',
+        element: (
+          <DemoAdminAutoAuth>
+            <AdminVolunteersPage />
           </DemoAdminAutoAuth>
         ),
       },
@@ -105,6 +116,22 @@ const router = createBrowserRouter([
         element: (
           <AdminRouteGuard>
             <AdminFormEditPage />
+          </AdminRouteGuard>
+        ),
+      },
+      {
+        path: ':organizationSlug/admin/integrations/planning-center',
+        element: (
+          <AdminRouteGuard>
+            <AdminPlanningCenterIntegrationPage />
+          </AdminRouteGuard>
+        ),
+      },
+      {
+        path: ':organizationSlug/admin/volunteers',
+        element: (
+          <AdminRouteGuard>
+            <AdminVolunteersPage />
           </AdminRouteGuard>
         ),
       },

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../auth/useAdminAuth'
-import { adminDashboardPath } from '../utils/organizationPaths'
+import { adminVolunteersPath } from '../utils/organizationPaths'
 import {
   ApiError,
   createAdminSubmissionNote,
@@ -40,7 +40,7 @@ export default function AdminSubmissionDetailPage() {
   const { id, organizationSlug: organizationSlugParam } = useParams()
   const { organization } = useAdminAuth()
   const organizationSlug = organizationSlugParam ?? organization?.slug
-  const dashboardPath = adminDashboardPath(organizationSlug)
+  const volunteersPath = adminVolunteersPath(organizationSlug)
   const [detail, setDetail] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -124,7 +124,7 @@ export default function AdminSubmissionDetailPage() {
       }
     >
       <p className="admin-back">
-        <Link to={dashboardPath}>← Back to dashboard</Link>
+        <Link to={volunteersPath}>← Back to volunteers</Link>
       </p>
 
       {loading ? <p className="admin-loading">Loading submission…</p> : null}

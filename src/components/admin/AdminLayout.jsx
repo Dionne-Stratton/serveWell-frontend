@@ -9,11 +9,16 @@ function isDemoAdminRoute(pathname) {
   return pathname.startsWith('/demo/admin')
 }
 
+function isAdminAppRoute(pathname) {
+  return isDemoAdminRoute(pathname) || /\/admin(\/|$)/.test(pathname)
+}
+
 export default function AdminLayout({ title, children }) {
   const { admin, logout, organization } = useAdminAuth()
   const { pathname } = useLocation()
   const { organizationSlug } = useParams()
   const showStaffBar = !isDemoAdminRoute(pathname)
+  const showAdminNav = isAdminAppRoute(pathname)
   const backLink = resolveAdminPageBackLink(pathname, organizationSlug, organization)
 
   return (
@@ -38,7 +43,7 @@ export default function AdminLayout({ title, children }) {
         ) : null
       }
     >
-      {showStaffBar ? (
+      {showAdminNav ? (
         <div className="admin-bar admin-bar--nav">
           <AdminNav />
         </div>

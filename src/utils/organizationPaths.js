@@ -15,6 +15,10 @@ export function demoAdminPath() {
   return '/demo/admin'
 }
 
+export function demoAdminVolunteersPath() {
+  return '/demo/admin/volunteers'
+}
+
 export function demoAdminSubmissionPath(submissionId) {
   return `/demo/admin/submissions/${submissionId}`
 }
@@ -33,6 +37,14 @@ export function organizationAdminLoginPath(organizationSlug) {
 
 export function organizationAdminPath(organizationSlug) {
   return `/${organizationSlug}/admin`
+}
+
+export function organizationAdminVolunteersPath(organizationSlug) {
+  return `/${organizationSlug}/admin/volunteers`
+}
+
+export function organizationPlanningCenterIntegrationPath(organizationSlug) {
+  return `/${organizationSlug}/admin/integrations/planning-center`
 }
 
 export function organizationAdminFormsPath(organizationSlug) {
@@ -72,6 +84,21 @@ export function adminDashboardPath(organizationSlug) {
     return demoAdminPath()
   }
   return organizationAdminPath(organizationSlug)
+}
+
+export function adminVolunteersPath(organizationSlug) {
+  if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
+    return demoAdminVolunteersPath()
+  }
+  return organizationAdminVolunteersPath(organizationSlug)
+}
+
+export function adminVolunteersFilteredPath(organizationSlug, status) {
+  const base = adminVolunteersPath(organizationSlug)
+  if (!status) {
+    return base
+  }
+  return `${base}?status=${encodeURIComponent(status)}`
 }
 
 export function adminLoginPath(organizationSlug) {

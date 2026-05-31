@@ -1,214 +1,140 @@
-import { useCallback, useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { ApiError, getAdminForms, getAdminSubmissions } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
-import SubmissionListItem from '../components/admin/SubmissionListItem'
-import { submissionStatusOptions } from '../constants/enums'
+import {
+  adminVolunteersFilteredPath,
+  organizationAdminFormsPath,
+  organizationPlanningCenterIntegrationPath,
+} from '../utils/organizationPaths'
 
-const emptyFilters = {
-  search: '',
-  status: '',
-  formId: '',
-  includeArchived: false,
-}
-
-function filtersToQuery(filters) {
-  return {
-    search: filters.search.trim() || undefined,
-    status: filters.status || undefined,
-    formId: filters.formId ? Number(filters.formId) : undefined,
-    archived: filters.includeArchived ? undefined : false,
-  }
-}
+const ACTION_STATUSES = [
+  { status: 'new', label: 'New' },
+  { status: 'follow_up_needed', label: 'Follow-up needed' },
+  { status: 'approved_ready_to_schedule', label: 'Ready to Schedule' },
+]
 
 export default function AdminDashboardPage() {
-  const [submissions, setSubmissions] = useState([])
-  const [forms, setForms] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [draftFilters, setDraftFilters] = useState(emptyFilters)
-  const [appliedFilters, setAppliedFilters] = useState(emptyFilters)
-
-  const fetchSubmissions = useCallback(async (filters) => {
-    setLoading(true)
-    setError('')
-
-    try {
-      const data = await getAdminSubmissions(filtersToQuery(filters))
-      setSubmissions(data.submissions ?? [])
-    } catch (err) {
-      setSubmissions([])
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : 'Unable to load submissions. Is the API running?',
-      )
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchSubmissions(appliedFilters)
-  }, [appliedFilters, fetchSubmissions])
+  const { organizationSlug } = useParams()
+  const [counts, setCounts] = useState(null)
+  const [activeForms, setActiveForms] = useState(null)
+  const [loadError, setLoadError] = useState('')
 
   useEffect(() => {
     let cancelled = false
 
-    async function loadForms() {
+    async function load() {
+      setLoadError('')
+
       try {
-        const data = await getAdminForms()
+        const countResults = await Promise.all(
+          ACTION_STATUSES.map(({ status }) =>
+            getAdminSubmissions({ status, archived: false }),
+          ),
+        )
+
+        const formsData = await getAdminForms()
+        const forms = formsData.forms ?? []
+        const active = forms.filter((form) => form.isActive)
+
         if (!cancelled) {
-          setForms(data.forms ?? [])
+          setCounts(
+            ACTION_STATUSES.map(({ status, label }, index) => ({
+              status,
+              label,
+              count: countResults[index]?.submissions?.length ?? 0,
+            })),
+          )
+          setActiveForms(active)
         }
-      } catch {
+      } catch (err) {
         if (!cancelled) {
-          setForms([])
+          setCounts(null)
+          setActiveForms(null)
+          setLoadError(
+            err instanceof ApiError
+              ? err.message
+              : 'Unable to load dashboard. Is the API running?',
+          )
         }
       }
     }
 
-    loadForms()
+    load()
 
     return () => {
       cancelled = true
     }
   }, [])
 
-  function handleFilterSubmit(event) {
-    event.preventDefault()
-    setAppliedFilters({ ...draftFilters })
-  }
-
-  function handleSubmissionStatusUpdated(submissionId, nextStatus) {
-    setSubmissions((current) =>
-      current.map((item) =>
-        item.id === submissionId ? { ...item, status: nextStatus } : item,
-      ),
-    )
-  }
-
-  function handleClearFilters() {
-    setDraftFilters(emptyFilters)
-    setAppliedFilters(emptyFilters)
-  }
+  const formsPath = organizationAdminFormsPath(organizationSlug)
+  const integrationPath = organizationPlanningCenterIntegrationPath(organizationSlug)
 
   return (
-    <AdminLayout title="Admin dashboard">
-      <form className="admin-filters" onSubmit={handleFilterSubmit}>
-        <div className="admin-filters__row">
-          <div className="admin-field">
-            <label className="admin-label" htmlFor="submission-search">
-              Search
-            </label>
-            <input
-              id="submission-search"
-              className="admin-input"
-              type="search"
-              placeholder="Name, email, or phone"
-              value={draftFilters.search}
-              onChange={(event) =>
-                setDraftFilters((current) => ({
-                  ...current,
-                  search: event.target.value,
-                }))
-              }
-            />
-          </div>
-          <div className="admin-field">
-            <label className="admin-label" htmlFor="submission-form">
-              Form
-            </label>
-            <select
-              id="submission-form"
-              className="admin-input admin-input--select"
-              value={draftFilters.formId}
-              onChange={(event) =>
-                setDraftFilters((current) => ({
-                  ...current,
-                  formId: event.target.value,
-                }))
-              }
-            >
-              <option value="">All forms</option>
-              {forms.map((form) => (
-                <option key={form.id} value={String(form.id)}>
-                  {form.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="admin-field">
-            <label className="admin-label" htmlFor="submission-status">
-              Status
-            </label>
-            <select
-              id="submission-status"
-              className="admin-input admin-input--select"
-              value={draftFilters.status}
-              onChange={(event) =>
-                setDraftFilters((current) => ({
-                  ...current,
-                  status: event.target.value,
-                }))
-              }
-            >
-              <option value="">All statuses</option>
-              {submissionStatusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <label className="admin-choice">
-          <input
-            type="checkbox"
-            checked={draftFilters.includeArchived}
-            onChange={(event) =>
-              setDraftFilters((current) => ({
-                ...current,
-                includeArchived: event.target.checked,
-              }))
-            }
-          />
-          <span>Include archived submissions</span>
-        </label>
-        <div className="admin-filters__actions">
-          <button type="submit" className="admin-button admin-button--secondary">
-            Apply filters
-          </button>
-          <button
-            type="button"
-            className="admin-button admin-button--secondary"
-            onClick={handleClearFilters}
-          >
-            Clear
-          </button>
-        </div>
-      </form>
+    <AdminLayout title="Dashboard">
+      {loadError ? <p className="admin-error">{loadError}</p> : null}
 
-      {loading ? <p className="admin-loading">Loading submissions…</p> : null}
-      {error ? <p className="admin-error">{error}</p> : null}
+      <section className="admin-dashboard-section" aria-labelledby="dashboard-action-heading">
+        <h2 id="dashboard-action-heading" className="admin-dashboard-section__title">
+          Needs attention
+        </h2>
+        <div className="admin-dashboard-stats">
+          {counts === null && !loadError ? (
+            <p className="admin-loading">Loading counts…</p>
+          ) : null}
+          {counts?.map(({ status, label, count }) => (
+            <Link
+              key={status}
+              to={adminVolunteersFilteredPath(organizationSlug, status)}
+              className="admin-stat-card"
+            >
+              <span className="admin-stat-card__count">{count}</span>
+              <span className="admin-stat-card__label">{label}</span>
+              <span className="admin-stat-card__hint">View in Volunteers</span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
-      {!loading && !error ? (
-        <>
-          <p className="admin-summary">
-            {submissions.length === 0
-              ? 'No submissions match your filters.'
-              : `${submissions.length} submission${submissions.length === 1 ? '' : 's'}`}
-          </p>
-          <div className="admin-submission-list">
-            {submissions.map((submission) => (
-              <SubmissionListItem
-                key={submission.id}
-                submission={submission}
-                onStatusUpdated={handleSubmissionStatusUpdated}
-              />
+      <section className="admin-dashboard-panel" aria-labelledby="dashboard-forms-heading">
+        <h2 id="dashboard-forms-heading" className="admin-dashboard-section__title">
+          Active forms
+        </h2>
+        {activeForms === null && !loadError ? (
+          <p className="admin-loading">Loading forms…</p>
+        ) : null}
+        {activeForms?.length ? (
+          <ul className="admin-dashboard-form-list">
+            {activeForms.map((form) => (
+              <li key={form.id}>{form.name}</li>
             ))}
+          </ul>
+        ) : null}
+        {activeForms && activeForms.length === 0 ? (
+          <p className="admin-muted">
+            No active forms yet.{' '}
+            <Link to={formsPath}>Go to Forms</Link> to create one or turn a form on.
+          </p>
+        ) : null}
+      </section>
+
+      <section className="admin-dashboard-panel" aria-labelledby="dashboard-integrations-heading">
+        <h2 id="dashboard-integrations-heading" className="admin-dashboard-section__title">
+          Integrations
+        </h2>
+        <div className="admin-integration-row">
+          <div className="admin-integration-row__info">
+            <span className="admin-integration-row__name">Planning Center</span>
+            <span className="admin-integration-row__status">Not connected</span>
           </div>
-        </>
-      ) : null}
+          <Link
+            to={integrationPath}
+            className="admin-button admin-button--secondary admin-button--inline admin-button--compact"
+          >
+            Manage Integration
+          </Link>
+        </div>
+      </section>
     </AdminLayout>
   )
 }

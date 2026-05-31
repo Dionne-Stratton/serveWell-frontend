@@ -45,13 +45,15 @@ Product and API details live in the parent folder:
 | `/login` | Staff login (redirects into org admin after sign-in) |
 | `/demo` | Demo sandbox hub |
 | `/demo/volunteer` | Demo public form (`/demo/serve` redirects here) |
-| `/demo/admin` | Demo dashboard (silent sign-in; no login screen) |
+| `/demo/admin` | Demo admin home (dashboard placeholder; silent sign-in) |
+| `/demo/admin/volunteers` | Demo volunteer submissions list |
 | `/demo/admin/submissions/:id` | Demo submission detail |
 | `/:organizationSlug` | Redirect: admin session → `/:slug/admin`, else `/` (no public org landing) |
 | `/:organizationSlug/volunteer` | Org default volunteer form |
 | `/:organizationSlug/forms/:formSlug` | Specific volunteer form |
 | `/:organizationSlug/admin/login` | Org admin login |
-| `/:organizationSlug/admin` | Submissions dashboard (filters apply on **Apply filters**) |
+| `/:organizationSlug/admin` | Admin home (dashboard placeholder) |
+| `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
 | `/:organizationSlug/admin/submissions/:id` | Submission detail (status autosaves; staff notes) |
 | `/:organizationSlug/admin/forms` | Forms list + links to public URLs |
 | `/:organizationSlug/admin/forms/new` | Create form (template or blank) |
@@ -63,7 +65,7 @@ Unknown paths redirect to `/`.
 ## Local smoke test
 
 1. Apply local D1 migrations and start the API (`serveWell-server`: `npm run dev`).
-2. **Demo:** open `/demo/volunteer`, submit a response (email and phone required). Open `/demo/admin` for the dashboard.
+2. **Demo:** open `/demo/volunteer`, submit a response (email and phone required). Open `/demo/admin/volunteers` for submissions.
 3. **Real org:** register at `/signup` or use seed admin `church@example.com` / `temporary-password` at `/:slug/admin/login` (slug `demo` for seeded demo org).
 4. Dashboard: set search/status/form/archived filters, click **Apply filters**. Change status on a row or detail page (saves immediately).
 5. Forms (non-demo orgs): list → **New form** → edit → **Save changes**. Share `/:slug/forms/:formSlug` from the forms list.
