@@ -39,6 +39,13 @@ export const submissionStatusOptions = [
   { value: 'not_a_fit', label: 'Not a fit' },
 ]
 
+export const volunteerNeedStatusOptions = [
+  { value: 'open', label: 'Open — shown normally' },
+  { value: 'needed', label: 'Needed — highlighted on form' },
+  { value: 'urgent', label: 'Urgent — callout at top; sign up in list below' },
+  { value: 'closed', label: 'Closed — hidden from public form' },
+]
+
 export const servingAreaCategoryLabels = {
   worship: 'Worship',
   media_tech: 'Media & tech',

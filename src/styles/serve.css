@@ -240,6 +240,96 @@
   border-bottom: none;
 }
 
+.serve-area-item--needed {
+  margin-left: -0.35rem;
+  margin-right: -0.35rem;
+  padding: 0.45rem 0.35rem 0.65rem;
+  border-bottom: none;
+  border-radius: 8px;
+  background: #fef9c3;
+  border: 1px solid #ca8a04;
+}
+
+.serve-fieldset--urgent-needs {
+  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  border: 1px solid #ca8a04;
+  background: #fef9c3;
+}
+
+.serve-fieldset--urgent-needs .serve-help {
+  color: #1f2937;
+}
+
+.serve-urgent-callout {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.serve-urgent-callout__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+  padding: 0.55rem 0.15rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.serve-urgent-callout__item:last-child {
+  border-bottom: none;
+}
+
+.serve-urgent-callout__text {
+  flex: 1 1 12rem;
+  min-width: 0;
+  color: #111827;
+}
+
+.serve-urgent-callout__text strong {
+  color: #0f172a;
+}
+
+.serve-urgent-callout__text .serve-area-list__desc {
+  color: #374151;
+}
+
+.serve-urgent-callout__jump {
+  flex-shrink: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .serve-area-item--needed {
+    background: #fef9c3;
+    border-color: #ca8a04;
+    color: #111827;
+  }
+
+  .serve-area-item--needed .serve-choice,
+  .serve-area-item--needed .serve-area-list__desc {
+    color: #374151;
+  }
+
+  .serve-fieldset--urgent-needs {
+    background: #fef9c3;
+    border-color: #ca8a04;
+  }
+
+  .serve-fieldset--urgent-needs .serve-help,
+  .serve-urgent-callout__text,
+  .serve-urgent-callout__text strong {
+    color: #111827;
+  }
+
+  .serve-urgent-callout__text .serve-area-list__desc {
+    color: #374151;
+  }
+}
+
 .serve-area-list__desc {
   font-weight: 400;
 }
@@ -359,6 +449,11 @@
   font-weight: 600;
   color: var(--serve-text);
   cursor: pointer;
+}
+
+.serve-button.serve-button--compact {
+  padding: 0.28rem 0.55rem;
+  font-size: 0.78rem;
 }
 
 .serve-button:hover:not(:disabled) {

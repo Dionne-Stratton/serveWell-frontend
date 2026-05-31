@@ -16,9 +16,10 @@ import {
   patchAdminServingArea,
 } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
-import AdminAreaHideToggle from '../components/admin/AdminAreaHideToggle'
 import UnsavedChangesDialog from '../components/admin/UnsavedChangesDialog'
 import softBtn from '../styles/adminSoftButtons.module.css'
+import { volunteerNeedStatusOptions } from '../constants/enums'
+import { isVolunteerNeedClosed, normalizeVolunteerNeedStatus } from '../constants/recruitmentStatus'
 import { organizationAdminFormsPath } from '../utils/organizationPaths'
 import '../styles/admin.css'
 
@@ -32,7 +33,13 @@ const REQUIREMENT_TYPES = [
 ]
 
 function cloneSections(sections) {
-  return JSON.parse(JSON.stringify(sections ?? []))
+  return JSON.parse(JSON.stringify(sections ?? [])).map((section) => ({
+    ...section,
+    servingAreas: (section.servingAreas ?? []).map((area) => ({
+      ...area,
+      recruitmentStatus: normalizeVolunteerNeedStatus(area),
+    })),
+  }))
 }
 
 const EMPTY_DELETES = {
@@ -365,7 +372,7 @@ export default function AdminFormEditPage() {
             requiresBackgroundCheck: flags.requiresBackgroundCheck,
             requiresTraining: flags.requiresTraining,
             requiresAuditionOrInterview: flags.requiresAuditionOrInterview,
-            isActive: area.isActive,
+            recruitmentStatus: normalizeVolunteerNeedStatus(area),
           })
           areaIdMap.set(area.id, servingArea.id)
         }
@@ -393,7 +400,7 @@ export default function AdminFormEditPage() {
             requiresBackgroundCheck: flags.requiresBackgroundCheck,
             requiresTraining: flags.requiresTraining,
             requiresAuditionOrInterview: flags.requiresAuditionOrInterview,
-            isActive: area.isActive,
+            recruitmentStatus: normalizeVolunteerNeedStatus(area),
           })
         }
 
@@ -560,7 +567,7 @@ export default function AdminFormEditPage() {
       requiresBackgroundCheck: false,
       requiresTraining: false,
       requiresAuditionOrInterview: false,
-      isActive: true,
+      recruitmentStatus: 'open',
       requirements: [],
     }
 
@@ -774,7 +781,7 @@ export default function AdminFormEditPage() {
                   {section.servingAreas.map((area) => (
                     <article
                       key={area.id}
-                      className={`admin-edit-area${area.isActive ? '' : ' admin-edit-area--hidden'}`}
+                      className={`admin-edit-area${isVolunteerNeedClosed(normalizeVolunteerNeedStatus(area)) ? ' admin-edit-area--hidden' : ''}`}
                     >
                       <div className="admin-field">
                         <label className="admin-label" htmlFor={`area-name-${area.id}`}>
@@ -821,13 +828,27 @@ export default function AdminFormEditPage() {
                           }
                         />
                       </div>
-                      <AdminAreaHideToggle
-                        inputId={`area-hide-${area.id}`}
-                        hidden={!area.isActive}
-                        onChange={(hidden) =>
-                          updateArea(section.id, area.id, { isActive: !hidden })
-                        }
-                      />
+                      <div className="admin-field">
+                        <label className="admin-label" htmlFor={`area-need-${area.id}`}>
+                          Volunteer need
+                        </label>
+                        <select
+                          id={`area-need-${area.id}`}
+                          className="admin-input admin-input--select"
+                          value={normalizeVolunteerNeedStatus(area)}
+                          onChange={(event) =>
+                            updateArea(section.id, area.id, {
+                              recruitmentStatus: event.target.value,
+                            })
+                          }
+                        >
+                          {volunteerNeedStatusOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
                       <fieldset className="admin-requirements-block">
                         <legend className="admin-requirements__heading">

@@ -66,6 +66,50 @@ export default function VolunteerForm({
     return groupServingAreasByCategory(servingAreas)
   }, [sections, servingAreas])
 
+  const urgentAreas = useMemo(() => {
+    const allAreas = sections?.length
+      ? sections.flatMap((section) => section.servingAreas ?? [])
+      : (servingAreas ?? [])
+    return allAreas.filter((area) => (area.recruitmentStatus ?? 'open') === 'urgent')
+  }, [sections, servingAreas])
+
+  function renderServingAreaItem(area) {
+    const need = area.recruitmentStatus ?? 'open'
+    const isSelected = form.selectedServingAreaIds.has(area.id)
+    const itemClass = ['serve-area-item']
+    if (need === 'needed' || need === 'urgent') {
+      itemClass.push('serve-area-item--needed')
+    }
+
+    return (
+      <li key={area.id} id={`serving-area-${area.id}`} className={itemClass.join(' ')}>
+        <label className="serve-choice serve-choice--area">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => toggleServingArea(area)}
+          />
+          <span>
+            <strong>{area.name}</strong>
+            {area.description ? (
+              <span className="serve-area-list__desc"> — {area.description}</span>
+            ) : null}
+          </span>
+        </label>
+        {isSelected ? (
+          <ServingAreaInlineDetail
+            area={area}
+            detail={getAreaDetail(form, area.id)}
+            confirmations={form.confirmations}
+            fieldErrors={fieldErrors}
+            onUpdateInterest={updateInterest}
+            onToggleConfirmation={toggleConfirmation}
+          />
+        ) : null}
+      </li>
+    )
+  }
+
   const introCopy =
     introText?.trim() ||
     "Thank you for wanting to serve. Share a little about yourself and where you'd like to help — we'll follow up with you soon."
@@ -386,6 +430,35 @@ export default function VolunteerForm({
         </div>
       </fieldset>
 
+      {urgentAreas.length > 0 ? (
+        <fieldset className="serve-fieldset serve-fieldset--urgent-needs">
+          <legend className="serve-fieldset__legend">Urgently needed</legend>
+          <p className="serve-help">
+            These roles need volunteers soon. Jump to each one in the list below, then check the box
+            there to sign up.
+          </p>
+          <ul className="serve-urgent-callout">
+            {urgentAreas.map((area) => (
+              <li key={area.id} className="serve-urgent-callout__item">
+                <div className="serve-urgent-callout__text">
+                  <strong>{area.name}</strong>
+                  {area.description ? (
+                    <span className="serve-area-list__desc"> — {area.description}</span>
+                  ) : null}
+                </div>
+                <button
+                  type="button"
+                  className="serve-button serve-button--compact serve-urgent-callout__jump"
+                  onClick={() => scrollToElement(`serving-area-${area.id}`)}
+                >
+                  Go to role
+                </button>
+              </li>
+            ))}
+          </ul>
+        </fieldset>
+      ) : null}
+
       <fieldset className="serve-fieldset" id="serving-areas-section">
         <legend className="serve-fieldset__legend">
           Serving areas
@@ -403,36 +476,7 @@ export default function VolunteerForm({
               {sections?.length ? groupTitle : (servingAreaCategoryLabels[groupTitle] ?? groupTitle)}
             </h3>
             <ul className="serve-area-list">
-              {areas.map((area) => {
-                const isSelected = form.selectedServingAreaIds.has(area.id)
-                return (
-                  <li key={area.id} className="serve-area-item">
-                    <label className="serve-choice serve-choice--area">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => toggleServingArea(area)}
-                      />
-                      <span>
-                        <strong>{area.name}</strong>
-                        {area.description ? (
-                          <span className="serve-area-list__desc"> — {area.description}</span>
-                        ) : null}
-                      </span>
-                    </label>
-                    {isSelected ? (
-                      <ServingAreaInlineDetail
-                        area={area}
-                        detail={getAreaDetail(form, area.id)}
-                        confirmations={form.confirmations}
-                        fieldErrors={fieldErrors}
-                        onUpdateInterest={updateInterest}
-                        onToggleConfirmation={toggleConfirmation}
-                      />
-                    ) : null}
-                  </li>
-                )
-              })}
+              {areas.map((area) => renderServingAreaItem(area))}
             </ul>
           </div>
         ))}
