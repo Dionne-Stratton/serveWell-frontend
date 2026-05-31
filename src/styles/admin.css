@@ -41,6 +41,10 @@
   color: var(--muted);
 }
 
+.admin-auth-page .admin-loading {
+  color: var(--muted);
+}
+
 .admin-auth-page .admin-input,
 .admin-auth-page select.admin-input {
   background-color: var(--bg);
@@ -1771,4 +1775,65 @@
 .admin-integration-row__status {
   font-size: 0.9rem;
   color: var(--muted);
+}
+
+.admin-integration-row__action--disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.admin-integration-row__demo-note {
+  margin: 0.85rem 0 0;
+  max-width: 42rem;
+  line-height: 1.45;
+}
+
+.admin-forms-list__demo-note {
+  margin: 0 0 1rem;
+  max-width: 40rem;
+}
+
+.admin-form-view__demo-note {
+  margin: 0 0 1.25rem;
+  max-width: 40rem;
+}
+
+.admin-form-view__actions {
+  margin-bottom: 1.25rem;
+}
+
+.admin-form-view__section + .admin-form-view__section {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+}
+
+.admin-form-view__section-title {
+  margin: 0 0 0.85rem;
+  font-size: 1.05rem;
+}
+
+.admin-form-view__area {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  background: var(--surface-muted, rgba(0, 0, 0, 0.03));
+}
+
+.admin-form-view__area-name {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.admin-form-view__multiline {
+  white-space: pre-wrap;
+}
+
+.admin-form-view__requirements {
+  margin-top: 0.65rem;
+}
+
+.admin-form-view__req-list {
+  margin: 0.35rem 0 0;
+  padding-left: 1.25rem;
 }

@@ -12,6 +12,8 @@ import { DEMO_ORGANIZATION_SLUG } from '../constants/demo'
 import {
   organizationAdminFormEditPath,
   organizationAdminFormNewPath,
+  adminFormSetupPath,
+  demoVolunteerPath,
 } from '../utils/organizationPaths'
 import { publicVolunteerFormUrl } from '../utils/publicSiteUrl'
 import styles from './AdminFormsListPage.module.css'
@@ -80,9 +82,13 @@ function ExternalLinkIcon() {
   )
 }
 
-export default function AdminFormsListPage() {
-  const { organizationSlug } = useParams()
+export default function AdminFormsListPage({
+  organizationSlug: organizationSlugProp,
+}) {
+  const { organizationSlug: organizationSlugParam } = useParams()
   const { organization } = useAdminAuth()
+  const organizationSlug =
+    organizationSlugProp ?? organizationSlugParam ?? organization?.slug
   const [forms, setForms] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -193,7 +199,12 @@ export default function AdminFormsListPage() {
 
   return (
     <AdminLayout title="Volunteer forms">
-      {!isDemoOrg ? (
+      {isDemoOrg ? (
+        <p className="admin-muted admin-forms-list__demo-note">
+          Demo: you can open the volunteer form and view how this form is set up. Editing is
+          disabled here.
+        </p>
+      ) : (
         <p className="admin-inline-actions">
           <Link
             className={softBtn.saveBtn}
@@ -202,7 +213,7 @@ export default function AdminFormsListPage() {
             + Add New
           </Link>
         </p>
-      ) : null}
+      )}
       {loading ? <p className="admin-loading">Loading forms…</p> : null}
       {error ? <p className="admin-error">{error}</p> : null}
 
@@ -213,7 +224,9 @@ export default function AdminFormsListPage() {
           ) : (
             forms.map((form) => {
               const publicUrl = publicVolunteerFormUrl(organizationSlug, form.slug)
-              const volunteerViewPath = `/${organizationSlug}/forms/${form.slug}`
+              const volunteerViewPath = isDemoOrg
+                ? demoVolunteerPath()
+                : `/${organizationSlug}/forms/${form.slug}`
               const linkCopied = copiedFormId === form.id
 
               return (
@@ -251,30 +264,37 @@ export default function AdminFormsListPage() {
                       View
                       <ExternalLinkIcon />
                     </a>
-                    <Link
-                      className={cardButtonClass}
-                      to={organizationAdminFormEditPath(organizationSlug, form.slug)}
-                    >
-                      Edit
-                    </Link>
-                    {!isDemoOrg ? (
-                      <button
-                        type="button"
+                    {isDemoOrg ? (
+                      <Link
                         className={cardButtonClass}
-                        onClick={() => handleSetFormActive(form, !form.isActive)}
+                        to={adminFormSetupPath(organizationSlug, form.slug)}
                       >
-                        {form.isActive ? 'Deactivate' : 'Activate'}
-                      </button>
-                    ) : null}
-                    {!isDemoOrg ? (
-                      <button
-                        type="button"
-                        className={deleteButtonClass}
-                        onClick={() => handleDelete(form)}
-                      >
-                        Delete
-                      </button>
-                    ) : null}
+                        View setup
+                      </Link>
+                    ) : (
+                      <>
+                        <Link
+                          className={cardButtonClass}
+                          to={organizationAdminFormEditPath(organizationSlug, form.slug)}
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          type="button"
+                          className={cardButtonClass}
+                          onClick={() => handleSetFormActive(form, !form.isActive)}
+                        >
+                          {form.isActive ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button
+                          type="button"
+                          className={deleteButtonClass}
+                          onClick={() => handleDelete(form)}
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
                   </div>
                 </article>
               )

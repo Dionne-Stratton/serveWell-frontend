@@ -5,7 +5,7 @@ import AdminLayout from '../components/admin/AdminLayout'
 import softBtn from '../styles/adminSoftButtons.module.css'
 import {
   adminVolunteersFilteredPath,
-  organizationAdminFormsPath,
+  adminFormsPath,
   organizationPlanningCenterIntegrationPath,
 } from '../utils/organizationPaths'
 
@@ -15,8 +15,12 @@ const ACTION_STATUSES = [
   { status: 'approved_ready_to_schedule', label: 'Ready to Schedule' },
 ]
 
-export default function AdminDashboardPage() {
-  const { organizationSlug } = useParams()
+export default function AdminDashboardPage({
+  organizationSlug: organizationSlugProp,
+  demoMode = false,
+}) {
+  const { organizationSlug: organizationSlugParam } = useParams()
+  const organizationSlug = organizationSlugProp ?? organizationSlugParam
   const [counts, setCounts] = useState(null)
   const [activeForms, setActiveForms] = useState(null)
   const [loadError, setLoadError] = useState('')
@@ -68,7 +72,7 @@ export default function AdminDashboardPage() {
     }
   }, [])
 
-  const formsPath = organizationAdminFormsPath(organizationSlug)
+  const formsPath = adminFormsPath(organizationSlug)
   const integrationPath = organizationPlanningCenterIntegrationPath(organizationSlug)
 
   return (
@@ -113,8 +117,14 @@ export default function AdminDashboardPage() {
         ) : null}
         {activeForms && activeForms.length === 0 ? (
           <p className="admin-muted">
-            No active forms yet.{' '}
-            <Link to={formsPath}>Go to Forms</Link> to create one or turn a form on.
+            {demoMode ? (
+              'No active forms are configured for the demo.'
+            ) : (
+              <>
+                No active forms yet.{' '}
+                <Link to={formsPath}>Go to Forms</Link> to create one or turn a form on.
+              </>
+            )}
           </p>
         ) : null}
       </section>
@@ -128,10 +138,28 @@ export default function AdminDashboardPage() {
             <span className="admin-integration-row__name">Planning Center</span>
             <span className="admin-integration-row__status">Not connected</span>
           </div>
-          <Link to={integrationPath} className={softBtn.softBtn}>
-            Manage Integration
-          </Link>
+          {demoMode ? (
+            <button
+              type="button"
+              className={`${softBtn.softBtn} admin-integration-row__action--disabled`}
+              disabled
+              aria-disabled="true"
+            >
+              Manage Integration
+            </button>
+          ) : (
+            <Link to={integrationPath} className={softBtn.softBtn}>
+              Manage Integration
+            </Link>
+          )}
         </div>
+        {demoMode ? (
+          <p className="admin-muted admin-integration-row__demo-note">
+            In a live church account, connecting Planning Center would let you send an approved
+            volunteer to People, add notes, and map their serving interests to the right teams—
+            without retyping everything from ServeWell.
+          </p>
+        ) : null}
       </section>
     </AdminLayout>
   )

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ApiError, getPublicFormBySlug, getPublicVolunteerForm } from '../api/client'
 import { DEMO_FORM_SLUG, DEMO_ORGANIZATION_SLUG } from '../constants/demo'
-import { demoHomeBackLink } from '../utils/pageBackLink'
 import PageShell from '../components/PageShell'
 import VolunteerForm from '../components/serve/VolunteerForm'
 import OrganizationNotFoundPage from './OrganizationNotFoundPage'
@@ -77,15 +76,11 @@ export default function ServePage({ organizationSlug: organizationSlugProp }) {
 
   const title = formMeta?.name ?? 'Volunteer interest'
   const formSlug = formMeta?.slug ?? formSlugParam ?? DEMO_FORM_SLUG
-  const isDemoForm = organizationSlug === DEMO_ORGANIZATION_SLUG
   const formInactive = formMeta && formMeta.isActive === false
 
   return (
     <div className="serve-page">
-      <PageShell
-        title={title}
-        backLink={isDemoForm ? demoHomeBackLink() : null}
-      >
+      <PageShell title={title}>
         {loadError ? (
           <p className="serve-load-error">{loadError}</p>
         ) : servingAreas === null ? (

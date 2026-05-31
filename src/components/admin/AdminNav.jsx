@@ -3,7 +3,7 @@ import { DEMO_ORGANIZATION_SLUG } from '../../constants/demo'
 import {
   adminDashboardPath,
   adminVolunteersPath,
-  organizationAdminFormsPath,
+  adminFormsPath,
 } from '../../utils/organizationPaths'
 
 function navClassName({ isActive }) {
@@ -31,8 +31,6 @@ export default function AdminNav() {
     return null
   }
 
-  const isDemo = slug === DEMO_ORGANIZATION_SLUG
-
   return (
     <nav className="admin-nav" aria-label="Admin">
       <NavLink to={adminDashboardPath(slug)} className={navClassName} end>
@@ -41,11 +39,9 @@ export default function AdminNav() {
       <NavLink to={adminVolunteersPath(slug)} className={navClassName}>
         Volunteers
       </NavLink>
-      {!isDemo ? (
-        <NavLink to={organizationAdminFormsPath(slug)} className={navClassName}>
-          Forms
-        </NavLink>
-      ) : null}
+      <NavLink to={adminFormsPath(slug)} className={navClassName}>
+        Forms
+      </NavLink>
     </nav>
   )
 }

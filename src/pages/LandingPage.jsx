@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import PageShell from '../components/PageShell'
+import { demoAdminPath } from '../utils/organizationPaths'
 
 export default function LandingPage() {
   return (
@@ -19,7 +20,7 @@ export default function LandingPage() {
         <section className="action-card">
           <h2>Product demo</h2>
           <p>Volunteer intake and admin tools used in development.</p>
-          <Link className="button button--secondary" to="/demo">
+          <Link className="button button--secondary" to={demoAdminPath()}>
             Open demo
           </Link>
         </section>

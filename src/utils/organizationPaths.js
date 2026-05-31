@@ -1,7 +1,7 @@
 import { DEMO_ORGANIZATION_SLUG } from '../constants/demo'
 
-/** Demo sandbox home (not the same page as `/${DEMO_ORGANIZATION_SLUG}` org landing). */
-export const DEMO_HUB_PATH = '/demo'
+/** @deprecated Former demo hub; `/demo` redirects to demo admin. */
+export const DEMO_HUB_PATH = '/demo/admin'
 
 export function demoVolunteerPath() {
   return '/demo/volunteer'
@@ -17,6 +17,14 @@ export function demoAdminPath() {
 
 export function demoAdminVolunteersPath() {
   return '/demo/admin/volunteers'
+}
+
+export function demoAdminFormsPath() {
+  return '/demo/admin/forms'
+}
+
+export function demoAdminFormViewPath(formSlug) {
+  return `/demo/admin/forms/${encodeURIComponent(formSlug)}`
 }
 
 export function demoAdminSubmissionPath(submissionId) {
@@ -57,6 +65,21 @@ export function organizationAdminFormNewPath(organizationSlug) {
 
 export function organizationAdminFormEditPath(organizationSlug, formSlug) {
   return `/${organizationSlug}/admin/forms/${encodeURIComponent(formSlug)}/edit`
+}
+
+export function adminFormsPath(organizationSlug) {
+  if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
+    return demoAdminFormsPath()
+  }
+  return organizationAdminFormsPath(organizationSlug)
+}
+
+/** Demo: read-only setup view. Real orgs: full edit page. */
+export function adminFormSetupPath(organizationSlug, formSlug) {
+  if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
+    return demoAdminFormViewPath(formSlug)
+  }
+  return organizationAdminFormEditPath(organizationSlug, formSlug)
 }
 
 export function organizationPublicFormPath(organizationSlug, formSlug) {
@@ -106,4 +129,12 @@ export function adminLoginPath(organizationSlug) {
     return demoAdminPath()
   }
   return organizationAdminLoginPath(organizationSlug)
+}
+
+/** Org slug for admin UI links and API context on the current route. */
+export function resolveAdminOrganizationSlug(pathname, paramSlug, authOrganizationSlug) {
+  if (pathname.startsWith('/demo/admin')) {
+    return DEMO_ORGANIZATION_SLUG
+  }
+  return paramSlug ?? authOrganizationSlug ?? null
 }

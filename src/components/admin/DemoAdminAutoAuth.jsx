@@ -1,35 +1,36 @@
 import { useEffect, useState } from 'react'
-import { ApiError } from '../../api/client'
-import { useAdminAuth } from '../../auth/useAdminAuth'
+import { adminLogin, ApiError } from '../../api/client'
+import { setDemoAdminToken } from '../../auth/token'
 import {
   DEMO_ADMIN_EMAIL,
   DEMO_ADMIN_PASSWORD,
-  DEMO_ORGANIZATION_SLUG,
 } from '../../constants/demo'
 import PageShell from '../PageShell'
-import { demoHomeBackLink } from '../../utils/pageBackLink'
-import AdminRouteGuard from './AdminRouteGuard'
+import { serveWellHomeBackLink } from '../../utils/pageBackLink'
 import '../../styles/admin.css'
 
 /**
- * Demo sandbox admin: sign in automatically so testers never see a login form.
- * Real churches still use /:slug/admin/login.
+ * Demo admin uses its own API token so it never replaces a real church sign-in.
  */
 export default function DemoAdminAutoAuth({ children }) {
-  const { admin, loading, login } = useAdminAuth()
+  const [ready, setReady] = useState(false)
   const [autoError, setAutoError] = useState('')
 
   useEffect(() => {
-    if (loading || admin) {
-      return undefined
-    }
-
     let cancelled = false
 
-    async function signInForDemo() {
+    async function ensureDemoAccess() {
       setAutoError('')
       try {
-        await login(DEMO_ADMIN_EMAIL, DEMO_ADMIN_PASSWORD)
+        const data = await adminLogin({
+          email: DEMO_ADMIN_EMAIL,
+          password: DEMO_ADMIN_PASSWORD,
+        })
+        if (cancelled) {
+          return
+        }
+        setDemoAdminToken(data.token)
+        setReady(true)
       } catch (err) {
         if (!cancelled) {
           setAutoError(
@@ -41,14 +42,14 @@ export default function DemoAdminAutoAuth({ children }) {
       }
     }
 
-    signInForDemo()
+    ensureDemoAccess()
 
     return () => {
       cancelled = true
     }
-  }, [admin, loading, login])
+  }, [])
 
-  if (loading || (!admin && !autoError)) {
+  if (!ready && !autoError) {
     return (
       <PageShell title="Demo dashboard" showHomeLink={false}>
         <p className="admin-loading">Opening demo dashboard…</p>
@@ -56,17 +57,13 @@ export default function DemoAdminAutoAuth({ children }) {
     )
   }
 
-  if (!admin) {
+  if (!ready) {
     return (
-      <PageShell title="Demo dashboard" backLink={demoHomeBackLink()}>
+      <PageShell title="Demo dashboard" backLink={serveWellHomeBackLink()}>
         <p className="serve-load-error">{autoError}</p>
       </PageShell>
     )
   }
 
-  return (
-    <AdminRouteGuard organizationSlug={DEMO_ORGANIZATION_SLUG}>
-      {children}
-    </AdminRouteGuard>
-  )
+  return children
 }

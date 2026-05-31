@@ -1,10 +1,8 @@
-import AdminLayout from '../components/admin/AdminLayout'
+import { DEMO_ORGANIZATION_SLUG } from '../constants/demo'
+import AdminDashboardPage from './AdminDashboardPage'
 
-/** Demo admin dashboard — unchanged sandbox; no org dashboard widgets. */
 export default function AdminDashboardDemoPage() {
   return (
-    <AdminLayout title="Dashboard">
-      <p className="admin-muted">Overview content will go here.</p>
-    </AdminLayout>
+    <AdminDashboardPage organizationSlug={DEMO_ORGANIZATION_SLUG} demoMode />
   )
 }

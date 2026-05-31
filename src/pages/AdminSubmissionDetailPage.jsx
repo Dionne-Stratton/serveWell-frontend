@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../auth/useAdminAuth'
-import { adminVolunteersPath } from '../utils/organizationPaths'
+import { adminVolunteersPath, resolveAdminOrganizationSlug } from '../utils/organizationPaths'
 import {
   ApiError,
   createAdminSubmissionNote,
@@ -38,8 +38,13 @@ function DetailRow({ label, value }) {
 
 export default function AdminSubmissionDetailPage() {
   const { id, organizationSlug: organizationSlugParam } = useParams()
+  const { pathname } = useLocation()
   const { organization } = useAdminAuth()
-  const organizationSlug = organizationSlugParam ?? organization?.slug
+  const organizationSlug = resolveAdminOrganizationSlug(
+    pathname,
+    organizationSlugParam,
+    organization?.slug,
+  )
   const volunteersPath = adminVolunteersPath(organizationSlug)
   const [detail, setDetail] = useState(null)
   const [loading, setLoading] = useState(true)

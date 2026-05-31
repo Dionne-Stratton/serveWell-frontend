@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ApiError, getAdminForms, getAdminSubmissions } from '../api/client'
+import { ApiError, getAdminForms, getAdminFormDetail, getAdminSubmissions } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import softBtn from '../styles/adminSoftButtons.module.css'
 import SubmissionListItem from '../components/admin/SubmissionListItem'
@@ -10,6 +10,7 @@ const emptyFilters = {
   search: '',
   status: '',
   formId: '',
+  formSectionId: '',
   includeArchived: false,
 }
 
@@ -18,6 +19,7 @@ function filtersToQuery(filters) {
     search: filters.search.trim() || undefined,
     status: filters.status || undefined,
     formId: filters.formId ? Number(filters.formId) : undefined,
+    formSectionId: filters.formSectionId ? Number(filters.formSectionId) : undefined,
     archived: filters.includeArchived ? undefined : false,
   }
 }
@@ -34,6 +36,7 @@ export default function AdminVolunteersPage() {
 
   const [submissions, setSubmissions] = useState([])
   const [forms, setForms] = useState([])
+  const [formSections, setFormSections] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [draftFilters, setDraftFilters] = useState(() => ({
@@ -104,6 +107,41 @@ export default function AdminVolunteersPage() {
     }
   }, [])
 
+  useEffect(() => {
+    const formId = draftFilters.formId
+
+    if (!formId) {
+      setFormSections([])
+      return undefined
+    }
+
+    let cancelled = false
+
+    async function loadSections() {
+      try {
+        const data = await getAdminFormDetail(Number(formId))
+        if (!cancelled) {
+          setFormSections(
+            (data.sections ?? []).map((section) => ({
+              id: section.id,
+              title: section.title,
+            })),
+          )
+        }
+      } catch {
+        if (!cancelled) {
+          setFormSections([])
+        }
+      }
+    }
+
+    loadSections()
+
+    return () => {
+      cancelled = true
+    }
+  }, [draftFilters.formId])
+
   function handleFilterSubmit(event) {
     event.preventDefault()
     setAppliedFilters({ ...draftFilters })
@@ -120,6 +158,7 @@ export default function AdminVolunteersPage() {
   function handleClearFilters() {
     setDraftFilters(emptyFilters)
     setAppliedFilters(emptyFilters)
+    setFormSections([])
   }
 
   return (
@@ -152,17 +191,45 @@ export default function AdminVolunteersPage() {
               id="submission-form"
               className="admin-input admin-input--select"
               value={draftFilters.formId}
-              onChange={(event) =>
+              onChange={(event) => {
+                const nextFormId = event.target.value
                 setDraftFilters((current) => ({
                   ...current,
-                  formId: event.target.value,
+                  formId: nextFormId,
+                  formSectionId: '',
                 }))
-              }
+              }}
             >
               <option value="">All forms</option>
               {forms.map((form) => (
                 <option key={form.id} value={String(form.id)}>
                   {form.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="admin-field">
+            <label className="admin-label" htmlFor="submission-section">
+              Section
+            </label>
+            <select
+              id="submission-section"
+              className="admin-input admin-input--select"
+              value={draftFilters.formSectionId}
+              disabled={!draftFilters.formId}
+              onChange={(event) =>
+                setDraftFilters((current) => ({
+                  ...current,
+                  formSectionId: event.target.value,
+                }))
+              }
+            >
+              <option value="">
+                {draftFilters.formId ? 'All sections' : 'Choose a form first'}
+              </option>
+              {formSections.map((section) => (
+                <option key={section.id} value={String(section.id)}>
+                  {section.title}
                 </option>
               ))}
             </select>

@@ -1,4 +1,4 @@
-import { getAdminToken } from "../auth/token";
+import { getActiveAdminToken } from "../auth/apiAuthScope";
 
 const defaultBaseUrl = "https://servewell-server.dionnestratton.workers.dev";
 
@@ -33,7 +33,7 @@ export async function apiRequest(path, options = {}) {
   };
 
   if (options.authenticated) {
-    const token = getAdminToken();
+    const token = getActiveAdminToken();
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
@@ -104,6 +104,8 @@ export function getAdminSubmissions(filters = {}) {
   if (filters.archived === false) params.set("archived", "false");
   if (filters.servingAreaId)
     params.set("servingAreaId", String(filters.servingAreaId));
+  if (filters.formSectionId)
+    params.set("formSectionId", String(filters.formSectionId));
   if (filters.search) params.set("search", filters.search);
 
   const query = params.toString();

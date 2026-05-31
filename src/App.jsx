@@ -15,10 +15,10 @@ import AdminPlanningCenterIntegrationPage from './pages/AdminPlanningCenterInteg
 import AdminVolunteersPage from './pages/AdminVolunteersPage'
 import AdminFormCreatePage from './pages/AdminFormCreatePage'
 import AdminFormEditPage from './pages/AdminFormEditPage'
+import AdminFormViewPage from './pages/AdminFormViewPage'
 import AdminFormsListPage from './pages/AdminFormsListPage'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminSubmissionDetailPage from './pages/AdminSubmissionDetailPage'
-import DemoHomePage from './pages/DemoHomePage'
 import LandingPage from './pages/LandingPage'
 import OrganizationRootRedirect from './pages/OrganizationRootRedirect'
 import ServePage from './pages/ServePage'
@@ -47,7 +47,7 @@ const router = createBrowserRouter([
       { index: true, element: <LandingPage /> },
       { path: 'signup', element: <SignupPage /> },
       { path: 'login', element: <StaffLoginPage /> },
-      { path: 'demo', element: <DemoHomePage /> },
+      { path: 'demo', element: <Navigate to="/demo/admin" replace /> },
       {
         path: 'demo/serve',
         element: <Navigate to="/demo/volunteer" replace />,
@@ -81,6 +81,22 @@ const router = createBrowserRouter([
         element: (
           <DemoAdminAutoAuth>
             <AdminSubmissionDetailPage />
+          </DemoAdminAutoAuth>
+        ),
+      },
+      {
+        path: 'demo/admin/forms',
+        element: (
+          <DemoAdminAutoAuth>
+            <AdminFormsListPage organizationSlug={DEMO_ORGANIZATION_SLUG} />
+          </DemoAdminAutoAuth>
+        ),
+      },
+      {
+        path: 'demo/admin/forms/:formSlug',
+        element: (
+          <DemoAdminAutoAuth>
+            <AdminFormViewPage organizationSlug={DEMO_ORGANIZATION_SLUG} />
           </DemoAdminAutoAuth>
         ),
       },

@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
-import { DEMO_ORGANIZATION_SLUG } from "../constants/demo";
 import { adminDashboardPath } from "../utils/organizationPaths";
-import {
-  demoHomeBackLink,
-  serveWellHomeBackLink,
-} from "../utils/pageBackLink";
+import { serveWellHomeBackLink } from "../utils/pageBackLink";
 import { ApiError } from "../api/client";
 import { useAdminAuth } from "../auth/useAdminAuth";
 import PageShell from "../components/PageShell";
@@ -26,12 +22,7 @@ export default function AdminLoginPage({ organizationSlug: organizationSlugProp 
     location.state?.from ??
     adminDashboardPath(organizationSlug);
 
-  const backLink =
-    organizationSlug === DEMO_ORGANIZATION_SLUG
-      ? demoHomeBackLink()
-      : organizationSlug
-        ? serveWellHomeBackLink()
-        : null;
+  const backLink = organizationSlug ? serveWellHomeBackLink() : null;
 
   useEffect(() => {
     if (!loading && admin) {
@@ -41,7 +32,7 @@ export default function AdminLoginPage({ organizationSlug: organizationSlugProp 
 
   if (loading) {
     return (
-      <PageShell title="Admin login" showHomeLink={false}>
+      <PageShell title="Admin login" className="admin-auth-page" showHomeLink={false}>
         <p className="admin-loading">Checking your session…</p>
       </PageShell>
     );
@@ -71,7 +62,7 @@ export default function AdminLoginPage({ organizationSlug: organizationSlugProp 
   }
 
   return (
-    <PageShell title="Admin login" backLink={backLink}>
+    <PageShell title="Admin login" className="admin-auth-page" backLink={backLink}>
       <form className="admin-login-form" onSubmit={handleSubmit}>
         <p className="lede">
           Staff sign-in for reviewing volunteer submissions.

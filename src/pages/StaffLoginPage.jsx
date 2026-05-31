@@ -23,7 +23,7 @@ export default function StaffLoginPage() {
 
   if (loading) {
     return (
-      <PageShell title="Staff sign in" showHomeLink={false}>
+      <PageShell title="Staff sign in" className="admin-auth-page" showHomeLink={false}>
         <p className="admin-loading">Checking your session…</p>
       </PageShell>
     )
@@ -63,7 +63,11 @@ export default function StaffLoginPage() {
   }
 
   return (
-    <PageShell title="Staff sign in" backLink={{ to: '/', label: '← Home' }}>
+    <PageShell
+      title="Staff sign in"
+      className="admin-auth-page"
+      backLink={{ to: '/', label: '← Home' }}
+    >
       <form className="admin-login-form" onSubmit={handleSubmit}>
         <p className="lede">
           Sign in to your church&apos;s admin dashboard.

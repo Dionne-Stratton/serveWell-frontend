@@ -1,9 +1,4 @@
 import { DEMO_ORGANIZATION_SLUG } from '../constants/demo'
-import { DEMO_HUB_PATH } from './organizationPaths'
-
-export function demoHomeBackLink() {
-  return { to: DEMO_HUB_PATH, label: '← Demo home' }
-}
 
 export function serveWellHomeBackLink() {
   return { to: '/', label: 'ServeWell home' }
@@ -17,7 +12,7 @@ export function organizationHomeBackLink() {
 /** Back link for admin surfaces (demo sandbox vs real church). */
 export function resolveAdminPageBackLink(pathname, organizationSlug, organization) {
   if (pathname.startsWith('/demo/admin')) {
-    return demoHomeBackLink()
+    return serveWellHomeBackLink()
   }
 
   const slug = organizationSlug ?? organization?.slug
