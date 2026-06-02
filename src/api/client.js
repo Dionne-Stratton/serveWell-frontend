@@ -156,6 +156,26 @@ export function getAdminForms() {
   return apiRequest("/api/admin/forms", { authenticated: true });
 }
 
+export function getPlanningCenterIntegration() {
+  return apiRequest("/api/admin/integrations/planning-center", {
+    authenticated: true,
+  });
+}
+
+export function connectPlanningCenterIntegration() {
+  return apiRequest("/api/admin/integrations/planning-center/connect", {
+    method: "POST",
+    authenticated: true,
+  });
+}
+
+export function disconnectPlanningCenterIntegration() {
+  return apiRequest("/api/admin/integrations/planning-center/disconnect", {
+    method: "POST",
+    authenticated: true,
+  });
+}
+
 export function createAdminForm(payload) {
   return apiRequest("/api/admin/forms", {
     method: "POST",

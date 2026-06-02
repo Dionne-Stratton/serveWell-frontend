@@ -1,12 +1,18 @@
 import { Link, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { ApiError, getAdminForms, getAdminSubmissions } from '../api/client'
+import {
+  ApiError,
+  connectPlanningCenterIntegration,
+  disconnectPlanningCenterIntegration,
+  getAdminForms,
+  getAdminSubmissions,
+  getPlanningCenterIntegration,
+} from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import softBtn from '../styles/adminSoftButtons.module.css'
 import {
   adminVolunteersFilteredPath,
   adminFormsPath,
-  organizationPlanningCenterIntegrationPath,
 } from '../utils/organizationPaths'
 
 const ACTION_STATUSES = [
@@ -23,7 +29,10 @@ export default function AdminDashboardPage({
   const organizationSlug = organizationSlugProp ?? organizationSlugParam
   const [counts, setCounts] = useState(null)
   const [activeForms, setActiveForms] = useState(null)
+  const [planningCenterIntegration, setPlanningCenterIntegration] = useState(null)
   const [loadError, setLoadError] = useState('')
+  const [integrationError, setIntegrationError] = useState('')
+  const [integrationActionPending, setIntegrationActionPending] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -41,6 +50,9 @@ export default function AdminDashboardPage({
         const formsData = await getAdminForms()
         const forms = formsData.forms ?? []
         const active = forms.filter((form) => form.isActive)
+        const integrationData = demoMode
+          ? null
+          : await getPlanningCenterIntegration()
 
         if (!cancelled) {
           setCounts(
@@ -51,11 +63,13 @@ export default function AdminDashboardPage({
             })),
           )
           setActiveForms(active)
+          setPlanningCenterIntegration(integrationData?.integration ?? null)
         }
       } catch (err) {
         if (!cancelled) {
           setCounts(null)
           setActiveForms(null)
+          setPlanningCenterIntegration(null)
           setLoadError(
             err instanceof ApiError
               ? err.message
@@ -70,10 +84,51 @@ export default function AdminDashboardPage({
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [demoMode])
 
   const formsPath = adminFormsPath(organizationSlug)
-  const integrationPath = organizationPlanningCenterIntegrationPath(organizationSlug)
+  const integrationStatus = demoMode
+    ? 'not_connected'
+    : planningCenterIntegration?.status ?? 'not_connected'
+  const isPlanningCenterConnected = integrationStatus === 'connected'
+  const integrationStatusLabel = getPlanningCenterStatusLabel(planningCenterIntegration)
+  const integrationButtonLabel = isPlanningCenterConnected
+    ? 'Disconnect Planning Center'
+    : 'Connect Planning Center'
+
+  async function handlePlanningCenterAction() {
+    if (demoMode || integrationActionPending) {
+      return
+    }
+
+    setIntegrationError('')
+    setIntegrationActionPending(true)
+
+    try {
+      if (isPlanningCenterConnected) {
+        const data = await disconnectPlanningCenterIntegration()
+        setPlanningCenterIntegration(data.integration)
+        return
+      }
+
+      const data = await connectPlanningCenterIntegration()
+
+      if (data.authorizationUrl) {
+        window.location.assign(data.authorizationUrl)
+        return
+      }
+
+      setIntegrationError('Planning Center did not return a connection URL.')
+    } catch (err) {
+      setIntegrationError(
+        err instanceof ApiError
+          ? err.message
+          : 'Unable to update the Planning Center connection.',
+      )
+    } finally {
+      setIntegrationActionPending(false)
+    }
+  }
 
   return (
     <AdminLayout title="Dashboard">
@@ -136,23 +191,21 @@ export default function AdminDashboardPage({
         <div className="admin-integration-row">
           <div className="admin-integration-row__info">
             <span className="admin-integration-row__name">Planning Center</span>
-            <span className="admin-integration-row__status">Not connected</span>
+            <span className="admin-integration-row__status">{integrationStatusLabel}</span>
           </div>
-          {demoMode ? (
-            <button
-              type="button"
-              className={`${softBtn.softBtn} admin-integration-row__action--disabled`}
-              disabled
-              aria-disabled="true"
-            >
-              Manage Integration
-            </button>
-          ) : (
-            <Link to={integrationPath} className={softBtn.softBtn}>
-              Manage Integration
-            </Link>
-          )}
+          <button
+            type="button"
+            className={`${softBtn.softBtn} ${demoMode ? 'admin-integration-row__action--disabled' : ''}`}
+            disabled={demoMode || integrationActionPending}
+            aria-disabled={demoMode || integrationActionPending}
+            onClick={handlePlanningCenterAction}
+          >
+            {integrationActionPending ? 'Working...' : integrationButtonLabel}
+          </button>
         </div>
+        {integrationError ? (
+          <p className="admin-error admin-integration-row__message">{integrationError}</p>
+        ) : null}
         {demoMode ? (
           <p className="admin-muted admin-integration-row__demo-note">
             In a live church account, connecting Planning Center would let you send an approved
@@ -163,4 +216,22 @@ export default function AdminDashboardPage({
       </section>
     </AdminLayout>
   )
+}
+
+function getPlanningCenterStatusLabel(integration) {
+  if (!integration || integration.status === 'not_connected') {
+    return 'Not connected'
+  }
+
+  if (integration.status === 'connected') {
+    return integration.externalOrganizationName
+      ? `Connected to ${integration.externalOrganizationName}`
+      : 'Connected'
+  }
+
+  if (integration.status === 'disabled') {
+    return 'Disconnected'
+  }
+
+  return 'Connection error'
 }

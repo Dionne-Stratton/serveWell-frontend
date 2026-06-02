@@ -11,7 +11,6 @@ import DemoAdminAutoAuth from './components/admin/DemoAdminAutoAuth'
 import { DEMO_ORGANIZATION_SLUG } from './constants/demo'
 import AdminDashboardDemoPage from './pages/AdminDashboardDemoPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
-import AdminPlanningCenterIntegrationPage from './pages/AdminPlanningCenterIntegrationPage'
 import AdminVolunteersPage from './pages/AdminVolunteersPage'
 import AdminFormCreatePage from './pages/AdminFormCreatePage'
 import AdminFormEditPage from './pages/AdminFormEditPage'
@@ -132,14 +131,6 @@ const router = createBrowserRouter([
         element: (
           <AdminRouteGuard>
             <AdminFormEditPage />
-          </AdminRouteGuard>
-        ),
-      },
-      {
-        path: ':organizationSlug/admin/integrations/planning-center',
-        element: (
-          <AdminRouteGuard>
-            <AdminPlanningCenterIntegrationPage />
           </AdminRouteGuard>
         ),
       },

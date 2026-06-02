@@ -51,10 +51,6 @@ export function organizationAdminVolunteersPath(organizationSlug) {
   return `/${organizationSlug}/admin/volunteers`
 }
 
-export function organizationPlanningCenterIntegrationPath(organizationSlug) {
-  return `/${organizationSlug}/admin/integrations/planning-center`
-}
-
 export function organizationAdminFormsPath(organizationSlug) {
   return `/${organizationSlug}/admin/forms`
 }
