@@ -2,7 +2,7 @@
 
 React + Vite app for ServeWell: marketing site, public volunteer forms, and organization-scoped admin.
 
-**Active SaaS branch:** `saas-foundation` (org routes, forms admin, signup). `main` may lag until merge.
+For repo/branch deployment notes, see [Progress checklist](../docs/Implementation-Progress-Checklist.md).
 
 ## Prerequisites
 
@@ -18,7 +18,10 @@ cp .env.example .env
 
 Set `VITE_API_URL` to your local Worker (default `http://localhost:8787` in `.env.example`). The server sets `FRONTEND_ORIGIN=http://localhost:5173` for CORS.
 
-Optional: `VITE_DEMO_ADMIN_EMAIL` / `VITE_DEMO_ADMIN_PASSWORD` for silent sign-in on `/demo/admin` (defaults match demo seed).
+Optional:
+
+- `VITE_PUBLIC_SITE_URL` — origin used in shareable form links (defaults to production marketing URL when unset).
+- `VITE_DEMO_ADMIN_EMAIL` / `VITE_DEMO_ADMIN_PASSWORD` — silent sign-in on `/demo/admin` (defaults match demo seed).
 
 ## Scripts
 
@@ -27,6 +30,7 @@ Optional: `VITE_DEMO_ADMIN_EMAIL` / `VITE_DEMO_ADMIN_PASSWORD` for silent sign-i
 | `npm run dev`     | Dev server (default port 5173)   |
 | `npm run build`   | Production build                 |
 | `npm run preview` | Preview production build         |
+| `npm run lint`    | ESLint                           |
 
 ## Docs
 
@@ -43,16 +47,19 @@ Product and API details live in the parent folder:
 | `/` | Marketing landing |
 | `/signup` | Church registration (creates org + admin + default form) |
 | `/login` | Staff login (redirects into org admin after sign-in) |
-| `/demo` | Demo sandbox hub |
+| `/demo` | Redirects to `/demo/admin` |
 | `/demo/volunteer` | Demo public form (`/demo/serve` redirects here) |
-| `/demo/admin` | Demo admin home (dashboard placeholder; silent sign-in) |
+| `/demo/admin` | Demo admin home (silent sign-in; Planning Center UI hidden) |
+| `/demo/admin/login` | Redirects to `/demo/admin` |
 | `/demo/admin/volunteers` | Demo volunteer submissions list |
 | `/demo/admin/submissions/:id` | Demo submission detail |
+| `/demo/admin/forms` | Demo forms list (read-only via API) |
+| `/demo/admin/forms/:formSlug` | Demo form preview (read-only) |
 | `/:organizationSlug` | Redirect: admin session → `/:slug/admin`, else `/` (no public org landing) |
 | `/:organizationSlug/volunteer` | Org default volunteer form |
 | `/:organizationSlug/forms/:formSlug` | Specific volunteer form |
 | `/:organizationSlug/admin/login` | Org admin login |
-| `/:organizationSlug/admin` | Admin home (dashboard placeholder) |
+| `/:organizationSlug/admin` | Admin home (counts, forms, Planning Center connect when API credentials are set) |
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
 | `/:organizationSlug/admin/submissions/:id` | Submission detail (status autosaves; staff notes) |
 | `/:organizationSlug/admin/forms` | Forms list + links to public URLs |
@@ -67,12 +74,12 @@ Unknown paths redirect to `/`.
 1. Apply local D1 migrations and start the API (`serveWell-server`: `npm run dev`).
 2. **Demo:** open `/demo/volunteer`, submit a response (email and phone required). Open `/demo/admin/volunteers` for submissions.
 3. **Real org:** register at `/signup` or use seed admin `church@example.com` / `temporary-password` at `/:slug/admin/login` (slug `demo` for seeded demo org).
-4. Dashboard: set search/status/form/archived filters, click **Apply filters**. Change status on a row or detail page (saves immediately).
-5. Forms (non-demo orgs): list → **New form** → edit → **Save changes**. Share `/:slug/forms/:formSlug` from the forms list.
+4. Dashboard: set search/status/form/archived filters, click **Apply filters**. Change status on a row or detail page (saves immediately). On a real org (`/:slug/admin`), use **Connect Planning Center** when the server has OAuth secrets configured.
+5. Forms (non-demo orgs): list → **New form** → edit → **Save changes**. Share `/:slug/forms/:formSlug` from the forms list (or set `VITE_PUBLIC_SITE_URL` for copy-link URLs).
 
 Demo org forms are read-only on the API; the UI still shows forms for browsing.
 
 ## Not implemented (UI placeholders)
 
-- Planning Center export on submission detail (disabled button; hover **i** for message)
+- **Add to Planning Center** on submission detail (disabled; tooltip explains connect-first; server export route not implemented)
 - Broader polish pass (Phase 15 in checklist)

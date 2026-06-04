@@ -188,20 +188,31 @@ export default function AdminDashboardPage({
         <h2 id="dashboard-integrations-heading" className="admin-dashboard-section__title">
           Integrations
         </h2>
-        <div className="admin-integration-row">
-          <div className="admin-integration-row__info">
-            <span className="admin-integration-row__name">Planning Center</span>
-            <span className="admin-integration-row__status">{integrationStatusLabel}</span>
+        <div className="admin-integration-block">
+          <div className="admin-integration-row">
+            <div className="admin-integration-row__info">
+              <span className="admin-integration-row__name">Planning Center</span>
+              <span className="admin-integration-row__status">{integrationStatusLabel}</span>
+            </div>
+            <button
+              type="button"
+              className={`${softBtn.softBtn} ${demoMode ? 'admin-integration-row__action--disabled' : ''}`}
+              disabled={demoMode || integrationActionPending}
+              aria-disabled={demoMode || integrationActionPending}
+              onClick={handlePlanningCenterAction}
+            >
+              {integrationActionPending ? 'Working...' : integrationButtonLabel}
+            </button>
           </div>
-          <button
-            type="button"
-            className={`${softBtn.softBtn} ${demoMode ? 'admin-integration-row__action--disabled' : ''}`}
-            disabled={demoMode || integrationActionPending}
-            aria-disabled={demoMode || integrationActionPending}
-            onClick={handlePlanningCenterAction}
-          >
-            {integrationActionPending ? 'Working...' : integrationButtonLabel}
-          </button>
+          {!demoMode ? (
+            <p className="admin-muted admin-integration-row__help">
+              ServeWell only uses the permissions your Planning Center account already has in
+              People—you cannot push data your role is not allowed to add or change. When you
+              connect, we create a <strong>SW Volunteering</strong> tab on person profiles with
+              custom fields; those fields are filled in when you send a volunteer from ServeWell
+              to Planning Center.
+            </p>
+          ) : null}
         </div>
         {integrationError ? (
           <p className="admin-error admin-integration-row__message">{integrationError}</p>
