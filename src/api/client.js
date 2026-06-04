@@ -145,6 +145,16 @@ export function createAdminSubmissionNote(submissionId, note) {
   });
 }
 
+export function pushAdminSubmissionToPlanningCenter(submissionId) {
+  return apiRequest(
+    `/api/admin/submissions/${submissionId}/planning-center`,
+    {
+      method: "POST",
+      authenticated: true,
+    },
+  );
+}
+
 export function deleteAdminNote(noteId) {
   return apiRequest(`/api/admin/notes/${noteId}`, {
     method: "DELETE",

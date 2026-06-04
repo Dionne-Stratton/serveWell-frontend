@@ -52,7 +52,7 @@ Product and API details live in the parent folder:
 | `/demo/admin` | Demo admin home (silent sign-in; Planning Center UI hidden) |
 | `/demo/admin/login` | Redirects to `/demo/admin` |
 | `/demo/admin/volunteers` | Demo volunteer submissions list |
-| `/demo/admin/submissions/:id` | Demo submission detail |
+| `/demo/admin/volunteers/:id` | Demo volunteer detail (`/demo/admin/submissions/:id` redirects here) |
 | `/demo/admin/forms` | Demo forms list (read-only via API) |
 | `/demo/admin/forms/:formSlug` | Demo form preview (read-only) |
 | `/:organizationSlug` | Redirect: admin session → `/:slug/admin`, else `/` (no public org landing) |
@@ -61,7 +61,7 @@ Product and API details live in the parent folder:
 | `/:organizationSlug/admin/login` | Org admin login |
 | `/:organizationSlug/admin` | Admin home (counts, forms, Planning Center connect when API credentials are set) |
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
-| `/:organizationSlug/admin/submissions/:id` | Submission detail (status autosaves; staff notes) |
+| `/:organizationSlug/admin/volunteers/:id` | Volunteer detail (status, staff notes, **Add to Planning Center** when connected) |
 | `/:organizationSlug/admin/forms` | Forms list + links to public URLs |
 | `/:organizationSlug/admin/forms/new` | Create form (template or blank) |
 | `/:organizationSlug/admin/forms/:formSlug/edit` | Edit form (sections, areas, acknowledgements; **Save changes** persists) |
@@ -81,5 +81,4 @@ Demo org forms are read-only on the API; the UI still shows forms for browsing.
 
 ## Not implemented (UI placeholders)
 
-- **Add to Planning Center** on submission detail (disabled; tooltip explains connect-first; server export route not implemented)
 - Broader polish pass (Phase 15 in checklist)

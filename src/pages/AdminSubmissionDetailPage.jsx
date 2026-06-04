@@ -7,6 +7,8 @@ import {
   createAdminSubmissionNote,
   deleteAdminNote,
   getAdminSubmissionDetail,
+  getPlanningCenterIntegration,
+  pushAdminSubmissionToPlanningCenter,
 } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import AdminSubmissionStatusSelect from '../components/admin/AdminSubmissionStatusSelect'
@@ -46,9 +48,13 @@ export default function AdminSubmissionDetailPage() {
     organization?.slug,
   )
   const volunteersPath = adminVolunteersPath(organizationSlug)
+  const demoMode = pathname.startsWith('/demo/admin')
   const [detail, setDetail] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [planningCenterIntegration, setPlanningCenterIntegration] = useState(null)
+  const [planningCenterPushPending, setPlanningCenterPushPending] = useState(false)
+  const [planningCenterPushError, setPlanningCenterPushError] = useState('')
   const [noteDraft, setNoteDraft] = useState('')
   const [noteError, setNoteError] = useState('')
   const [noteSubmitting, setNoteSubmitting] = useState(false)
@@ -66,7 +72,7 @@ export default function AdminSubmissionDetailPage() {
       setError(
         err instanceof ApiError
           ? err.message
-          : 'Unable to load this submission.',
+          : 'Unable to load this volunteer.',
       )
     } finally {
       setLoading(false)
@@ -76,6 +82,34 @@ export default function AdminSubmissionDetailPage() {
   useEffect(() => {
     loadDetail()
   }, [loadDetail])
+
+  useEffect(() => {
+    if (demoMode) {
+      setPlanningCenterIntegration(null)
+      return
+    }
+
+    let cancelled = false
+
+    async function loadIntegration() {
+      try {
+        const data = await getPlanningCenterIntegration()
+        if (!cancelled) {
+          setPlanningCenterIntegration(data.integration ?? null)
+        }
+      } catch {
+        if (!cancelled) {
+          setPlanningCenterIntegration(null)
+        }
+      }
+    }
+
+    loadIntegration()
+
+    return () => {
+      cancelled = true
+    }
+  }, [demoMode])
 
   async function handleAddNote(event) {
     event.preventDefault()
@@ -119,20 +153,88 @@ export default function AdminSubmissionDetailPage() {
   }
 
   const submission = detail?.submission
+  const isPlanningCenterConnected =
+    planningCenterIntegration?.status === 'connected'
+  const hasEmailOrPhone =
+    Boolean(submission?.email?.trim()) || Boolean(submission?.phone?.trim())
+  const isLinkedToPlanningCenter = Boolean(
+    submission?.planningCenterPersonId?.trim(),
+  )
+  const canPushToPlanningCenter =
+    !demoMode &&
+    isPlanningCenterConnected &&
+    hasEmailOrPhone &&
+    !planningCenterPushPending
+
+  let planningCenterDisabledReason = ''
+  if (!demoMode && submission) {
+    if (!isPlanningCenterConnected) {
+      planningCenterDisabledReason =
+        'Connect Planning Center from your dashboard first.'
+    } else if (!hasEmailOrPhone) {
+      planningCenterDisabledReason =
+        'This volunteer needs an email address or phone number before they can be added to Planning Center.'
+    }
+  }
+
+  async function handleAddToPlanningCenter() {
+    if (!canPushToPlanningCenter) {
+      return
+    }
+
+    setPlanningCenterPushError('')
+    setPlanningCenterPushPending(true)
+
+    try {
+      const data = await pushAdminSubmissionToPlanningCenter(id)
+      const nextPersonId =
+        data.submission?.planningCenterPersonId ?? data.personId ?? null
+      if (data.submission || nextPersonId) {
+        setDetail((current) =>
+          current
+            ? {
+                ...current,
+                submission: {
+                  ...current.submission,
+                  ...(data.submission?.status
+                    ? { status: data.submission.status }
+                    : {}),
+                  ...(nextPersonId
+                    ? { planningCenterPersonId: nextPersonId }
+                    : {}),
+                },
+              }
+            : current,
+        )
+      } else {
+        await loadDetail()
+      }
+    } catch (err) {
+      setPlanningCenterPushError(
+        err instanceof ApiError
+          ? err.message
+          : isLinkedToPlanningCenter
+            ? 'Unable to sync this volunteer to Planning Center.'
+            : 'Unable to add this volunteer to Planning Center.',
+      )
+    } finally {
+      setPlanningCenterPushPending(false)
+    }
+  }
 
   return (
     <AdminLayout
       title={
         submission
           ? `${submission.firstName} ${submission.lastName}`
-          : 'Submission detail'
+          : 'Volunteer detail'
       }
     >
       <p className="admin-back">
         <Link to={volunteersPath}>← Back to volunteers</Link>
       </p>
 
-      {loading ? <p className="admin-loading">Loading submission…</p> : null}
+      {loading ? <p className="admin-loading">Loading volunteer…</p> : null}
       {error ? <p className="admin-error">{error}</p> : null}
 
       {submission ? (
@@ -159,28 +261,43 @@ export default function AdminSubmissionDetailPage() {
               <span className="admin-tag admin-tag--muted">Archived</span>
             ) : null}
             <div className="admin-detail-meta__aside">
-              <div className="admin-planning-center-row">
-                <button
-                  type="button"
-                  className="admin-button admin-button--secondary admin-button--inline admin-button--planning-center"
-                  disabled
-                  aria-disabled="true"
-                >
-                  Add to Planning Center
-                </button>
-                <span className="admin-info-tip">
+              {!demoMode ? (
+                <div className="admin-planning-center-row">
                   <button
                     type="button"
-                    className="admin-info-mark"
-                    aria-label="Planning Center needs to be connected first."
+                    className={`admin-button admin-button--secondary admin-button--inline admin-button--planning-center${planningCenterPushPending ? ' admin-button--busy' : ''}`}
+                    disabled={!canPushToPlanningCenter}
+                    onClick={handleAddToPlanningCenter}
                   >
-                    i
+                    {planningCenterPushPending
+                      ? isLinkedToPlanningCenter
+                        ? 'Syncing…'
+                        : 'Sending…'
+                      : isLinkedToPlanningCenter
+                        ? 'Sync to Planning Center'
+                        : 'Add to Planning Center'}
                   </button>
-                  <span className="admin-info-tip__bubble" role="tooltip">
-                    Planning Center needs to be connected first.
-                  </span>
-                </span>
-              </div>
+                  {planningCenterDisabledReason ? (
+                    <span className="admin-info-tip">
+                      <button
+                        type="button"
+                        className="admin-info-mark"
+                        aria-label={planningCenterDisabledReason}
+                      >
+                        i
+                      </button>
+                      <span className="admin-info-tip__bubble" role="tooltip">
+                        {planningCenterDisabledReason}
+                      </span>
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
+              {planningCenterPushError ? (
+                <p className="admin-error admin-planning-center-row__error">
+                  {planningCenterPushError}
+                </p>
+              ) : null}
               <span className="admin-detail-meta__date">
                 Submitted {formatDateTime(submission.createdAt)}
               </span>

@@ -27,8 +27,13 @@ export function demoAdminFormViewPath(formSlug) {
   return `/demo/admin/forms/${encodeURIComponent(formSlug)}`
 }
 
+export function demoAdminVolunteerDetailPath(volunteerId) {
+  return `/demo/admin/volunteers/${volunteerId}`
+}
+
+/** @deprecated Use demoAdminVolunteerDetailPath */
 export function demoAdminSubmissionPath(submissionId) {
-  return `/demo/admin/submissions/${submissionId}`
+  return demoAdminVolunteerDetailPath(submissionId)
 }
 
 export function organizationLandingPath(organizationSlug) {
@@ -86,16 +91,26 @@ export function organizationAdminFormSettingsPath(organizationSlug) {
   return organizationAdminFormsPath(organizationSlug)
 }
 
-export function organizationAdminSubmissionPath(organizationSlug, submissionId) {
-  return `/${organizationSlug}/admin/submissions/${submissionId}`
+export function organizationAdminVolunteerDetailPath(organizationSlug, volunteerId) {
+  return `/${organizationSlug}/admin/volunteers/${volunteerId}`
 }
 
-/** Admin list/detail links from dashboard (demo hub or org-scoped routes). */
-export function adminSubmissionDetailPath(organizationSlug, submissionId) {
+/** @deprecated Use organizationAdminVolunteerDetailPath */
+export function organizationAdminSubmissionPath(organizationSlug, submissionId) {
+  return organizationAdminVolunteerDetailPath(organizationSlug, submissionId)
+}
+
+/** Admin volunteer detail (demo hub or org-scoped routes). */
+export function adminVolunteerDetailPath(organizationSlug, volunteerId) {
   if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
-    return demoAdminSubmissionPath(submissionId)
+    return demoAdminVolunteerDetailPath(volunteerId)
   }
-  return organizationAdminSubmissionPath(organizationSlug, submissionId)
+  return organizationAdminVolunteerDetailPath(organizationSlug, volunteerId)
+}
+
+/** @deprecated Use adminVolunteerDetailPath */
+export function adminSubmissionDetailPath(organizationSlug, submissionId) {
+  return adminVolunteerDetailPath(organizationSlug, submissionId)
 }
 
 export function adminDashboardPath(organizationSlug) {

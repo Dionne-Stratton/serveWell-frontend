@@ -1102,6 +1102,14 @@
   color: #111827;
 }
 
+.admin-page .admin-dl dt {
+  color: var(--muted);
+}
+
+.admin-page .admin-dl dd {
+  color: var(--text-h);
+}
+
 .admin-flags {
   margin: 0.5rem 0 0;
   padding-left: 1.1rem;
@@ -1144,8 +1152,18 @@
   margin: 0;
   padding: 0.4rem 0.65rem;
   font-size: 0.85rem;
+}
+
+.admin-button--planning-center:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+.admin-planning-center-row__error {
+  margin: 0;
+  max-width: 14rem;
+  text-align: right;
+  font-size: 0.8rem;
 }
 
 .admin-info-tip {
@@ -1233,16 +1251,16 @@
 .admin-detail-section {
   margin-bottom: 1.5rem;
   padding: 1rem 1.1rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  background: #ffffff;
-  color: #111827;
+  background: var(--surface);
+  color: var(--text-h);
 }
 
 .admin-detail-section__title {
   margin: 0 0 0.75rem;
   font-size: 1rem;
-  color: #1a5fb4;
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -1256,13 +1274,13 @@
 
 .admin-detail-row dt {
   font-weight: 600;
-  color: #4b5563;
+  color: var(--muted);
   font-size: 0.9rem;
 }
 
 .admin-detail-row dd {
   margin: 0;
-  color: #111827;
+  color: var(--text-h);
 }
 
 .admin-interest-list {
@@ -1277,32 +1295,37 @@
 .admin-interest-card {
   padding: 0.75rem;
   border-radius: 8px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: color-mix(in srgb, var(--bg) 40%, var(--surface));
+  border: 1px solid var(--border);
 }
 
 .admin-interest-card h3 {
   margin: 0 0 0.5rem;
   font-size: 1rem;
-  color: #111827;
+  color: var(--text-h);
+}
+
+.admin-page .admin-flags--inline li {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  color: var(--text-h);
 }
 
 .admin-confirm-list,
 .admin-notes-list {
   margin: 0;
   padding-left: 1.2rem;
-  color: #111827;
+  color: var(--text-h);
 }
 
 .admin-notes-list__meta {
   margin: 0.25rem 0 0;
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--muted);
 }
 
 .admin-notes-intro {
   margin: 0 0 0.75rem;
-  color: #4b5563;
+  color: var(--muted);
   font-size: 0.95rem;
 }
 
@@ -1321,6 +1344,22 @@
   border-radius: 6px;
   font: inherit;
   resize: vertical;
+}
+
+.admin-page .admin-textarea {
+  background-color: var(--bg);
+  color: var(--text-h);
+  border-color: var(--border);
+  caret-color: var(--text-h);
+}
+
+.admin-page .admin-textarea::placeholder {
+  color: var(--muted);
+}
+
+.admin-page .admin-tag--muted {
+  background: color-mix(in srgb, var(--muted) 25%, var(--surface));
+  color: var(--text-h);
 }
 
 .admin-notes-list__item {

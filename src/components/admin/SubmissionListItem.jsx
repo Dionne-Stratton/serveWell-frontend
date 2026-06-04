@@ -1,6 +1,6 @@
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../../auth/useAdminAuth'
-import { adminSubmissionDetailPath, resolveAdminOrganizationSlug } from '../../utils/organizationPaths'
+import { adminVolunteerDetailPath, resolveAdminOrganizationSlug } from '../../utils/organizationPaths'
 import softBtn from '../../styles/adminSoftButtons.module.css'
 import AdminSubmissionStatusSelect from './AdminSubmissionStatusSelect'
 import {
@@ -19,7 +19,7 @@ export default function SubmissionListItem({ submission, onStatusUpdated }) {
     organizationSlugParam,
     organization?.slug,
   )
-  const detailPath = adminSubmissionDetailPath(organizationSlug, submission.id)
+  const detailPath = adminVolunteerDetailPath(organizationSlug, submission.id)
   const name = `${submission.firstName} ${submission.lastName}`.trim()
   const areas = submission.servingAreas?.length
     ? submission.servingAreas.join(', ')

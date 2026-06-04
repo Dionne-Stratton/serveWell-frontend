@@ -39,6 +39,18 @@ function RedirectLegacyAdminForm() {
   return <Navigate to={organizationAdminFormsPath(organizationSlug)} replace />
 }
 
+function RedirectLegacyAdminSubmissionDetail() {
+  const { organizationSlug, id } = useParams()
+  return (
+    <Navigate to={`/${organizationSlug}/admin/volunteers/${id}`} replace />
+  )
+}
+
+function RedirectDemoLegacyAdminSubmissionDetail() {
+  const { id } = useParams()
+  return <Navigate to={`/demo/admin/volunteers/${id}`} replace />
+}
+
 const router = createBrowserRouter([
   {
     element: <AppRoot />,
@@ -76,12 +88,16 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: 'demo/admin/submissions/:id',
+        path: 'demo/admin/volunteers/:id',
         element: (
           <DemoAdminAutoAuth>
             <AdminSubmissionDetailPage />
           </DemoAdminAutoAuth>
         ),
+      },
+      {
+        path: 'demo/admin/submissions/:id',
+        element: <RedirectDemoLegacyAdminSubmissionDetail />,
       },
       {
         path: 'demo/admin/forms',
@@ -143,10 +159,18 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: ':organizationSlug/admin/submissions/:id',
+        path: ':organizationSlug/admin/volunteers/:id',
         element: (
           <AdminRouteGuard>
             <AdminSubmissionDetailPage />
+          </AdminRouteGuard>
+        ),
+      },
+      {
+        path: ':organizationSlug/admin/submissions/:id',
+        element: (
+          <AdminRouteGuard>
+            <RedirectLegacyAdminSubmissionDetail />
           </AdminRouteGuard>
         ),
       },
