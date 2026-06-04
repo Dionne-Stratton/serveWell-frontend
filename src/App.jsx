@@ -23,6 +23,9 @@ import OrganizationRootRedirect from './pages/OrganizationRootRedirect'
 import ServePage from './pages/ServePage'
 import SignupPage from './pages/SignupPage'
 import StaffLoginPage from './pages/StaffLoginPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
+import AdminProfilePage from './pages/AdminProfilePage'
 import { organizationAdminFormsPath } from './utils/organizationPaths'
 import './App.css'
 
@@ -58,6 +61,8 @@ const router = createBrowserRouter([
       { index: true, element: <LandingPage /> },
       { path: 'signup', element: <SignupPage /> },
       { path: 'login', element: <StaffLoginPage /> },
+      { path: 'forgot-password', element: <ForgotPasswordPage /> },
+      { path: 'reset-password', element: <ResetPasswordPage /> },
       { path: 'demo', element: <Navigate to="/demo/admin" replace /> },
       {
         path: 'demo/serve',
@@ -171,6 +176,14 @@ const router = createBrowserRouter([
         element: (
           <AdminRouteGuard>
             <RedirectLegacyAdminSubmissionDetail />
+          </AdminRouteGuard>
+        ),
+      },
+      {
+        path: ':organizationSlug/admin/profile',
+        element: (
+          <AdminRouteGuard>
+            <AdminProfilePage />
           </AdminRouteGuard>
         ),
       },

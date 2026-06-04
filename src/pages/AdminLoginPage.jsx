@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { adminDashboardPath } from "../utils/organizationPaths";
 import { serveWellHomeBackLink } from "../utils/pageBackLink";
 import { ApiError } from "../api/client";
@@ -103,6 +103,9 @@ export default function AdminLoginPage({ organizationSlug: organizationSlugProp 
         >
           {submitting ? "Signing in…" : "Sign in"}
         </button>
+        <p className="admin-form-footer">
+          <Link to="/forgot-password">Forgot password?</Link>
+        </p>
       </form>
     </PageShell>
   );

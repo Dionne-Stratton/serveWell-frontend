@@ -95,6 +95,27 @@ export function getCurrentAdmin() {
   return apiRequest("/api/admin/me", { authenticated: true });
 }
 
+export function requestPasswordReset(email) {
+  return apiRequest("/api/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function resetPasswordWithToken(token, newPassword) {
+  return apiRequest("/api/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ token, newPassword }),
+  });
+}
+
+export function requestPasswordResetFromProfile() {
+  return apiRequest("/api/admin/request-password-reset", {
+    method: "POST",
+    authenticated: true,
+  });
+}
+
 export function getAdminSubmissions(filters = {}) {
   const params = new URLSearchParams();
 

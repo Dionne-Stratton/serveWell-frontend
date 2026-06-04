@@ -120,6 +120,13 @@ export function adminDashboardPath(organizationSlug) {
   return organizationAdminPath(organizationSlug)
 }
 
+export function adminProfilePath(organizationSlug) {
+  if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
+    return '/demo/admin/profile'
+  }
+  return `/${organizationSlug}/admin/profile`
+}
+
 export function adminVolunteersPath(organizationSlug) {
   if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
     return demoAdminVolunteersPath()

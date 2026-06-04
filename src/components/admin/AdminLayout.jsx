@@ -1,7 +1,11 @@
-import { useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../../auth/useAdminAuth'
 import PageShell from '../PageShell'
 import AdminNav from './AdminNav'
+import {
+  adminProfilePath,
+  resolveAdminOrganizationSlug,
+} from '../../utils/organizationPaths'
 import { resolveAdminPageBackLink } from '../../utils/pageBackLink'
 import '../../styles/admin.css'
 
@@ -14,31 +18,52 @@ function isAdminAppRoute(pathname) {
 }
 
 export default function AdminLayout({ title, children }) {
-  const { admin, logout, organization } = useAdminAuth()
+  const { admin, organization, logout } = useAdminAuth()
   const { pathname } = useLocation()
-  const { organizationSlug } = useParams()
+  const { organizationSlug: organizationSlugParam } = useParams()
   const isDemoAdmin = isDemoAdminRoute(pathname)
   const showAdminNav = isAdminAppRoute(pathname)
-  const backLink = resolveAdminPageBackLink(pathname, organizationSlug, organization)
+  const navSlug = resolveAdminOrganizationSlug(
+    pathname,
+    organizationSlugParam,
+    organization?.slug,
+  )
+  const backLink = resolveAdminPageBackLink(pathname, organizationSlugParam, organization)
+  const profilePath = navSlug ? adminProfilePath(navSlug) : null
+  const profileLabel = admin?.displayName?.trim() || admin?.email || 'Account'
 
-  const headerAccount = isDemoAdmin ? (
+  const headerAccount = (
     <div className="admin-top-account">
-      <p className="admin-bar__user">
-        <strong>Demo church</strong>
-      </p>
-    </div>
-  ) : (
-    <div className="admin-top-account">
-      <p className="admin-bar__user">
-        Signed in as <strong>{admin?.email ?? 'Admin'}</strong>
-      </p>
-      <button
-        type="button"
-        className="admin-bar__logout button button--secondary"
-        onClick={logout}
-      >
-        Log out
-      </button>
+      {profilePath ? (
+        <Link
+          to={profilePath}
+          className="admin-profile-link"
+          aria-label={`Your account (${profileLabel})`}
+          title={profileLabel}
+        >
+          <span className="admin-profile-link__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" focusable="false">
+              <path
+                fill="currentColor"
+                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+              />
+            </svg>
+          </span>
+        </Link>
+      ) : null}
+      {isDemoAdmin ? (
+        <span className="admin-bar__user admin-bar__user--compact">
+          <strong>Demo</strong>
+        </span>
+      ) : (
+        <button
+          type="button"
+          className="admin-bar__logout button button--secondary"
+          onClick={logout}
+        >
+          Log out
+        </button>
+      )}
     </div>
   )
 

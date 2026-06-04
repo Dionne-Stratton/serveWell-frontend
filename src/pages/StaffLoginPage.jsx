@@ -109,6 +109,8 @@ export default function StaffLoginPage() {
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>
         <p className="admin-form-footer">
+          <Link to="/forgot-password">Forgot password?</Link>
+          <br />
           New to ServeWell?{' '}
           <Link to="/signup">Create your church workspace</Link>
         </p>
