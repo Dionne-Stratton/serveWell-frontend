@@ -6,11 +6,17 @@ export const LEGACY_REQUIREMENTS_PENDING_STATUSES = [
 
 export const REQUIREMENTS_PENDING_STATUS = 'requirements_pending'
 
+const LEGACY_ADDED_TO_PLANNING_CENTER = 'added_to_planning_center'
+
 export function normalizeSubmissionStatus(value) {
   if (!value) {
     return value
   }
-  return LEGACY_REQUIREMENTS_PENDING_STATUSES.includes(value)
-    ? REQUIREMENTS_PENDING_STATUS
-    : value
+  if (LEGACY_REQUIREMENTS_PENDING_STATUSES.includes(value)) {
+    return REQUIREMENTS_PENDING_STATUS
+  }
+  if (value === LEGACY_ADDED_TO_PLANNING_CENTER) {
+    return 'approved_ready_to_schedule'
+  }
+  return value
 }

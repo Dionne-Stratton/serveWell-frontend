@@ -34,7 +34,6 @@ export const submissionStatusOptions = [
   { value: 'follow_up_needed', label: 'Follow-up needed' },
   { value: 'requirements_pending', label: 'Requirements pending' },
   { value: 'approved_ready_to_schedule', label: 'Approved / ready to schedule' },
-  { value: 'added_to_planning_center', label: 'Added to Planning Center' },
   { value: 'archived_inactive', label: 'Archived / inactive' },
   { value: 'not_a_fit', label: 'Not a fit' },
 ]

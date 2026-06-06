@@ -41,6 +41,26 @@ function DetailRow({ label, value }) {
   )
 }
 
+function formatAdminActorLabel(actor) {
+  if (!actor) {
+    return ''
+  }
+  const name = actor.displayName?.trim()
+  const email = actor.email?.trim()
+  if (name && email && name.toLowerCase() !== email.toLowerCase()) {
+    return `${name} (${email})`
+  }
+  return name || email || ''
+}
+
+function formatPlanningCenterSyncedLine(submission) {
+  if (!submission?.planningCenterSyncedAt || !submission?.planningCenterSyncedBy) {
+    return null
+  }
+  const who = formatAdminActorLabel(submission.planningCenterSyncedBy)
+  return `Last synced to Planning Center ${formatDateTime(submission.planningCenterSyncedAt)} by ${who}`
+}
+
 export default function AdminSubmissionDetailPage() {
   const { id, organizationSlug: organizationSlugParam } = useParams()
   const navigate = useNavigate()
@@ -160,6 +180,9 @@ export default function AdminSubmissionDetailPage() {
   }
 
   const submission = detail?.submission
+  const planningCenterSyncedLine = submission
+    ? formatPlanningCenterSyncedLine(submission)
+    : null
   const isPlanningCenterConnected =
     planningCenterIntegration?.status === 'connected'
   const hasEmailOrPhone =
@@ -218,11 +241,18 @@ export default function AdminSubmissionDetailPage() {
                 ...current,
                 submission: {
                   ...current.submission,
-                  ...(data.submission?.status
-                    ? { status: data.submission.status }
-                    : {}),
                   ...(nextPersonId
                     ? { planningCenterPersonId: nextPersonId }
+                    : {}),
+                  ...(data.submission?.planningCenterSyncedAt
+                    ? {
+                        planningCenterSyncedAt: data.submission.planningCenterSyncedAt,
+                      }
+                    : {}),
+                  ...(data.submission?.planningCenterSyncedBy
+                    ? {
+                        planningCenterSyncedBy: data.submission.planningCenterSyncedBy,
+                      }
                     : {}),
                 },
               }
@@ -323,6 +353,11 @@ export default function AdminSubmissionDetailPage() {
               <span className="admin-detail-meta__date">
                 Submitted {formatDateTime(submission.createdAt)}
               </span>
+              {!demoMode && planningCenterSyncedLine ? (
+                <span className="admin-detail-meta__date admin-detail-meta__pc-sync">
+                  {planningCenterSyncedLine}
+                </span>
+              ) : null}
             </div>
           </div>
 
