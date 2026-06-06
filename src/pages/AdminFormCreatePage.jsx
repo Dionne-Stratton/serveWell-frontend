@@ -1,8 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ApiError, createAdminForm } from '../api/client'
+import {
+  ApiError,
+  createAdminForm,
+  getPlanningCenterIntegration,
+} from '../api/client'
 import { useAdminAuth } from '../auth/useAdminAuth'
 import AdminLayout from '../components/admin/AdminLayout'
+import AdminToast from '../components/admin/AdminToast'
 import { DEMO_ORGANIZATION_SLUG } from '../constants/demo'
 import {
   organizationAdminFormEditPath,
@@ -38,6 +43,33 @@ export default function AdminFormCreatePage() {
   const [templateKey, setTemplateKey] = useState(TEMPLATE_STANDARD)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [planningCenterConnected, setPlanningCenterConnected] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadIntegration() {
+      try {
+        const data = await getPlanningCenterIntegration()
+        if (!cancelled) {
+          setPlanningCenterConnected(data.integration?.status === 'connected')
+        }
+      } catch {
+        if (!cancelled) {
+          setPlanningCenterConnected(false)
+        }
+      }
+    }
+
+    if (!isDemoOrg) {
+      loadIntegration()
+    }
+
+    return () => {
+      cancelled = true
+    }
+  }, [isDemoOrg])
 
   function handleNameChange(event) {
     const nextName = event.target.value
@@ -62,11 +94,21 @@ export default function AdminFormCreatePage() {
     setSubmitting(true)
 
     try {
-      const { form } = await createAdminForm({
+      const data = await createAdminForm({
         name: trimmedName,
         slug: trimmedSlug,
         templateKey,
       })
+      const { form, planningCenter } = data
+
+      if (planningCenter?.tabCreated && planningCenter.tabName) {
+        setToastMessage(`Planning Center tab “${planningCenter.tabName}” created.`)
+        window.setTimeout(() => {
+          navigate(organizationAdminFormEditPath(organizationSlug, form.slug))
+        }, 1200)
+        return
+      }
+
       navigate(organizationAdminFormEditPath(organizationSlug, form.slug))
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Unable to create form.')
@@ -154,6 +196,13 @@ export default function AdminFormCreatePage() {
 
         {error ? <p className="admin-error">{error}</p> : null}
 
+        {planningCenterConnected ? (
+          <p className="admin-muted admin-help--nested">
+            Planning Center is connected. Creating this form also adds a matching person
+            profile tab named <strong>SW: …</strong> using this form&apos;s name.
+          </p>
+        ) : null}
+
         <div className="admin-save-bar">
           <button
             type="submit"
@@ -172,6 +221,8 @@ export default function AdminFormCreatePage() {
           </button>
         </div>
       </form>
+
+      <AdminToast message={toastMessage} onDismiss={() => setToastMessage('')} />
     </AdminLayout>
   )
 }
