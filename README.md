@@ -45,8 +45,11 @@ Product and API details live in the parent folder:
 | Path | Purpose |
 |------|---------|
 | `/` | Marketing landing |
-| `/signup` | Church registration (creates org + admin + default form) |
-| `/login` | Staff login (redirects into org admin after sign-in) |
+| `/signup` | Church registration (creates org + owner admin + default form) |
+| `/login` | Staff login (`organizationSlug` + email + password → org admin) |
+| `/forgot-password` | Request password reset (org slug + email) |
+| `/reset-password` | Complete reset from email link (`?token=`) |
+| `/accept-invite` | Accept team invite and set password (`?token=`) |
 | `/demo` | Redirects to `/demo/admin` |
 | `/demo/volunteer` | Demo public form (`/demo/serve` redirects here) |
 | `/demo/admin` | Demo admin home (silent sign-in; Planning Center UI hidden) |
@@ -61,7 +64,9 @@ Product and API details live in the parent folder:
 | `/:organizationSlug/admin/login` | Org admin login |
 | `/:organizationSlug/admin` | Admin home (counts, forms, Planning Center connect when API credentials are set) |
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
-| `/:organizationSlug/admin/volunteers/:id` | Volunteer detail (status, staff notes, **Add to Planning Center** when connected) |
+| `/:organizationSlug/admin/volunteers/:id` | Volunteer detail (status, staff notes, **Delete** / remove from ServeWell, **Add to Planning Center** when connected) |
+| `/:organizationSlug/admin/team` | Team members and invites (owner can invite/revoke/remove) |
+| `/:organizationSlug/admin/profile` | Signed-in admin profile + request password reset email |
 | `/:organizationSlug/admin/forms` | Forms list + links to public URLs |
 | `/:organizationSlug/admin/forms/new` | Create form (template or blank) |
 | `/:organizationSlug/admin/forms/:formSlug/edit` | Edit form (sections, areas, acknowledgements; **Save changes** persists) |
@@ -73,9 +78,10 @@ Unknown paths redirect to `/`.
 
 1. Apply local D1 migrations and start the API (`serveWell-server`: `npm run dev`).
 2. **Demo:** open `/demo/volunteer`, submit a response (email required). Open `/demo/admin/volunteers` for submissions.
-3. **Real org:** register at `/signup` or use seed admin `church@example.com` / `temporary-password` at `/:slug/admin/login` (slug `demo` for seeded demo org).
+3. **Real org:** register at `/signup` or use seed admin `church@example.com` / `temporary-password` with organization slug `demo` at `/login` or `/:slug/admin/login`.
 4. Dashboard: set search/status/form/archived filters, click **Apply filters**. Change status on a row or detail page (saves immediately). On a real org (`/:slug/admin`), use **Connect Planning Center** when the server has OAuth secrets configured.
 5. Forms (non-demo orgs): list → **New form** → edit → **Save changes**. Share `/:slug/forms/:formSlug` from the forms list (or set `VITE_PUBLIC_SITE_URL` for copy-link URLs).
+6. **Team (non-demo):** owner opens `/:slug/admin/team`, invites by email; invitee uses `/accept-invite`. **Forgot password:** `/forgot-password` with org slug + email.
 
 Demo org forms are read-only on the API; the UI still shows forms for browsing.
 
