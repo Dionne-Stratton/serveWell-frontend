@@ -52,7 +52,7 @@ export function buildSubmissionPayload(form, servingAreas) {
     firstName: form.firstName.trim(),
     lastName: form.lastName.trim(),
     email: form.email.trim(),
-    phone: form.phone.trim(),
+    phone: form.phone.trim() || null,
     preferredContactMethod: form.preferredContactMethod,
     overallFrequency: form.overallFrequency,
     availability: [...form.availability],
@@ -65,6 +65,8 @@ export function buildSubmissionPayload(form, servingAreas) {
 }
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const phoneRequiredPreferredContactMethods = new Set(['text', 'phone'])
 
 export function isValidEmail(value) {
   return emailPattern.test(value.trim())
@@ -80,11 +82,15 @@ export function validateVolunteerForm(form, servingAreas) {
   } else if (!isValidEmail(form.email)) {
     errors.email = 'Please enter a valid email address.'
   }
-  if (!form.phone.trim()) {
-    errors.phone = 'Phone number is required.'
-  }
   if (!form.preferredContactMethod) {
     errors.preferredContactMethod = 'Please choose a preferred contact method.'
+  }
+  if (
+    phoneRequiredPreferredContactMethods.has(form.preferredContactMethod) &&
+    !form.phone.trim()
+  ) {
+    errors.phone =
+      'Phone number is required when you prefer to be contacted by phone or text.'
   }
   if (!form.overallFrequency) {
     errors.overallFrequency = 'Please choose your overall serving frequency.'

@@ -348,14 +348,15 @@ export default function VolunteerForm({
         <div className="serve-field">
           <label className="serve-label" htmlFor="phone">
             Phone
-            <RequiredMark />
           </label>
+          <p className="serve-field-hint">
+            Optional unless you prefer phone or text below.
+          </p>
           <input
             id="phone"
             className="serve-input"
             type="tel"
             autoComplete="tel"
-            required
             value={form.phone}
             onChange={(event) => updateField('phone', event.target.value)}
           />

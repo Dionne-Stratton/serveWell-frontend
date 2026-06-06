@@ -72,7 +72,7 @@ Unknown paths redirect to `/`.
 ## Local smoke test
 
 1. Apply local D1 migrations and start the API (`serveWell-server`: `npm run dev`).
-2. **Demo:** open `/demo/volunteer`, submit a response (email and phone required). Open `/demo/admin/volunteers` for submissions.
+2. **Demo:** open `/demo/volunteer`, submit a response (email required). Open `/demo/admin/volunteers` for submissions.
 3. **Real org:** register at `/signup` or use seed admin `church@example.com` / `temporary-password` at `/:slug/admin/login` (slug `demo` for seeded demo org).
 4. Dashboard: set search/status/form/archived filters, click **Apply filters**. Change status on a row or detail page (saves immediately). On a real org (`/:slug/admin`), use **Connect Planning Center** when the server has OAuth secrets configured.
 5. Forms (non-demo orgs): list → **New form** → edit → **Save changes**. Share `/:slug/forms/:formSlug` from the forms list (or set `VITE_PUBLIC_SITE_URL` for copy-link URLs).

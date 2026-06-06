@@ -394,6 +394,12 @@
   margin-bottom: 0;
 }
 
+.serve-field-hint {
+  margin: 0.2rem 0 0.35rem;
+  font-size: 0.85rem;
+  color: var(--serve-muted, #5c6670);
+}
+
 .serve-field-error {
   margin: 0.35rem 0 0;
   font-size: 0.85rem;
