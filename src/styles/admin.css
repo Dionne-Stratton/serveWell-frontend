@@ -886,6 +886,13 @@
   margin-top: 0.15rem;
 }
 
+.admin-team-invite-note {
+  margin: -0.25rem 0 0.85rem;
+  max-width: 42rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
 .admin-field--grow {
   flex: 1;
   min-width: 12rem;
@@ -1916,6 +1923,13 @@
 .admin-integration-row__status {
   font-size: 0.9rem;
   color: var(--muted);
+}
+
+.admin-integration-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
 }
 
 .admin-integration-row__action--disabled {

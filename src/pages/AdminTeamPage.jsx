@@ -184,6 +184,10 @@ export default function AdminTeamPage() {
           {canManage ? (
             <section className="admin-detail-section">
               <h2 className="admin-detail-section__title">Invite admin</h2>
+              <p className="admin-muted admin-team-invite-note">
+                Anyone you invite will use your organization&apos;s shared Planning Center
+                connection in ServeWell—the same one connected on the dashboard.
+              </p>
               <form className="admin-field-row" onSubmit={handleInvite}>
                 <div className="admin-field admin-field--grow">
                   <label className="admin-label" htmlFor="team-invite-email">

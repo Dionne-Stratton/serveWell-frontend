@@ -9,6 +9,7 @@ import {
   getPlanningCenterIntegration,
 } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
+import { useAdminAuth } from '../auth/useAdminAuth'
 import softBtn from '../styles/adminSoftButtons.module.css'
 import {
   adminVolunteersFilteredPath,
@@ -27,6 +28,10 @@ export default function AdminDashboardPage({
 }) {
   const { organizationSlug: organizationSlugParam } = useParams()
   const organizationSlug = organizationSlugProp ?? organizationSlugParam
+  const { admin } = useAdminAuth()
+  const isOrganizationOwner = admin?.role === 'owner'
+  const PLANNING_CENTER_OWNER_ONLY_HINT =
+    'Only the organization owner can manage the shared Planning Center connection.'
   const [counts, setCounts] = useState(null)
   const [activeForms, setActiveForms] = useState(null)
   const [planningCenterIntegration, setPlanningCenterIntegration] = useState(null)
@@ -194,15 +199,31 @@ export default function AdminDashboardPage({
               <span className="admin-integration-row__name">Planning Center</span>
               <span className="admin-integration-row__status">{integrationStatusLabel}</span>
             </div>
-            <button
-              type="button"
-              className={`${softBtn.softBtn} ${demoMode ? 'admin-integration-row__action--disabled' : ''}`}
-              disabled={demoMode || integrationActionPending}
-              aria-disabled={demoMode || integrationActionPending}
-              onClick={handlePlanningCenterAction}
-            >
-              {integrationActionPending ? 'Working...' : integrationButtonLabel}
-            </button>
+            <div className="admin-integration-row__actions">
+              <button
+                type="button"
+                className={`${softBtn.softBtn} ${demoMode || !isOrganizationOwner ? 'admin-integration-row__action--disabled' : ''}`}
+                disabled={demoMode || integrationActionPending || !isOrganizationOwner}
+                aria-disabled={demoMode || integrationActionPending || !isOrganizationOwner}
+                onClick={handlePlanningCenterAction}
+              >
+                {integrationActionPending ? 'Working...' : integrationButtonLabel}
+              </button>
+              {!demoMode && !isOrganizationOwner ? (
+                <span className="admin-info-tip">
+                  <button
+                    type="button"
+                    className="admin-info-mark"
+                    aria-label={PLANNING_CENTER_OWNER_ONLY_HINT}
+                  >
+                    i
+                  </button>
+                  <span className="admin-info-tip__bubble" role="tooltip">
+                    {PLANNING_CENTER_OWNER_ONLY_HINT}
+                  </span>
+                </span>
+              ) : null}
+            </div>
           </div>
           {!demoMode ? (
             <p className="admin-muted admin-integration-row__help">
