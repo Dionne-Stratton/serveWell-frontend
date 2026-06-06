@@ -48,7 +48,7 @@ export default function AdminLoginPage({ organizationSlug: organizationSlugProp 
     setSubmitting(true);
 
     try {
-      await login(email.trim(), password);
+      await login(email.trim(), password, organizationSlug);
       navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(

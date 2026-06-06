@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import { ApiError, getCurrentAdmin, requestPasswordResetFromProfile } from '../api/client'
 import { useAdminAuth } from '../auth/useAdminAuth'
 import AdminLayout from '../components/admin/AdminLayout'
 import AdminToast from '../components/admin/AdminToast'
-import { resolveAdminOrganizationSlug } from '../utils/organizationPaths'
+import { adminTeamPath, resolveAdminOrganizationSlug } from '../utils/organizationPaths'
 
 const ORG_TYPE_LABELS = {
   church: 'Church',
@@ -103,7 +103,16 @@ export default function AdminProfilePage() {
             <dl className="admin-dl">
               <ProfileRow label="Name" value={sessionAdmin.displayName} />
               <ProfileRow label="Sign-in email" value={sessionAdmin.email} />
-              <ProfileRow label="Role" value={sessionAdmin.role} />
+              <ProfileRow
+                label="Role"
+                value={
+                  sessionAdmin.role === 'owner'
+                    ? 'Owner'
+                    : sessionAdmin.role === 'admin'
+                      ? 'Admin'
+                      : sessionAdmin.role
+                }
+              />
             </dl>
           </section>
 
@@ -129,6 +138,13 @@ export default function AdminProfilePage() {
                 <ProfileRow label="Website" value={sessionOrg.websiteUrl} />
               </dl>
             </section>
+          ) : null}
+
+          {!demoMode && organizationSlug ? (
+            <p className="admin-help">
+              <Link to={adminTeamPath(organizationSlug)}>Team</Link> — manage who can
+              access this organization.
+            </p>
           ) : null}
 
           <section className="admin-detail-section">

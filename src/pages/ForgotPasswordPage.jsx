@@ -5,6 +5,7 @@ import PageShell from '../components/PageShell'
 import '../styles/admin.css'
 
 export default function ForgotPasswordPage() {
+  const [organizationSlug, setOrganizationSlug] = useState('')
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -38,6 +39,17 @@ export default function ForgotPasswordPage() {
           Enter the email you use to sign in. We will send a reset link if an account
           exists.
         </p>
+        <label className="admin-label" htmlFor="forgot-org-slug">
+          Church URL slug
+        </label>
+        <input
+          id="forgot-org-slug"
+          className="admin-input"
+          type="text"
+          value={organizationSlug}
+          onChange={(event) => setOrganizationSlug(event.target.value)}
+          required
+        />
         <label className="admin-label" htmlFor="forgot-email">
           Email
         </label>

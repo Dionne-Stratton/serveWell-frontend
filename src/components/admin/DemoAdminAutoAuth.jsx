@@ -23,6 +23,7 @@ export default function DemoAdminAutoAuth({ children }) {
       setAutoError('')
       try {
         const data = await adminLogin({
+          organizationSlug: 'demo',
           email: DEMO_ADMIN_EMAIL,
           password: DEMO_ADMIN_PASSWORD,
         })

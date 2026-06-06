@@ -10,6 +10,7 @@ export default function StaffLoginPage() {
   const { admin, organization, loading, login } = useAdminAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const [organizationSlug, setOrganizationSlug] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -39,7 +40,12 @@ export default function StaffLoginPage() {
     setSubmitting(true)
 
     try {
-      const session = await login(email.trim(), password)
+      const orgSlug = organizationSlug.trim().toLowerCase()
+      if (!orgSlug) {
+        setError('Enter your church URL slug (from your dashboard link).')
+        return
+      }
+      const session = await login(email.trim(), password, orgSlug)
       const slug = session.organization?.slug
       if (!slug) {
         setError('Signed in, but your organization could not be loaded.')
@@ -72,6 +78,25 @@ export default function StaffLoginPage() {
         <p className="lede">
           Sign in to your church&apos;s admin dashboard.
         </p>
+        <div className="admin-field">
+          <label className="admin-label" htmlFor="staff-org-slug">
+            Church URL slug
+          </label>
+          <input
+            id="staff-org-slug"
+            className="admin-input"
+            type="text"
+            autoComplete="organization"
+            placeholder="e.g. grace-community"
+            value={organizationSlug}
+            onChange={(event) => setOrganizationSlug(event.target.value)}
+            required
+          />
+          <p className="admin-help admin-help--nested">
+            The part of your dashboard URL after the domain, e.g.{' '}
+            <code>/your-slug/admin</code>.
+          </p>
+        </div>
         <div className="admin-field">
           <label className="admin-label" htmlFor="staff-email">
             Email

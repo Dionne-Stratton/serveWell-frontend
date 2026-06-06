@@ -4,6 +4,7 @@ import {
   adminDashboardPath,
   adminVolunteersPath,
   adminFormsPath,
+  adminTeamPath,
 } from '../../utils/organizationPaths'
 
 function navClassName({ isActive }) {
@@ -42,6 +43,11 @@ export default function AdminNav() {
       <NavLink to={adminFormsPath(slug)} className={navClassName}>
         Forms
       </NavLink>
+      {slug !== DEMO_ORGANIZATION_SLUG ? (
+        <NavLink to={adminTeamPath(slug)} className={navClassName}>
+          Team
+        </NavLink>
+      ) : null}
     </nav>
   )
 }

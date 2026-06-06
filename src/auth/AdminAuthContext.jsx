@@ -104,8 +104,12 @@ export function AdminAuthProvider({ children }) {
   }, [applySession, detachDemoFromMainSession])
 
   const login = useCallback(
-    async (email, password) => {
-      const data = await adminLogin({ email, password })
+    async (email, password, organizationSlug) => {
+      const data = await adminLogin({
+        email,
+        password,
+        organizationSlug,
+      })
       if (data.organization?.slug === DEMO_ORGANIZATION_SLUG) {
         setDemoAdminToken(data.token)
         throw new ApiError(

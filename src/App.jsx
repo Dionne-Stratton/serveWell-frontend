@@ -26,6 +26,8 @@ import StaffLoginPage from './pages/StaffLoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AdminProfilePage from './pages/AdminProfilePage'
+import AdminTeamPage from './pages/AdminTeamPage'
+import AcceptInvitePage from './pages/AcceptInvitePage'
 import { organizationAdminFormsPath } from './utils/organizationPaths'
 import './App.css'
 
@@ -63,6 +65,7 @@ const router = createBrowserRouter([
       { path: 'login', element: <StaffLoginPage /> },
       { path: 'forgot-password', element: <ForgotPasswordPage /> },
       { path: 'reset-password', element: <ResetPasswordPage /> },
+      { path: 'accept-invite', element: <AcceptInvitePage /> },
       { path: 'demo', element: <Navigate to="/demo/admin" replace /> },
       {
         path: 'demo/serve',
@@ -184,6 +187,14 @@ const router = createBrowserRouter([
         element: (
           <AdminRouteGuard>
             <AdminProfilePage />
+          </AdminRouteGuard>
+        ),
+      },
+      {
+        path: ':organizationSlug/admin/team',
+        element: (
+          <AdminRouteGuard>
+            <AdminTeamPage />
           </AdminRouteGuard>
         ),
       },

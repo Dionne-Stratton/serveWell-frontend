@@ -95,10 +95,48 @@ export function getCurrentAdmin() {
   return apiRequest("/api/admin/me", { authenticated: true });
 }
 
-export function requestPasswordReset(email) {
+export function requestPasswordReset(organizationSlug, email) {
   return apiRequest("/api/auth/forgot-password", {
     method: "POST",
+    body: JSON.stringify({ organizationSlug, email }),
+  });
+}
+
+export function previewAdminInvite(token) {
+  const params = new URLSearchParams({ token });
+  return apiRequest(`/api/auth/accept-invite?${params.toString()}`);
+}
+
+export function acceptAdminInvite(token, newPassword, confirmPassword) {
+  return apiRequest("/api/auth/accept-invite", {
+    method: "POST",
+    body: JSON.stringify({ token, newPassword, confirmPassword }),
+  });
+}
+
+export function getAdminTeam() {
+  return apiRequest("/api/admin/team", { authenticated: true });
+}
+
+export function inviteAdminTeamMember(email) {
+  return apiRequest("/api/admin/team/invites", {
+    method: "POST",
+    authenticated: true,
     body: JSON.stringify({ email }),
+  });
+}
+
+export function revokeAdminTeamInvite(inviteId) {
+  return apiRequest(`/api/admin/team/invites/${inviteId}`, {
+    method: "DELETE",
+    authenticated: true,
+  });
+}
+
+export function removeAdminTeamMember(adminUserId) {
+  return apiRequest(`/api/admin/team/members/${adminUserId}`, {
+    method: "DELETE",
+    authenticated: true,
   });
 }
 
