@@ -95,14 +95,15 @@ export default function AdminDashboardPage({
   const integrationStatus = demoMode
     ? 'not_connected'
     : planningCenterIntegration?.status ?? 'not_connected'
-  const isPlanningCenterConnected = integrationStatus === 'connected'
+  const isPlanningCenterLinked = integrationStatus === 'connected'
+  const isPlanningCenterTokenUsable = planningCenterIntegration?.tokenUsable === true
+  const needsPlanningCenterReconnect =
+    isPlanningCenterLinked && !isPlanningCenterTokenUsable
   const integrationStatusLabel = getPlanningCenterStatusLabel(planningCenterIntegration)
-  const integrationButtonLabel = isPlanningCenterConnected
-    ? 'Disconnect Planning Center'
-    : 'Connect Planning Center'
+  const integrationButtonLabel = getPlanningCenterActionLabel(planningCenterIntegration)
 
   async function handlePlanningCenterAction() {
-    if (demoMode || integrationActionPending) {
+    if (demoMode || integrationActionPending || !isOrganizationOwner) {
       return
     }
 
@@ -110,7 +111,7 @@ export default function AdminDashboardPage({
     setIntegrationActionPending(true)
 
     try {
-      if (isPlanningCenterConnected) {
+      if (isPlanningCenterLinked && isPlanningCenterTokenUsable) {
         const data = await disconnectPlanningCenterIntegration()
         setPlanningCenterIntegration(data.integration)
         return
@@ -197,7 +198,11 @@ export default function AdminDashboardPage({
           <div className="admin-integration-row">
             <div className="admin-integration-row__info">
               <span className="admin-integration-row__name">Planning Center</span>
-              <span className="admin-integration-row__status">{integrationStatusLabel}</span>
+              <span
+                className={`admin-integration-row__status${needsPlanningCenterReconnect ? ' admin-integration-row__status--warning' : ''}`}
+              >
+                {integrationStatusLabel}
+              </span>
             </div>
             <div className="admin-integration-row__actions">
               <button
@@ -225,6 +230,13 @@ export default function AdminDashboardPage({
               ) : null}
             </div>
           </div>
+          {!demoMode && needsPlanningCenterReconnect ? (
+            <p className="admin-muted admin-integration-row__help admin-integration-row__help--warning">
+              {isOrganizationOwner
+                ? 'The Planning Center sign-in has expired. Use Reconnect Planning Center to sync volunteers again.'
+                : 'The Planning Center sign-in has expired. Ask your organization owner to reconnect from this dashboard.'}
+            </p>
+          ) : null}
           {!demoMode ? (
             <p className="admin-muted admin-integration-row__help">
               ServeWell only uses the permissions your Planning Center account already has in
@@ -256,6 +268,13 @@ function getPlanningCenterStatusLabel(integration) {
   }
 
   if (integration.status === 'connected') {
+    if (integration.tokenUsable === false) {
+      const org = integration.externalOrganizationName
+      return org
+        ? `Reconnect required (${org})`
+        : 'Reconnect required — session expired'
+    }
+
     return integration.externalOrganizationName
       ? `Connected to ${integration.externalOrganizationName}`
       : 'Connected'
@@ -266,4 +285,16 @@ function getPlanningCenterStatusLabel(integration) {
   }
 
   return 'Connection error'
+}
+
+function getPlanningCenterActionLabel(integration) {
+  if (!integration || integration.status !== 'connected') {
+    return 'Connect Planning Center'
+  }
+
+  if (integration.tokenUsable === false) {
+    return 'Reconnect Planning Center'
+  }
+
+  return 'Disconnect Planning Center'
 }

@@ -1925,6 +1925,14 @@
   color: var(--muted);
 }
 
+.admin-integration-row__status--warning {
+  color: var(--danger, #b42318);
+}
+
+.admin-integration-row__help--warning {
+  color: var(--danger, #b42318);
+}
+
 .admin-integration-row__actions {
   display: flex;
   align-items: center;

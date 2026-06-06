@@ -184,7 +184,11 @@ export default function AdminSubmissionDetailPage() {
     ? formatPlanningCenterSyncedLine(submission)
     : null
   const isPlanningCenterConnected =
-    planningCenterIntegration?.status === 'connected'
+    planningCenterIntegration?.status === 'connected' &&
+    planningCenterIntegration?.tokenUsable === true
+  const planningCenterNeedsReconnect =
+    planningCenterIntegration?.status === 'connected' &&
+    planningCenterIntegration?.tokenUsable === false
   const hasEmailOrPhone =
     Boolean(submission?.email?.trim()) || Boolean(submission?.phone?.trim())
   const isLinkedToPlanningCenter = Boolean(
@@ -198,7 +202,10 @@ export default function AdminSubmissionDetailPage() {
 
   let planningCenterDisabledReason = ''
   if (!demoMode && submission) {
-    if (!isPlanningCenterConnected) {
+    if (planningCenterNeedsReconnect) {
+      planningCenterDisabledReason =
+        'Planning Center sign-in expired. Your organization owner must reconnect from the dashboard.'
+    } else if (!isPlanningCenterConnected) {
       planningCenterDisabledReason =
         'Connect Planning Center from your dashboard first.'
     } else if (!hasEmailOrPhone) {
