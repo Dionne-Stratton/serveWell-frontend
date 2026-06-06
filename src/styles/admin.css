@@ -855,6 +855,14 @@
   color: var(--text);
 }
 
+.admin-dialog__body p {
+  margin: 0 0 0.75rem;
+}
+
+.admin-dialog__body p:last-child {
+  margin-bottom: 0;
+}
+
 .admin-dialog__actions {
   display: flex;
   flex-direction: column;

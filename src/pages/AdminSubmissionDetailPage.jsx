@@ -1,17 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../auth/useAdminAuth'
 import { adminVolunteersPath, resolveAdminOrganizationSlug } from '../utils/organizationPaths'
 import {
   ApiError,
   createAdminSubmissionNote,
   deleteAdminNote,
+  deleteAdminSubmission,
   getAdminSubmissionDetail,
   getPlanningCenterIntegration,
   pushAdminSubmissionToPlanningCenter,
 } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
+import DeleteVolunteerSubmissionDialog from '../components/admin/DeleteVolunteerSubmissionDialog'
 import AdminSubmissionStatusSelect from '../components/admin/AdminSubmissionStatusSelect'
+import softBtn from '../styles/adminSoftButtons.module.css'
 import {
   formatAvailabilityList,
   formatDateTime,
@@ -40,6 +43,7 @@ function DetailRow({ label, value }) {
 
 export default function AdminSubmissionDetailPage() {
   const { id, organizationSlug: organizationSlugParam } = useParams()
+  const navigate = useNavigate()
   const { pathname } = useLocation()
   const { organization } = useAdminAuth()
   const organizationSlug = resolveAdminOrganizationSlug(
@@ -59,6 +63,9 @@ export default function AdminSubmissionDetailPage() {
   const [noteError, setNoteError] = useState('')
   const [noteSubmitting, setNoteSubmitting] = useState(false)
   const [deletingNoteId, setDeletingNoteId] = useState(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deletePending, setDeletePending] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   const loadDetail = useCallback(async () => {
     setLoading(true)
@@ -174,6 +181,21 @@ export default function AdminSubmissionDetailPage() {
     } else if (!hasEmailOrPhone) {
       planningCenterDisabledReason =
         'This volunteer needs an email address or phone number before they can be added to Planning Center.'
+    }
+  }
+
+  async function handleConfirmDeleteSubmission() {
+    setDeleteError('')
+    setDeletePending(true)
+
+    try {
+      await deleteAdminSubmission(id)
+      navigate(volunteersPath, { replace: true })
+    } catch (err) {
+      setDeleteError(
+        err instanceof ApiError ? err.message : 'Unable to delete this volunteer.',
+      )
+      setDeletePending(false)
     }
   }
 
@@ -436,8 +458,44 @@ export default function AdminSubmissionDetailPage() {
               <p className="admin-notes-empty">No staff notes yet.</p>
             )}
           </DetailSection>
+
+          <section
+            className="admin-detail-section admin-form-block--danger"
+            aria-labelledby="delete-volunteer-heading"
+          >
+            <h2 id="delete-volunteer-heading" className="admin-detail-section__title">
+              Remove from ServeWell
+            </h2>
+            <button
+              type="button"
+              className={softBtn.softBtnDanger}
+              disabled={deletePending}
+              onClick={() => {
+                setDeleteError('')
+                setDeleteDialogOpen(true)
+              }}
+            >
+              Delete
+            </button>
+          </section>
         </>
       ) : null}
+
+      <DeleteVolunteerSubmissionDialog
+        open={deleteDialogOpen}
+        volunteerName={
+          submission ? `${submission.firstName} ${submission.lastName}` : ''
+        }
+        deleting={deletePending}
+        error={deleteError}
+        onConfirm={handleConfirmDeleteSubmission}
+        onCancel={() => {
+          if (!deletePending) {
+            setDeleteDialogOpen(false)
+            setDeleteError('')
+          }
+        }}
+      />
     </AdminLayout>
   )
 }
