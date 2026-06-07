@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
-import { ApiError, getCurrentAdmin, requestPasswordResetFromProfile } from '../api/client'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import {
+  ApiError,
+  deleteAdminOrganization,
+  getCurrentAdmin,
+  requestPasswordResetFromProfile,
+} from '../api/client'
 import { useAdminAuth } from '../auth/useAdminAuth'
 import AdminLayout from '../components/admin/AdminLayout'
+import DeleteOrganizationDialog from '../components/admin/DeleteOrganizationDialog'
 import AdminToast from '../components/admin/AdminToast'
+import softBtn from '../styles/adminSoftButtons.module.css'
 import { adminTeamPath, resolveAdminOrganizationSlug } from '../utils/organizationPaths'
 
 const ORG_TYPE_LABELS = {
@@ -28,7 +35,8 @@ function ProfileRow({ label, value }) {
 export default function AdminProfilePage() {
   const { organizationSlug: organizationSlugParam } = useParams()
   const { pathname } = useLocation()
-  const { admin, organization } = useAdminAuth()
+  const navigate = useNavigate()
+  const { admin, organization, logout } = useAdminAuth()
   const organizationSlug = resolveAdminOrganizationSlug(
     pathname,
     organizationSlugParam,
@@ -41,6 +49,9 @@ export default function AdminProfilePage() {
   const [resetToast, setResetToast] = useState('')
   const [resetError, setResetError] = useState('')
   const [resetPending, setResetPending] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deletePending, setDeletePending] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   const loadProfile = useCallback(async () => {
     if (demoMode) {
@@ -90,6 +101,31 @@ export default function AdminProfilePage() {
 
   const sessionAdmin = profile?.admin ?? admin
   const sessionOrg = profile?.organization ?? organization
+  const isOwner = sessionAdmin?.role === 'owner'
+
+  async function handleConfirmDeleteOrganization() {
+    if (!sessionOrg?.slug) {
+      return
+    }
+
+    setDeleteError('')
+    setDeletePending(true)
+
+    try {
+      await deleteAdminOrganization(sessionOrg.slug)
+      setDeleteDialogOpen(false)
+      logout()
+      navigate('/login', {
+        replace: true,
+        state: { flashSuccess: 'Organization deleted.' },
+      })
+    } catch (err) {
+      setDeleteError(
+        err instanceof ApiError ? err.message : 'Unable to delete this organization.',
+      )
+      setDeletePending(false)
+    }
+  }
 
   return (
     <AdminLayout title="Your account">
@@ -167,9 +203,48 @@ export default function AdminProfilePage() {
               </>
             )}
           </section>
+
+          {isOwner && !demoMode && sessionOrg?.slug ? (
+            <section
+              className="admin-detail-section admin-profile-danger"
+              aria-labelledby="profile-danger-heading"
+            >
+              <h2 id="profile-danger-heading" className="admin-detail-section__title">
+                Danger zone
+              </h2>
+              <p className="admin-muted admin-profile-danger__lead">
+                Permanently delete this organization and all ServeWell data for it, including
+                every admin account. Planning Center People records are not changed.
+              </p>
+              <button
+                type="button"
+                className={softBtn.softBtnDanger}
+                onClick={() => {
+                  setDeleteError('')
+                  setDeleteDialogOpen(true)
+                }}
+              >
+                Delete organization…
+              </button>
+            </section>
+          ) : null}
         </>
       ) : null}
       <AdminToast message={resetToast} onDismiss={() => setResetToast('')} />
+      <DeleteOrganizationDialog
+        open={deleteDialogOpen}
+        organizationName={sessionOrg?.name}
+        organizationSlug={sessionOrg?.slug}
+        deleting={deletePending}
+        error={deleteError}
+        onConfirm={handleConfirmDeleteOrganization}
+        onCancel={() => {
+          if (!deletePending) {
+            setDeleteDialogOpen(false)
+            setDeleteError('')
+          }
+        }}
+      />
     </AdminLayout>
   )
 }

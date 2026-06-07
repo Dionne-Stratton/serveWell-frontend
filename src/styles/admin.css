@@ -2018,6 +2018,19 @@
   border-top: 1px solid #e5e7eb;
 }
 
+.admin-profile-danger {
+  margin-top: 1.5rem;
+  border-color: color-mix(in srgb, #f87171 40%, var(--border));
+  background: color-mix(in srgb, #ef4444 8%, var(--surface));
+}
+
+.admin-profile-danger__lead {
+  margin: 0 0 1rem;
+  max-width: 40rem;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
 .admin-success {
   color: #047857;
   margin: 0;

@@ -25,6 +25,7 @@ import ServePage from './pages/ServePage'
 import SignupPage from './pages/SignupPage'
 import StaffLoginPage from './pages/StaffLoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ChurchSlugHintPage from './pages/ChurchSlugHintPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AdminProfilePage from './pages/AdminProfilePage'
 import AdminTeamPage from './pages/AdminTeamPage'
@@ -72,6 +73,7 @@ const router = createBrowserRouter([
       { path: 'signup', element: <SignupPage /> },
       { path: 'login', element: <StaffLoginPage /> },
       { path: 'forgot-password', element: <ForgotPasswordPage /> },
+      { path: 'church-slug-hint', element: <ChurchSlugHintPage /> },
       { path: 'reset-password', element: <ResetPasswordPage /> },
       { path: 'accept-invite', element: <AcceptInvitePage /> },
       { path: 'demo', element: <Navigate to="/demo/admin" replace /> },

@@ -104,6 +104,8 @@ export default function AdminLoginPage({ organizationSlug: organizationSlugProp 
           {submitting ? "Signing in…" : "Sign in"}
         </button>
         <p className="admin-form-footer">
+          <Link to="/church-slug-hint">Forgot your church URL slug?</Link>
+          <br />
           <Link to="/forgot-password">Forgot password?</Link>
         </p>
       </form>

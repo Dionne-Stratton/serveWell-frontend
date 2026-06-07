@@ -15,12 +15,22 @@ export default function StaffLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [flashSuccess, setFlashSuccess] = useState('')
 
   useEffect(() => {
     if (!loading && admin && organization?.slug) {
       navigate(adminDashboardPath(organization.slug), { replace: true })
     }
   }, [admin, loading, navigate, organization?.slug])
+
+  useEffect(() => {
+    const message = location.state?.flashSuccess
+    if (!message) {
+      return
+    }
+    setFlashSuccess(message)
+    navigate('/login', { replace: true, state: null })
+  }, [location.state, navigate])
 
   if (loading) {
     return (
@@ -125,6 +135,11 @@ export default function StaffLoginPage() {
             required
           />
         </div>
+        {flashSuccess ? (
+          <p className="admin-save-success" role="status">
+            {flashSuccess}
+          </p>
+        ) : null}
         {error ? <p className="admin-error">{error}</p> : null}
         <button
           type="submit"
@@ -134,6 +149,8 @@ export default function StaffLoginPage() {
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>
         <p className="admin-form-footer">
+          <Link to="/church-slug-hint">Forgot your church URL slug?</Link>
+          <br />
           <Link to="/forgot-password">Forgot password?</Link>
           <br />
           New to ServeWell?{' '}

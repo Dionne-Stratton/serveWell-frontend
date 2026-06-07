@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ApiError, requestPasswordReset } from '../api/client'
+import { ApiError, requestChurchSlugHint } from '../api/client'
 import PageShell from '../components/PageShell'
 import '../styles/admin.css'
 
-export default function ForgotPasswordPage() {
-  const [organizationSlug, setOrganizationSlug] = useState('')
+export default function ChurchSlugHintPage() {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -18,17 +17,17 @@ export default function ForgotPasswordPage() {
     setSubmitting(true)
 
     try {
-      const data = await requestPasswordReset(
-        organizationSlug.trim().toLowerCase(),
-        email.trim(),
+      const data = await requestChurchSlugHint(email.trim())
+      setMessage(
+        data.message ??
+          'If an account exists for that email, we sent a reminder with your church name and URL slug.',
       )
-      setMessage(data.message ?? 'Check your email for reset instructions.')
       setEmail('')
     } catch (err) {
       setError(
         err instanceof ApiError
           ? err.message
-          : 'Unable to send reset instructions. Try again later.',
+          : 'Unable to send a reminder. Try again later.',
       )
     } finally {
       setSubmitting(false)
@@ -36,28 +35,21 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <PageShell title="Forgot password" className="admin-auth-page" showHomeLink={false}>
+    <PageShell
+      title="Church URL slug reminder"
+      className="admin-auth-page"
+      showHomeLink={false}
+    >
       <form className="admin-login-form" onSubmit={handleSubmit}>
         <p className="lede">
-          Enter the email you use to sign in. We will send a reset link if an account
-          exists.
+          Enter the email you use for staff sign-in. If you have an account, we will
+          email your church name and the URL slug to enter on the sign-in page.
         </p>
-        <label className="admin-label" htmlFor="forgot-org-slug">
-          Church URL slug
-        </label>
-        <input
-          id="forgot-org-slug"
-          className="admin-input"
-          type="text"
-          value={organizationSlug}
-          onChange={(event) => setOrganizationSlug(event.target.value)}
-          required
-        />
-        <label className="admin-label" htmlFor="forgot-email">
+        <label className="admin-label" htmlFor="hint-email">
           Email
         </label>
         <input
-          id="forgot-email"
+          id="hint-email"
           className="admin-input"
           type="email"
           autoComplete="email"
@@ -72,7 +64,7 @@ export default function ForgotPasswordPage() {
           className={`admin-button${submitting ? ' admin-button--busy' : ''}`}
           disabled={submitting || !email.trim()}
         >
-          {submitting ? 'Sending…' : 'Send reset link'}
+          {submitting ? 'Sending…' : 'Email me my church slug'}
         </button>
         <p className="admin-form-footer">
           <Link to="/login">Back to sign in</Link>

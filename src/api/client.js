@@ -95,10 +95,25 @@ export function getCurrentAdmin() {
   return apiRequest("/api/admin/me", { authenticated: true });
 }
 
+export function deleteAdminOrganization(confirmSlug) {
+  return apiRequest("/api/admin/organization", {
+    method: "DELETE",
+    authenticated: true,
+    body: JSON.stringify({ confirmSlug }),
+  });
+}
+
 export function requestPasswordReset(organizationSlug, email) {
   return apiRequest("/api/auth/forgot-password", {
     method: "POST",
     body: JSON.stringify({ organizationSlug, email }),
+  });
+}
+
+export function requestChurchSlugHint(email) {
+  return apiRequest("/api/auth/church-slug-hint", {
+    method: "POST",
+    body: JSON.stringify({ email }),
   });
 }
 
