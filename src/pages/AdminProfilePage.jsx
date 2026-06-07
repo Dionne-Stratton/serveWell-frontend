@@ -4,24 +4,19 @@ import {
   ApiError,
   deleteAdminOrganization,
   getCurrentAdmin,
+  patchAdminMe,
+  patchAdminOrganization,
+  patchAdminNotificationPreferences,
   requestPasswordResetFromProfile,
 } from '../api/client'
 import { useAdminAuth } from '../auth/useAdminAuth'
 import AdminLayout from '../components/admin/AdminLayout'
+import EditableOrganizationSection from '../components/admin/EditableOrganizationSection'
+import EditableProfileField from '../components/admin/EditableProfileField'
 import DeleteOrganizationDialog from '../components/admin/DeleteOrganizationDialog'
 import AdminToast from '../components/admin/AdminToast'
 import softBtn from '../styles/adminSoftButtons.module.css'
 import { resolveAdminOrganizationSlug } from '../utils/organizationPaths'
-
-const ORG_TYPE_LABELS = {
-  church: 'Church',
-  ministry: 'Ministry',
-  other: 'Other',
-}
-
-function labelOrgType(value) {
-  return ORG_TYPE_LABELS[value] ?? value ?? '—'
-}
 
 function ProfileRow({ label, value }) {
   return (
@@ -36,7 +31,7 @@ export default function AdminProfilePage() {
   const { organizationSlug: organizationSlugParam } = useParams()
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const { admin, organization, logout } = useAdminAuth()
+  const { admin, organization, logout, refreshSession } = useAdminAuth()
   const organizationSlug = resolveAdminOrganizationSlug(
     pathname,
     organizationSlugParam,
@@ -52,6 +47,9 @@ export default function AdminProfilePage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletePending, setDeletePending] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [notificationPrefs, setNotificationPrefs] = useState(null)
+  const [notifyPrefsSaving, setNotifyPrefsSaving] = useState(false)
+  const [notifyPrefsError, setNotifyPrefsError] = useState('')
 
   const loadProfile = useCallback(async () => {
     if (demoMode) {
@@ -66,6 +64,13 @@ export default function AdminProfilePage() {
     try {
       const data = await getCurrentAdmin()
       setProfile(data)
+      setNotificationPrefs(
+        data.notificationPreferences ?? {
+          newSubmissions: true,
+          readyToSchedule: false,
+          volunteerUpdated: false,
+        },
+      )
     } catch (err) {
       setProfile(null)
       setError(
@@ -79,6 +84,57 @@ export default function AdminProfilePage() {
   useEffect(() => {
     loadProfile()
   }, [loadProfile])
+
+  async function handleNotificationPrefChange(key, checked) {
+    if (demoMode || !notificationPrefs) {
+      return
+    }
+
+    const previous = notificationPrefs
+    const next = { ...notificationPrefs, [key]: checked }
+    setNotificationPrefs(next)
+    setNotifyPrefsError('')
+    setNotifyPrefsSaving(true)
+
+    try {
+      const payload =
+        key === 'newSubmissions'
+          ? { newSubmissions: checked }
+          : { readyToSchedule: checked }
+      const data = await patchAdminNotificationPreferences(payload)
+      setNotificationPrefs(data.notificationPreferences ?? next)
+      setProfile((current) =>
+        current ? { ...current, notificationPreferences: data.notificationPreferences } : current,
+      )
+    } catch (err) {
+      setNotificationPrefs(previous)
+      setNotifyPrefsError(
+        err instanceof ApiError ? err.message : 'Unable to save notification preferences.',
+      )
+    } finally {
+      setNotifyPrefsSaving(false)
+    }
+  }
+
+  async function handleSaveOrganization(payload) {
+    const data = await patchAdminOrganization(payload)
+    setProfile(data)
+    setNotificationPrefs(
+      data.notificationPreferences ?? notificationPrefs,
+    )
+    await refreshSession()
+  }
+
+  async function handleSaveProfileField(field, value) {
+    const data = await patchAdminMe(
+      field === 'displayName' ? { displayName: value } : { email: value },
+    )
+    setProfile(data)
+    setNotificationPrefs(
+      data.notificationPreferences ?? notificationPrefs,
+    )
+    await refreshSession()
+  }
 
   async function handleSendResetEmail() {
     setResetError('')
@@ -137,8 +193,21 @@ export default function AdminProfilePage() {
           <section className="admin-detail-section">
             <h2 className="admin-detail-section__title">You</h2>
             <dl className="admin-dl">
-              <ProfileRow label="Name" value={sessionAdmin.displayName} />
-              <ProfileRow label="Sign-in email" value={sessionAdmin.email} />
+              <EditableProfileField
+                label="Name"
+                value={sessionAdmin.displayName}
+                disabled={demoMode}
+                autoComplete="name"
+                onSave={(value) => handleSaveProfileField('displayName', value)}
+              />
+              <EditableProfileField
+                label="Sign-in email"
+                value={sessionAdmin.email}
+                inputType="email"
+                disabled={demoMode}
+                autoComplete="email"
+                onSave={(value) => handleSaveProfileField('email', value)}
+              />
               <ProfileRow
                 label="Role"
                 value={
@@ -153,28 +222,59 @@ export default function AdminProfilePage() {
           </section>
 
           {sessionOrg ? (
-            <section className="admin-detail-section">
-              <h2 className="admin-detail-section__title">Organization</h2>
-              <dl className="admin-dl">
-                <ProfileRow label="Name" value={sessionOrg.name} />
-                <ProfileRow
-                  label="Dashboard URL"
-                  value={
-                    organizationSlug ? `/${organizationSlug}/admin` : sessionOrg.slug
-                  }
-                />
-                <ProfileRow
-                  label="Type"
-                  value={labelOrgType(sessionOrg.organizationType)}
-                />
-                <ProfileRow
-                  label="Contact email"
-                  value={sessionOrg.contactEmail}
-                />
-                <ProfileRow label="Website" value={sessionOrg.websiteUrl} />
-              </dl>
-            </section>
+            <EditableOrganizationSection
+              organization={sessionOrg}
+              canEdit={isOwner && !demoMode}
+              onSave={handleSaveOrganization}
+            />
           ) : null}
+
+          <section className="admin-detail-section">
+            <h2 className="admin-detail-section__title">Notifications</h2>
+            {demoMode ? (
+              <p className="admin-notes-intro">
+                Email notifications are not available in the demo environment.
+              </p>
+            ) : notificationPrefs ? (
+              <>
+                <p className="admin-muted admin-profile-notify__lead">
+                  Choose which volunteer activity emails you receive for this organization.
+                </p>
+                <div className="admin-profile-notify__list">
+                  <label className="admin-choice admin-choice--inline">
+                    <input
+                      type="checkbox"
+                      checked={notificationPrefs.newSubmissions}
+                      disabled={notifyPrefsSaving}
+                      onChange={(event) =>
+                        handleNotificationPrefChange('newSubmissions', event.target.checked)
+                      }
+                    />
+                    <span>New volunteer submissions</span>
+                  </label>
+                  <label className="admin-choice admin-choice--inline">
+                    <input
+                      type="checkbox"
+                      checked={notificationPrefs.readyToSchedule}
+                      disabled={notifyPrefsSaving}
+                      onChange={(event) =>
+                        handleNotificationPrefChange('readyToSchedule', event.target.checked)
+                      }
+                    />
+                    <span>Submissions marked ready to schedule</span>
+                  </label>
+                  <label className="admin-choice admin-choice--inline admin-choice--disabled">
+                    <input type="checkbox" checked={false} disabled />
+                    <span>
+                      Volunteer updated their submission{' '}
+                      <span className="admin-muted">(Coming soon)</span>
+                    </span>
+                  </label>
+                </div>
+                {notifyPrefsError ? <p className="admin-error">{notifyPrefsError}</p> : null}
+              </>
+            ) : null}
+          </section>
 
           <section className="admin-detail-section">
             <h2 className="admin-detail-section__title">Password</h2>

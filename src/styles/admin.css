@@ -2031,6 +2031,123 @@
   font-size: 0.9rem;
 }
 
+.admin-profile-editable dd {
+  min-width: 0;
+}
+
+.admin-profile-editable__display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.admin-profile-editable__pencil {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0.15rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  line-height: 0;
+}
+
+.admin-profile-editable__pencil:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.admin-profile-editable__icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.admin-profile-editable__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.admin-profile-editable__input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  max-width: 22rem;
+}
+
+.admin-profile-editable__error {
+  flex: 1 1 100%;
+  margin: 0;
+}
+
+.admin-profile-org-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-profile-org-card__title {
+  margin: 0;
+}
+
+.admin-profile-org-card__edit {
+  flex-shrink: 0;
+}
+
+.admin-profile-org-card__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-input--readonly,
+.admin-input--readonly:disabled {
+  opacity: 0.72;
+  color: var(--muted);
+  -webkit-text-fill-color: var(--muted);
+  background: color-mix(in srgb, var(--muted) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--muted) 35%, var(--border));
+  cursor: not-allowed;
+}
+
+.admin-profile-org-slug__value {
+  color: var(--muted);
+}
+
+.admin-profile-org-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.admin-profile-notify__lead {
+  margin: 0 0 0.75rem;
+  max-width: 40rem;
+  font-size: 0.9rem;
+}
+
+.admin-profile-notify__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.admin-choice--disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.admin-choice--disabled input {
+  cursor: not-allowed;
+}
+
 .admin-success {
   color: #047857;
   margin: 0;

@@ -95,6 +95,26 @@ export function getCurrentAdmin() {
   return apiRequest("/api/admin/me", { authenticated: true });
 }
 
+export function patchAdminMe(payload) {
+  return apiRequest("/api/admin/me", {
+    method: "PATCH",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function patchAdminNotificationPreferences(notificationPreferences) {
+  return patchAdminMe({ notificationPreferences });
+}
+
+export function patchAdminOrganization(payload) {
+  return apiRequest("/api/admin/organization", {
+    method: "PATCH",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
 export function deleteAdminOrganization(confirmSlug) {
   return apiRequest("/api/admin/organization", {
     method: "DELETE",
