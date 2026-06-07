@@ -18,6 +18,7 @@ import AdminFormViewPage from './pages/AdminFormViewPage'
 import AdminFormsListPage from './pages/AdminFormsListPage'
 import AdminLoginPage from './pages/AdminLoginPage'
 import AdminSubmissionDetailPage from './pages/AdminSubmissionDetailPage'
+import AdminSubmissionEditPage from './pages/AdminSubmissionEditPage'
 import LandingPage from './pages/LandingPage'
 import OrganizationRootRedirect from './pages/OrganizationRootRedirect'
 import ServePage from './pages/ServePage'
@@ -48,6 +49,13 @@ function RedirectLegacyAdminSubmissionDetail() {
   const { organizationSlug, id } = useParams()
   return (
     <Navigate to={`/${organizationSlug}/admin/volunteers/${id}`} replace />
+  )
+}
+
+function RedirectLegacyAdminSubmissionEdit() {
+  const { organizationSlug, id } = useParams()
+  return (
+    <Navigate to={`/${organizationSlug}/admin/volunteers/${id}/edit`} replace />
   )
 }
 
@@ -175,10 +183,26 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: ':organizationSlug/admin/volunteers/:id/edit',
+        element: (
+          <AdminRouteGuard>
+            <AdminSubmissionEditPage />
+          </AdminRouteGuard>
+        ),
+      },
+      {
         path: ':organizationSlug/admin/submissions/:id',
         element: (
           <AdminRouteGuard>
             <RedirectLegacyAdminSubmissionDetail />
+          </AdminRouteGuard>
+        ),
+      },
+      {
+        path: ':organizationSlug/admin/submissions/:id/edit',
+        element: (
+          <AdminRouteGuard>
+            <RedirectLegacyAdminSubmissionEdit />
           </AdminRouteGuard>
         ),
       },

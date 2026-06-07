@@ -239,9 +239,7 @@ export default function AdminDashboardPage({
           ) : null}
           {!demoMode ? (
             <p className="admin-muted admin-integration-row__help">
-              ServeWell only uses the permissions your Planning Center account already has in
-              People—you cannot push data your role is not allowed to add or change. When you
-              connect, we create a <strong>SW: …</strong> tab on person profiles for each
+              When you connect, we create a <strong>SW: …</strong> tab on person profiles for each
               volunteer form (for example <strong>SW: Volunteering</strong>), with custom fields
               filled when you send a volunteer from ServeWell to Planning Center.
             </p>

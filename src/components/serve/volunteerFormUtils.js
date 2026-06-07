@@ -161,6 +161,97 @@ export function confirmationKey(servingAreaId, requirementId) {
   return `${servingAreaId}:${requirementId}`
 }
 
+export function isServingAreaOpenForIntake(area) {
+  const status = area.recruitmentStatus ?? 'open'
+  return status !== 'closed'
+}
+
+export function filterSectionsForVolunteerIntake(sections) {
+  return (sections ?? [])
+    .map((section) => ({
+      ...section,
+      servingAreas: (section.servingAreas ?? []).filter(isServingAreaOpenForIntake),
+    }))
+    .filter((section) => section.servingAreas.length > 0)
+}
+
+export function collectOpenServingAreaIds(sections) {
+  const ids = new Set()
+  for (const section of sections ?? []) {
+    for (const area of section.servingAreas ?? []) {
+      if (isServingAreaOpenForIntake(area)) {
+        ids.add(area.id)
+      }
+    }
+  }
+  return ids
+}
+
+export function submissionDetailToFormState(detail) {
+  const submission = detail.submission
+  const selectedServingAreaIds = new Set()
+  const interestByAreaId = {}
+
+  for (const interest of detail.interests ?? []) {
+    selectedServingAreaIds.add(interest.servingAreaId)
+    interestByAreaId[interest.servingAreaId] = {
+      usesAreaSpecificFrequency: interest.usesAreaSpecificFrequency,
+      areaSpecificFrequency: interest.areaSpecificFrequency ?? '',
+      experienceLevel: interest.experienceLevel ?? '',
+      interestNotes: interest.interestNotes ?? '',
+    }
+  }
+
+  const confirmations = {}
+  for (const row of detail.requirementConfirmations ?? []) {
+    if (row.confirmed) {
+      confirmations[confirmationKey(row.servingAreaId, row.requirementId)] = true
+    }
+  }
+
+  return {
+    firstName: submission.firstName ?? '',
+    lastName: submission.lastName ?? '',
+    email: submission.email ?? '',
+    phone: submission.phone ?? '',
+    preferredContactMethod: submission.preferredContactMethod ?? '',
+    overallFrequency: submission.overallFrequency ?? '',
+    availability: new Set(submission.availability ?? []),
+    openToSpecialEvents: Boolean(submission.openToSpecialEvents),
+    experienceNotes: submission.experienceNotes ?? '',
+    additionalNotes: submission.additionalNotes ?? '',
+    selectedServingAreaIds,
+    interestByAreaId,
+    confirmations,
+  }
+}
+
+export function restrictFormStateToOpenAreas(formState, openAreaIds) {
+  const selectedServingAreaIds = new Set()
+  const interestByAreaId = { ...formState.interestByAreaId }
+  const confirmations = { ...formState.confirmations }
+
+  for (const areaId of formState.selectedServingAreaIds) {
+    if (!openAreaIds.has(areaId)) {
+      delete interestByAreaId[areaId]
+      for (const key of Object.keys(confirmations)) {
+        if (key.startsWith(`${areaId}:`)) {
+          delete confirmations[key]
+        }
+      }
+      continue
+    }
+    selectedServingAreaIds.add(areaId)
+  }
+
+  return {
+    ...formState,
+    selectedServingAreaIds,
+    interestByAreaId,
+    confirmations,
+  }
+}
+
 export function groupServingAreasByCategory(servingAreas) {
   const groups = new Map()
 

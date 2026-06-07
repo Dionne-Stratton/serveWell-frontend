@@ -95,6 +95,10 @@ export function organizationAdminVolunteerDetailPath(organizationSlug, volunteer
   return `/${organizationSlug}/admin/volunteers/${volunteerId}`
 }
 
+export function organizationAdminVolunteerEditPath(organizationSlug, volunteerId) {
+  return `/${organizationSlug}/admin/volunteers/${volunteerId}/edit`
+}
+
 /** @deprecated Use organizationAdminVolunteerDetailPath */
 export function organizationAdminSubmissionPath(organizationSlug, submissionId) {
   return organizationAdminVolunteerDetailPath(organizationSlug, submissionId)
@@ -106,6 +110,13 @@ export function adminVolunteerDetailPath(organizationSlug, volunteerId) {
     return demoAdminVolunteerDetailPath(volunteerId)
   }
   return organizationAdminVolunteerDetailPath(organizationSlug, volunteerId)
+}
+
+export function adminVolunteerEditPath(organizationSlug, volunteerId) {
+  if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
+    return null
+  }
+  return organizationAdminVolunteerEditPath(organizationSlug, volunteerId)
 }
 
 /** @deprecated Use adminVolunteerDetailPath */

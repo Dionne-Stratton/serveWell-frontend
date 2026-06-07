@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../auth/useAdminAuth'
-import { adminVolunteersPath, resolveAdminOrganizationSlug } from '../utils/organizationPaths'
+import {
+  adminVolunteerEditPath,
+  adminVolunteersPath,
+  resolveAdminOrganizationSlug,
+} from '../utils/organizationPaths'
 import {
   ApiError,
   createAdminSubmissionNote,
@@ -23,10 +27,89 @@ import {
   labelPreferredContact,
 } from '../constants/labels'
 
-function DetailSection({ title, children }) {
+function DetailIcon({ children, className = '' }) {
+  return (
+    <span className={`admin-detail-icon${className ? ` ${className}` : ''}`} aria-hidden>
+      {children}
+    </span>
+  )
+}
+
+function IconCalendar() {
+  return (
+    <DetailIcon>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+        <path d="M7 3v3M17 3v3M4 8h16M6 5h12a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+      </svg>
+    </DetailIcon>
+  )
+}
+
+function IconRefresh() {
+  return (
+    <DetailIcon className="admin-detail-icon--accent">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+        <path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </DetailIcon>
+  )
+}
+
+function IconWarning() {
+  return (
+    <DetailIcon className="admin-detail-icon--warn">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2 2 20h20L12 2zm0 5.5a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1zm0 10.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z" />
+      </svg>
+    </DetailIcon>
+  )
+}
+
+function IconCheckCircle() {
+  return (
+    <DetailIcon className="admin-detail-icon--ok">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+        <circle cx="12" cy="12" r="9" />
+        <path d="m8 12.5 2.5 2.5L16 9.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </DetailIcon>
+  )
+}
+
+function IconPencil() {
+  return (
+    <DetailIcon className="admin-detail-icon--inline-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+        <path
+          d="M4 20h4l10.5-10.5a2.12 2.12 0 0 0-3-3L5 17v3z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </DetailIcon>
+  )
+}
+
+function IconContact() {
+  return (
+    <DetailIcon className="admin-detail-icon--section">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+        <circle cx="12" cy="8" r="3.5" />
+        <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" strokeLinecap="round" />
+      </svg>
+    </DetailIcon>
+  )
+}
+
+function DetailSection({ title, children, titleIcon = null }) {
   return (
     <section className="admin-detail-section">
-      <h2 className="admin-detail-section__title">{title}</h2>
+      <h2 className="admin-detail-section__title">
+        {titleIcon ? (
+          <span className="admin-detail-section__title-mark">{titleIcon}</span>
+        ) : null}
+        <span>{title}</span>
+      </h2>
       {children}
     </section>
   )
@@ -73,6 +156,7 @@ export default function AdminSubmissionDetailPage() {
   )
   const volunteersPath = adminVolunteersPath(organizationSlug)
   const demoMode = pathname.startsWith('/demo/admin')
+  const editPath = demoMode ? null : adminVolunteerEditPath(organizationSlug, id)
   const [detail, setDetail] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -86,6 +170,8 @@ export default function AdminSubmissionDetailPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletePending, setDeletePending] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [saveNotice, setSaveNotice] = useState('')
+  const location = useLocation()
 
   const loadDetail = useCallback(async () => {
     setLoading(true)
@@ -109,6 +195,19 @@ export default function AdminSubmissionDetailPage() {
   useEffect(() => {
     loadDetail()
   }, [loadDetail])
+
+  useEffect(() => {
+    if (!location.state?.submissionSaved) {
+      return
+    }
+
+    setSaveNotice(
+      location.state.planningCenterStale
+        ? 'Submission saved. This submission has been edited since it was last synced. Sync to Planning Center to update the external record.'
+        : 'Submission saved.',
+    )
+    navigate(pathname, { replace: true, state: null })
+  }, [location.state, navigate, pathname])
 
   useEffect(() => {
     if (demoMode) {
@@ -194,6 +293,21 @@ export default function AdminSubmissionDetailPage() {
   const isLinkedToPlanningCenter = Boolean(
     submission?.planningCenterPersonId?.trim(),
   )
+  const stalePlanningCenterSync = Boolean(submission?.editedSinceLastPlanningCenterSync)
+  const planningCenterUpToDate =
+    isLinkedToPlanningCenter &&
+    !stalePlanningCenterSync &&
+    Boolean(submission?.planningCenterSyncedAt)
+  const showStaleSyncMessage =
+    stalePlanningCenterSync || Boolean(saveNotice && saveNotice.includes('synced'))
+  const showEditBanner = Boolean(
+    editPath || saveNotice || stalePlanningCenterSync || planningCenterUpToDate,
+  )
+  const editBannerTone = showStaleSyncMessage
+    ? 'warn'
+    : planningCenterUpToDate
+      ? 'synced'
+      : 'plain'
   const canPushToPlanningCenter =
     !demoMode &&
     isPlanningCenterConnected &&
@@ -238,36 +352,9 @@ export default function AdminSubmissionDetailPage() {
     setPlanningCenterPushPending(true)
 
     try {
-      const data = await pushAdminSubmissionToPlanningCenter(id)
-      const nextPersonId =
-        data.submission?.planningCenterPersonId ?? data.personId ?? null
-      if (data.submission || nextPersonId) {
-        setDetail((current) =>
-          current
-            ? {
-                ...current,
-                submission: {
-                  ...current.submission,
-                  ...(nextPersonId
-                    ? { planningCenterPersonId: nextPersonId }
-                    : {}),
-                  ...(data.submission?.planningCenterSyncedAt
-                    ? {
-                        planningCenterSyncedAt: data.submission.planningCenterSyncedAt,
-                      }
-                    : {}),
-                  ...(data.submission?.planningCenterSyncedBy
-                    ? {
-                        planningCenterSyncedBy: data.submission.planningCenterSyncedBy,
-                      }
-                    : {}),
-                },
-              }
-            : current,
-        )
-      } else {
-        await loadDetail()
-      }
+      await pushAdminSubmissionToPlanningCenter(id)
+      setSaveNotice('')
+      await loadDetail()
     } catch (err) {
       setPlanningCenterPushError(
         err instanceof ApiError
@@ -298,77 +385,138 @@ export default function AdminSubmissionDetailPage() {
 
       {submission ? (
         <>
-          <div className="admin-detail-meta">
-            <AdminSubmissionStatusSelect
-              submissionId={submission.id}
-              status={submission.status}
-              label="Status"
-              inline
-              autosavedHint="below"
-              onUpdated={(nextStatus) =>
-                setDetail((current) =>
-                  current
-                    ? {
-                        ...current,
-                        submission: { ...current.submission, status: nextStatus },
-                      }
-                    : current,
-                )
-              }
-            />
-            {submission.isArchived ? (
-              <span className="admin-tag admin-tag--muted">Archived</span>
-            ) : null}
-            <div className="admin-detail-meta__aside">
+          <section className="admin-detail-section admin-detail-toolbar">
+            <div className="admin-detail-toolbar__row">
+              <p className="admin-detail-toolbar__submitted">
+                <IconCalendar />
+                <span>Submitted {formatDateTime(submission.createdAt)}</span>
+              </p>
               {!demoMode ? (
-                <div className="admin-planning-center-row">
-                  <button
-                    type="button"
-                    className={`admin-button admin-button--secondary admin-button--inline admin-button--planning-center${planningCenterPushPending ? ' admin-button--busy' : ''}`}
-                    disabled={!canPushToPlanningCenter}
-                    onClick={handleAddToPlanningCenter}
-                  >
-                    {planningCenterPushPending
-                      ? isLinkedToPlanningCenter
-                        ? 'Syncing…'
-                        : 'Sending…'
-                      : isLinkedToPlanningCenter
-                        ? 'Sync to Planning Center'
-                        : 'Add to Planning Center'}
-                  </button>
-                  {planningCenterDisabledReason ? (
-                    <span className="admin-info-tip">
-                      <button
-                        type="button"
-                        className="admin-info-mark"
-                        aria-label={planningCenterDisabledReason}
-                      >
-                        i
-                      </button>
-                      <span className="admin-info-tip__bubble" role="tooltip">
-                        {planningCenterDisabledReason}
+                <div className="admin-detail-toolbar__sync">
+                  <div className="admin-planning-center-row">
+                    <button
+                      type="button"
+                      className={`admin-button admin-button--inline admin-button--planning-center admin-button--planning-center-outline${planningCenterPushPending ? ' admin-button--busy' : ''}`}
+                      disabled={!canPushToPlanningCenter}
+                      onClick={handleAddToPlanningCenter}
+                    >
+                      {planningCenterPushPending
+                        ? isLinkedToPlanningCenter
+                          ? 'Syncing…'
+                          : 'Sending…'
+                        : isLinkedToPlanningCenter
+                          ? 'Sync to Planning Center'
+                          : 'Add to Planning Center'}
+                    </button>
+                    {planningCenterDisabledReason ? (
+                      <span className="admin-info-tip">
+                        <button
+                          type="button"
+                          className="admin-info-mark"
+                          aria-label={planningCenterDisabledReason}
+                        >
+                          i
+                        </button>
+                        <span className="admin-info-tip__bubble" role="tooltip">
+                          {planningCenterDisabledReason}
+                        </span>
                       </span>
-                    </span>
+                    ) : null}
+                  </div>
+                  {planningCenterPushError ? (
+                    <p className="admin-error admin-detail-toolbar__sync-error">
+                      {planningCenterPushError}
+                    </p>
                   ) : null}
                 </div>
               ) : null}
-              {planningCenterPushError ? (
-                <p className="admin-error admin-planning-center-row__error">
-                  {planningCenterPushError}
-                </p>
-              ) : null}
-              <span className="admin-detail-meta__date">
-                Submitted {formatDateTime(submission.createdAt)}
-              </span>
+            </div>
+            <div className="admin-detail-toolbar__row admin-detail-toolbar__row--main">
+              <div className="admin-detail-toolbar__status">
+                <AdminSubmissionStatusSelect
+                  submissionId={submission.id}
+                  status={submission.status}
+                  label="Status"
+                  inline
+                  autosavedHint="below"
+                  onUpdated={(nextStatus) =>
+                    setDetail((current) =>
+                      current
+                        ? {
+                            ...current,
+                            submission: { ...current.submission, status: nextStatus },
+                          }
+                        : current,
+                    )
+                  }
+                />
+                {submission.isArchived ? (
+                  <span className="admin-tag admin-tag--muted">Archived</span>
+                ) : null}
+              </div>
               {!demoMode && planningCenterSyncedLine ? (
-                <span className="admin-detail-meta__date admin-detail-meta__pc-sync">
-                  {planningCenterSyncedLine}
-                </span>
+                <div className="admin-detail-toolbar__pc-sync">
+                  <IconRefresh />
+                  <p>{planningCenterSyncedLine}</p>
+                </div>
               ) : null}
             </div>
-          </div>
+          </section>
 
-          <DetailSection title="Contact">
+          {showEditBanner ? (
+            <div
+              className={[
+                'admin-detail-edit-banner',
+                editBannerTone === 'warn'
+                  ? 'admin-detail-edit-banner--warn'
+                  : editBannerTone === 'synced'
+                    ? 'admin-detail-edit-banner--synced'
+                    : 'admin-detail-edit-banner--plain',
+              ].join(' ')}
+            >
+              {saveNotice && !showStaleSyncMessage ? (
+                <p className="admin-success admin-detail-edit-banner__saved">{saveNotice}</p>
+              ) : null}
+              {showStaleSyncMessage ? (
+                <>
+                  <IconWarning />
+                  <div className="admin-detail-edit-banner__text">
+                    <p className="admin-detail-edit-banner__title">
+                      This submission has been edited since it was last synced.
+                    </p>
+                    <p className="admin-detail-edit-banner__subtitle">
+                      Sync to Planning Center to update the external record.
+                    </p>
+                  </div>
+                </>
+              ) : null}
+              {planningCenterUpToDate && !showStaleSyncMessage ? (
+                <>
+                  <IconCheckCircle />
+                  <div className="admin-detail-edit-banner__text">
+                    <p className="admin-detail-edit-banner__title">
+                      Up to date with Planning Center
+                    </p>
+                    <p className="admin-detail-edit-banner__subtitle">
+                      Matches your last sync. Edit here, then sync again if you change intake
+                      fields.
+                    </p>
+                  </div>
+                </>
+              ) : null}
+              {editPath ? (
+                <Link
+                  to={editPath}
+                  className="admin-button admin-button--soft-blue admin-button--inline admin-detail-edit-banner__edit"
+                >
+                  <IconPencil />
+                  Edit submission
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
+
+          <DetailSection title="Contact" titleIcon={<IconContact />}>
             <dl className="admin-dl">
               <DetailRow label="Email" value={submission.email} />
               <DetailRow label="Phone" value={submission.phone} />

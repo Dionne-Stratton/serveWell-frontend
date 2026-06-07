@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ApiError, submitVolunteerForm } from '../../api/client'
 import {
   availabilityOptions,
@@ -18,7 +18,7 @@ import {
   validateVolunteerForm
 } from './volunteerFormUtils'
 
-function initialFormState() {
+function createEmptyFormState() {
   return {
     firstName: '',
     lastName: '',
@@ -50,14 +50,25 @@ export default function VolunteerForm({
   formSlug,
   previewOnly = false,
   introText,
+  adminEdit = false,
+  initialFormState = null,
+  onAdminSave = null,
+  submitButtonLabel = null,
+  saveSuccessContent = null,
 }) {
-  const [form, setForm] = useState(initialFormState)
+  const [form, setForm] = useState(() => initialFormState ?? createEmptyFormState())
   const [fieldErrors, setFieldErrors] = useState({})
   const [validationSummary, setValidationSummary] = useState([])
   const [submitError, setSubmitError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const statusRef = useRef(null)
+
+  useEffect(() => {
+    if (initialFormState) {
+      setForm(initialFormState)
+    }
+  }, [initialFormState])
 
   const groupedAreas = useMemo(() => {
     if (sections?.length) {
@@ -221,6 +232,10 @@ export default function VolunteerForm({
 
     try {
       const payload = buildSubmissionPayload(form, servingAreas)
+      if (adminEdit && onAdminSave) {
+        await onAdminSave(payload)
+        return
+      }
       const data = await submitVolunteerForm(organizationSlug, formSlug, payload)
       setSuccessMessage(
         data.message ??
@@ -231,7 +246,9 @@ export default function VolunteerForm({
       const message =
         error instanceof ApiError
           ? error.message
-          : 'Unable to submit right now. Please try again in a moment.'
+          : adminEdit
+            ? 'Unable to save changes right now. Please try again in a moment.'
+            : 'Unable to submit right now. Please try again in a moment.'
       setSubmitError(message)
       setValidationSummary([message])
       requestAnimationFrame(() => scrollToElement('form-validation-summary'))
@@ -241,7 +258,7 @@ export default function VolunteerForm({
   }
 
   function handleSubmitAnother() {
-    setForm(initialFormState())
+    setForm(createEmptyFormState())
     setFieldErrors({})
     setSubmitError('')
     setValidationSummary([])
@@ -252,9 +269,11 @@ export default function VolunteerForm({
     return (
       <div className="serve-success" role="status">
         <p className="serve-success__message">{successMessage}</p>
-        <button type="button" className="serve-button" onClick={handleSubmitAnother}>
-          Submit another response
-        </button>
+        {saveSuccessContent ?? (
+          <button type="button" className="serve-button" onClick={handleSubmitAnother}>
+            Submit another response
+          </button>
+        )}
       </div>
     )
   }
@@ -536,7 +555,7 @@ export default function VolunteerForm({
         ) : null}
         {submitting ? (
           <p className="serve-status serve-status--loading" role="status" aria-live="polite">
-            Submitting your response…
+            {adminEdit ? 'Saving changes…' : 'Submitting your response…'}
           </p>
         ) : null}
         {submitError ? <p className="serve-form-error">{submitError}</p> : null}
@@ -545,7 +564,11 @@ export default function VolunteerForm({
           className={`serve-button${submitting ? ' serve-button--busy' : ''}`}
           disabled={previewOnly || submitting}
         >
-          {submitting ? 'Submitting…' : 'Submit'}
+          {submitting
+            ? adminEdit
+              ? 'Saving…'
+              : 'Submitting…'
+            : submitButtonLabel ?? (adminEdit ? 'Save changes' : 'Submit')}
         </button>
       </div>
     </form>

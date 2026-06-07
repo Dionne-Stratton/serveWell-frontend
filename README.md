@@ -64,7 +64,8 @@ Product and API details live in the parent folder:
 | `/:organizationSlug/admin/login` | Org admin login |
 | `/:organizationSlug/admin` | Admin home (counts, forms, Planning Center connect when API credentials are set) |
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
-| `/:organizationSlug/admin/volunteers/:id` | Volunteer detail (status, staff notes, **Delete** / remove from ServeWell, **Add to Planning Center** when connected) |
+| `/:organizationSlug/admin/volunteers/:id` | Volunteer detail (status, staff notes, **Edit submission**, **Delete**, **Sync to Planning Center** when connected) |
+| `/:organizationSlug/admin/volunteers/:id/edit` | Edit volunteer intake fields (same validation as public submit; `/admin/submissions/:id/edit` redirects here) |
 | `/:organizationSlug/admin/team` | Team members and invites (owner can invite/revoke/remove) |
 | `/:organizationSlug/admin/profile` | Signed-in admin profile + request password reset email |
 | `/:organizationSlug/admin/forms` | Forms list + links to public URLs |

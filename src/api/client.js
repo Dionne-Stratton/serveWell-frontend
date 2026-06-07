@@ -189,6 +189,14 @@ export function updateAdminSubmission(submissionId, payload) {
   });
 }
 
+export function putAdminSubmission(submissionId, payload) {
+  return apiRequest(`/api/admin/submissions/${submissionId}`, {
+    method: "PUT",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
 export function deleteAdminSubmission(submissionId) {
   return apiRequest(`/api/admin/submissions/${submissionId}`, {
     method: "DELETE",
