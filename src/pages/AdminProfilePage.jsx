@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   ApiError,
   deleteAdminOrganization,
@@ -11,7 +11,7 @@ import AdminLayout from '../components/admin/AdminLayout'
 import DeleteOrganizationDialog from '../components/admin/DeleteOrganizationDialog'
 import AdminToast from '../components/admin/AdminToast'
 import softBtn from '../styles/adminSoftButtons.module.css'
-import { adminTeamPath, resolveAdminOrganizationSlug } from '../utils/organizationPaths'
+import { resolveAdminOrganizationSlug } from '../utils/organizationPaths'
 
 const ORG_TYPE_LABELS = {
   church: 'Church',
@@ -176,13 +176,6 @@ export default function AdminProfilePage() {
             </section>
           ) : null}
 
-          {!demoMode && organizationSlug ? (
-            <p className="admin-help">
-              <Link to={adminTeamPath(organizationSlug)}>Team</Link> — manage who can
-              access this organization.
-            </p>
-          ) : null}
-
           <section className="admin-detail-section">
             <h2 className="admin-detail-section__title">Password</h2>
             {demoMode ? (
@@ -193,7 +186,7 @@ export default function AdminProfilePage() {
               <>
                 <button
                   type="button"
-                  className={`admin-button admin-button--secondary${resetPending ? ' admin-button--busy' : ''}`}
+                  className={softBtn.softBtn}
                   disabled={resetPending}
                   onClick={handleSendResetEmail}
                 >
