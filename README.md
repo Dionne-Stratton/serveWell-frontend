@@ -64,8 +64,8 @@ Product and API details live in the parent folder:
 | `/:organizationSlug/admin/login` | Org admin login |
 | `/:organizationSlug/admin` | Admin home (counts, forms, Planning Center connect when API credentials are set) |
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
-| `/:organizationSlug/admin/volunteers/:id` | Volunteer detail (status, staff notes, **Edit submission**, **Delete**, **Sync to Planning Center** when connected) |
-| `/:organizationSlug/admin/volunteers/:id/edit` | Edit volunteer intake fields (same validation as public submit; `/admin/submissions/:id/edit` redirects here) |
+| `/:organizationSlug/admin/volunteers/:id` | Volunteer detail — status toolbar, PC sync, in-sync / stale banner, **Edit submission**, staff notes, **Delete** |
+| `/:organizationSlug/admin/volunteers/:id/edit` | Admin intake editor (card layout, dropdowns for single-choice fields; `/admin/submissions/:id/edit` redirects here). Demo org: no edit (API blocks PUT). |
 | `/:organizationSlug/admin/team` | Team members and invites (owner can invite/revoke/remove) |
 | `/:organizationSlug/admin/profile` | Signed-in admin profile + request password reset email |
 | `/:organizationSlug/admin/forms` | Forms list + links to public URLs |
@@ -81,8 +81,9 @@ Unknown paths redirect to `/`.
 2. **Demo:** open `/demo/volunteer`, submit a response (email required). Open `/demo/admin/volunteers` for submissions.
 3. **Real org:** register at `/signup` or use seed admin `church@example.com` / `temporary-password` with organization slug `demo` at `/login` or `/:slug/admin/login`.
 4. Dashboard: set search/status/form/archived filters, click **Apply filters**. Change status on a row or detail page (saves immediately). On a real org (`/:slug/admin`), use **Connect Planning Center** when the server has OAuth secrets configured.
-5. Forms (non-demo orgs): list → **New form** → edit → **Save changes**. Share `/:slug/forms/:formSlug` from the forms list (or set `VITE_PUBLIC_SITE_URL` for copy-link URLs).
-6. **Team (non-demo):** owner opens `/:slug/admin/team`, invites by email; invitee uses `/accept-invite`. **Forgot password:** `/forgot-password` with org slug + email.
+5. Volunteer detail (non-demo): **Edit submission** → change intake → **Save changes** → detail shows save notice; if linked to PC, use **Sync to Planning Center** after intake edits.
+6. Forms (non-demo orgs): list → **New form** → edit → **Save changes**. Share `/:slug/forms/:formSlug` from the forms list (or set `VITE_PUBLIC_SITE_URL` for copy-link URLs).
+7. **Team (non-demo):** owner opens `/:slug/admin/team`, invites by email; invitee uses `/accept-invite`. **Forgot password:** `/forgot-password` with org slug + email.
 
 Demo org forms are read-only on the API; the UI still shows forms for browsing.
 
