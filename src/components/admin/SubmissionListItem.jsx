@@ -28,12 +28,18 @@ export default function SubmissionListItem({ submission, onStatusUpdated }) {
   const staffNotes = submission.staffNotes ?? []
   const hasRequirementTags =
     submission.requiresBackgroundCheck || submission.requiresTraining
+  const volunteerUpdateReviewNeeded = Boolean(submission.volunteerUpdateReviewNeeded)
 
   return (
     <article className="admin-submission-card">
       <header className="admin-submission-card__header">
         <h2 className="admin-submission-card__name">
           <Link to={detailPath}>{name}</Link>
+          {volunteerUpdateReviewNeeded ? (
+            <span className="admin-submission-card__volunteer-update-badge">
+              Volunteer updated
+            </span>
+          ) : null}
         </h2>
         <AdminSubmissionStatusSelect
           submissionId={submission.id}

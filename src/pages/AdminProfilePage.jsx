@@ -69,7 +69,7 @@ export default function AdminProfilePage() {
         data.notificationPreferences ?? {
           newSubmissions: true,
           readyToSchedule: false,
-          volunteerUpdated: false,
+          volunteerUpdated: true,
           adminJoined: data.admin?.role === 'owner',
         },
       )
@@ -104,7 +104,9 @@ export default function AdminProfilePage() {
           ? { newSubmissions: checked }
           : key === 'adminJoined'
             ? { adminJoined: checked }
-            : { readyToSchedule: checked }
+            : key === 'volunteerUpdated'
+              ? { volunteerUpdated: checked }
+              : { readyToSchedule: checked }
       const data = await patchAdminNotificationPreferences(payload)
       setNotificationPrefs(data.notificationPreferences ?? next)
       setProfile((current) =>
@@ -282,12 +284,16 @@ export default function AdminProfilePage() {
                       <span>Invited admin joins your organization</span>
                     </label>
                   ) : null}
-                  <label className="admin-choice admin-choice--inline admin-choice--disabled">
-                    <input type="checkbox" checked={false} disabled />
-                    <span>
-                      Volunteer updated their submission{' '}
-                      <span className="admin-muted">(Coming soon)</span>
-                    </span>
+                  <label className="admin-choice admin-choice--inline">
+                    <input
+                      type="checkbox"
+                      checked={notificationPrefs.volunteerUpdated === true}
+                      disabled={notifyPrefsSaving}
+                      onChange={(event) =>
+                        handleNotificationPrefChange('volunteerUpdated', event.target.checked)
+                      }
+                    />
+                    <span>Volunteer updated their submission</span>
                   </label>
                 </div>
                 {notifyPrefsError ? <p className="admin-error">{notifyPrefsError}</p> : null}

@@ -22,6 +22,7 @@ import AdminSubmissionEditPage from './pages/AdminSubmissionEditPage'
 import LandingPage from './pages/LandingPage'
 import OrganizationRootRedirect from './pages/OrganizationRootRedirect'
 import ServePage from './pages/ServePage'
+import VolunteerUpdatePage from './pages/VolunteerUpdatePage'
 import SignupPage from './pages/SignupPage'
 import StaffLoginPage from './pages/StaffLoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
@@ -141,6 +142,7 @@ const router = createBrowserRouter([
         ),
       },
       { path: ':organizationSlug/volunteer', element: <ServePage /> },
+      { path: ':organizationSlug/volunteer/update', element: <VolunteerUpdatePage /> },
       { path: ':organizationSlug/forms/:formSlug', element: <ServePage /> },
       { path: ':organizationSlug/admin/login', element: <AdminLoginPage /> },
       {

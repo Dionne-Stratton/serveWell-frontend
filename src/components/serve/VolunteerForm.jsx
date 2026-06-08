@@ -8,6 +8,7 @@ import {
 } from '../../constants/enums'
 import RequiredMark from './RequiredMark'
 import ServingAreaInlineDetail from './ServingAreaInlineDetail'
+import VolunteerAlreadySubmittedSection from './VolunteerAlreadySubmittedSection'
 import {
   buildSubmissionPayload,
   confirmationKey,
@@ -51,6 +52,9 @@ export default function VolunteerForm({
   previewOnly = false,
   introText,
   adminEdit = false,
+  volunteerSelfEdit = false,
+  editToken = null,
+  onVolunteerSelfSave = null,
   initialFormState = null,
   onAdminSave = null,
   submitButtonLabel = null,
@@ -236,6 +240,15 @@ export default function VolunteerForm({
         await onAdminSave(payload)
         return
       }
+      if (volunteerSelfEdit && onVolunteerSelfSave) {
+        const data = await onVolunteerSelfSave(payload)
+        setSuccessMessage(
+          data.message ??
+            'Your submission was updated. Someone from the church may follow up after reviewing your changes.',
+        )
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
       const data = await submitVolunteerForm(organizationSlug, formSlug, payload)
       setSuccessMessage(
         data.message ??
@@ -246,12 +259,16 @@ export default function VolunteerForm({
       const message =
         error instanceof ApiError
           ? error.message
-          : adminEdit
+          : adminEdit || volunteerSelfEdit
             ? 'Unable to save changes right now. Please try again in a moment.'
             : 'Unable to submit right now. Please try again in a moment.'
       setSubmitError(message)
       setValidationSummary([message])
-      requestAnimationFrame(() => scrollToElement('form-validation-summary'))
+      const scrollTarget =
+        error instanceof ApiError && error.code === 'DUPLICATE_SUBMISSION'
+          ? 'already-submitted'
+          : 'form-validation-summary'
+      requestAnimationFrame(() => scrollToElement(scrollTarget))
     } finally {
       setSubmitting(false)
     }
@@ -268,11 +285,15 @@ export default function VolunteerForm({
   if (successMessage) {
     return (
       <div className="serve-success" role="status">
-        <p className="serve-success__message">{successMessage}</p>
         {saveSuccessContent ?? (
-          <button type="button" className="serve-button" onClick={handleSubmitAnother}>
-            Submit another response
-          </button>
+          <>
+            <p className="serve-success__message">{successMessage}</p>
+            {!volunteerSelfEdit ? (
+              <button type="button" className="serve-button" onClick={handleSubmitAnother}>
+                Submit another response
+              </button>
+            ) : null}
+          </>
         )}
       </div>
     )
@@ -296,6 +317,14 @@ export default function VolunteerForm({
             ))}
           </ul>
         </div>
+      ) : null}
+
+      {!adminEdit && !volunteerSelfEdit ? (
+        <VolunteerAlreadySubmittedSection
+          organizationSlug={organizationSlug}
+          formSlug={formSlug}
+          previewOnly={previewOnly}
+        />
       ) : null}
 
       <p className="serve-form__intro">{introCopy}</p>
@@ -555,7 +584,9 @@ export default function VolunteerForm({
         ) : null}
         {submitting ? (
           <p className="serve-status serve-status--loading" role="status" aria-live="polite">
-            {adminEdit ? 'Saving changes…' : 'Submitting your response…'}
+            {adminEdit || volunteerSelfEdit
+              ? 'Saving changes…'
+              : 'Submitting your response…'}
           </p>
         ) : null}
         {submitError ? <p className="serve-form-error">{submitError}</p> : null}
@@ -565,10 +596,11 @@ export default function VolunteerForm({
           disabled={previewOnly || submitting}
         >
           {submitting
-            ? adminEdit
+            ? adminEdit || volunteerSelfEdit
               ? 'Saving…'
               : 'Submitting…'
-            : submitButtonLabel ?? (adminEdit ? 'Save changes' : 'Submit')}
+            : submitButtonLabel ??
+              (adminEdit || volunteerSelfEdit ? 'Save changes' : 'Submit')}
         </button>
       </div>
     </form>

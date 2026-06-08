@@ -77,6 +77,29 @@ export function submitVolunteerForm(organizationSlug, formSlug, payload) {
   );
 }
 
+export function requestVolunteerSubmissionUpdateLink(organizationSlug, formSlug, email) {
+  const path = formSlug
+    ? `/api/organizations/${encodeURIComponent(organizationSlug)}/forms/${encodeURIComponent(formSlug)}/submission-update-request`
+    : `/api/organizations/${encodeURIComponent(organizationSlug)}/volunteer-submission-update-request`;
+
+  return apiRequest(path, {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function getVolunteerSubmissionEditPreview(token) {
+  const params = new URLSearchParams({ token });
+  return apiRequest(`/api/public/volunteer-submission-edit?${params.toString()}`);
+}
+
+export function saveVolunteerSubmissionEdit(token, payload) {
+  return apiRequest("/api/public/volunteer-submission-edit", {
+    method: "PUT",
+    body: JSON.stringify({ token, ...payload }),
+  });
+}
+
 export function adminLogin(credentials) {
   return apiRequest("/api/admin/login", {
     method: "POST",
@@ -245,6 +268,17 @@ export function createAdminSubmissionNote(submissionId, note) {
     authenticated: true,
     body: JSON.stringify({ note }),
   });
+}
+
+export function markVolunteerUpdateReviewed(submissionId) {
+  return apiRequest(
+    `/api/admin/submissions/${submissionId}/mark-volunteer-update-reviewed`,
+    {
+      method: "POST",
+      authenticated: true,
+      body: JSON.stringify({}),
+    },
+  );
 }
 
 export function pushAdminSubmissionToPlanningCenter(submissionId) {

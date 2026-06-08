@@ -1175,6 +1175,130 @@
   text-decoration: underline;
 }
 
+.admin-submission-card__volunteer-update-badge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  color: #5c4a00;
+  background: #fff4d6;
+  border: 1px solid #e8d49a;
+}
+
+.admin-detail-volunteer-update-banner {
+  --volunteer-update-accent: #e5a319;
+
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1.25rem;
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.15rem 1rem 1.35rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 62%, var(--surface));
+  overflow: hidden;
+}
+
+.admin-detail-volunteer-update-banner__accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--volunteer-update-accent);
+}
+
+.admin-detail-volunteer-update-banner__icon-wrap {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 50%;
+  border: 2px solid var(--volunteer-update-accent);
+  color: var(--volunteer-update-accent);
+}
+
+.admin-detail-volunteer-update-banner__icon-wrap svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.admin-detail-volunteer-update-banner__content {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.admin-detail-volunteer-update-banner__title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.98rem;
+  line-height: 1.4;
+  color: var(--volunteer-update-accent);
+}
+
+.admin-detail-volunteer-update-banner__subtitle {
+  margin: 0.3rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.admin-detail-volunteer-update-banner__error {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+}
+
+.admin-detail-volunteer-update-banner__action {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+  padding: 0.55rem 0.95rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.admin-detail-volunteer-update-banner__action svg {
+  flex-shrink: 0;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--volunteer-update-accent);
+}
+
+.admin-detail-volunteer-update-banner__action:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--volunteer-update-accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--bg) 80%, var(--surface));
+}
+
+.admin-detail-volunteer-update-banner__action:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+@media (max-width: 640px) {
+  .admin-detail-volunteer-update-banner__action {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 .admin-submission-card__action {
   margin: 0.75rem 0 0;
 }

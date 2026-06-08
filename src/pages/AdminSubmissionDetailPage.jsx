@@ -13,6 +13,7 @@ import {
   deleteAdminSubmission,
   getAdminSubmissionDetail,
   getPlanningCenterIntegration,
+  markVolunteerUpdateReviewed,
   pushAdminSubmissionToPlanningCenter,
 } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
@@ -171,6 +172,8 @@ export default function AdminSubmissionDetailPage() {
   const [deletePending, setDeletePending] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [saveNotice, setSaveNotice] = useState('')
+  const [markReviewPending, setMarkReviewPending] = useState(false)
+  const [markReviewError, setMarkReviewError] = useState('')
   const location = useLocation()
 
   const loadDetail = useCallback(async () => {
@@ -258,6 +261,24 @@ export default function AdminSubmissionDetailPage() {
       )
     } finally {
       setNoteSubmitting(false)
+    }
+  }
+
+  async function handleMarkVolunteerUpdateReviewed() {
+    setMarkReviewError('')
+    setMarkReviewPending(true)
+
+    try {
+      const data = await markVolunteerUpdateReviewed(id)
+      setDetail(data)
+    } catch (err) {
+      setMarkReviewError(
+        err instanceof ApiError
+          ? err.message
+          : 'Unable to mark this update as reviewed.',
+      )
+    } finally {
+      setMarkReviewPending(false)
     }
   }
 
@@ -382,6 +403,46 @@ export default function AdminSubmissionDetailPage() {
 
       {loading ? <p className="admin-loading">Loading volunteer…</p> : null}
       {error ? <p className="admin-error">{error}</p> : null}
+
+      {submission?.volunteerUpdateReviewNeeded && submission.volunteerSelfUpdatedAt ? (
+        <div className="admin-detail-volunteer-update-banner" role="status">
+          <div className="admin-detail-volunteer-update-banner__accent" aria-hidden="true" />
+          <div className="admin-detail-volunteer-update-banner__icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+              <path
+                d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <div className="admin-detail-volunteer-update-banner__content">
+            <p className="admin-detail-volunteer-update-banner__title">
+              Volunteer updated this submission on{' '}
+              {formatDateTime(submission.volunteerSelfUpdatedAt)}.
+            </p>
+            <p className="admin-detail-volunteer-update-banner__subtitle">
+              This update needs your review.
+            </p>
+            {markReviewError ? (
+              <p className="admin-error admin-detail-volunteer-update-banner__error">
+                {markReviewError}
+              </p>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            className={`admin-detail-volunteer-update-banner__action${markReviewPending ? ' admin-detail-volunteer-update-banner__action--busy' : ''}`}
+            disabled={markReviewPending}
+            onClick={handleMarkVolunteerUpdateReviewed}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <path d="m5 12.5 2.5 2.5L19 5.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span>{markReviewPending ? 'Saving…' : 'Mark update reviewed'}</span>
+          </button>
+        </div>
+      ) : null}
 
       {submission ? (
         <>
