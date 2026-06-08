@@ -70,6 +70,7 @@ export default function AdminProfilePage() {
           newSubmissions: true,
           readyToSchedule: false,
           volunteerUpdated: false,
+          adminJoined: data.admin?.role === 'owner',
         },
       )
     } catch (err) {
@@ -101,7 +102,9 @@ export default function AdminProfilePage() {
       const payload =
         key === 'newSubmissions'
           ? { newSubmissions: checked }
-          : { readyToSchedule: checked }
+          : key === 'adminJoined'
+            ? { adminJoined: checked }
+            : { readyToSchedule: checked }
       const data = await patchAdminNotificationPreferences(payload)
       setNotificationPrefs(data.notificationPreferences ?? next)
       setProfile((current) =>
@@ -266,6 +269,19 @@ export default function AdminProfilePage() {
                     />
                     <span>Submissions marked ready to schedule</span>
                   </label>
+                  {isOwner ? (
+                    <label className="admin-choice admin-choice--inline">
+                      <input
+                        type="checkbox"
+                        checked={notificationPrefs.adminJoined === true}
+                        disabled={notifyPrefsSaving}
+                        onChange={(event) =>
+                          handleNotificationPrefChange('adminJoined', event.target.checked)
+                        }
+                      />
+                      <span>Invited admin joins your organization</span>
+                    </label>
+                  ) : null}
                   <label className="admin-choice admin-choice--inline admin-choice--disabled">
                     <input type="checkbox" checked={false} disabled />
                     <span>

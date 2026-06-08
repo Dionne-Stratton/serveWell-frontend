@@ -39,6 +39,34 @@ function labelRole(role) {
   return role ?? '—'
 }
 
+function buildAdminRoster(team) {
+  if (!team) {
+    return []
+  }
+
+  const active = (team.members ?? []).map((member) => ({
+    key: `member-${member.id}`,
+    kind: 'member',
+    id: member.id,
+    email: member.email,
+    displayName: member.displayName,
+    role: member.role,
+    status: member.status ?? 'active',
+  }))
+
+  const pending = (team.pendingInvites ?? []).map((invite) => ({
+    key: `invite-${invite.id}`,
+    kind: 'invite',
+    id: invite.id,
+    email: invite.email,
+    displayName: null,
+    role: null,
+    status: invite.status ?? 'pending',
+  }))
+
+  return [...active, ...pending]
+}
+
 export default function AdminProfileTeamSection({ demoMode }) {
   const [team, setTeam] = useState(null)
   const [loading, setLoading] = useState(!demoMode)
@@ -138,13 +166,14 @@ export default function AdminProfileTeamSection({ demoMode }) {
     )
   }
 
-  const memberCount = team?.members?.length ?? 0
+  const roster = buildAdminRoster(team)
+  const rosterCount = roster.length
 
   return (
     <section className="admin-detail-section admin-profile-admin-card">
       <div className="admin-profile-admin-card__header">
         <h2 className="admin-detail-section__title admin-profile-admin-card__title">Admin</h2>
-        {memberCount > 0 ? (
+        {rosterCount > 0 ? (
           <button
             type="button"
             className="admin-profile-admin-list__toggle"
@@ -156,7 +185,7 @@ export default function AdminProfileTeamSection({ demoMode }) {
               {membersExpanded ? '▾' : '▸'}
             </span>
             <span className="admin-profile-admin-list__toggle-text">
-              {membersExpanded ? 'Hide' : 'Show'} ({memberCount})
+              {membersExpanded ? 'Hide' : 'Show'} ({rosterCount})
             </span>
           </button>
         ) : null}
@@ -167,23 +196,41 @@ export default function AdminProfileTeamSection({ demoMode }) {
 
       {team ? (
         <>
-          {membersExpanded && memberCount > 0 ? (
+          {membersExpanded && rosterCount > 0 ? (
             <div className="admin-profile-admin-member-panel">
               <ul id="profile-admin-member-list" className="admin-team-list">
-                {team.members.map((member) => (
-                  <li key={member.id} className="admin-team-list__item">
+                {roster.map((entry) => (
+                  <li key={entry.key} className="admin-team-list__item">
                     <div>
-                      <strong>{member.displayName}</strong>
+                      <strong>
+                        {entry.kind === 'invite' ? entry.email : entry.displayName}
+                      </strong>
                       <span className="admin-muted admin-team-list__meta">
-                        {member.email} · {labelRole(member.role)}
+                        {entry.kind === 'invite' ? (
+                          <>Invitation pending</>
+                        ) : (
+                          <>
+                            {entry.email} · {labelRole(entry.role)}
+                          </>
+                        )}
                       </span>
                     </div>
-                    {canManage && member.role === 'admin' ? (
+                    {canManage && entry.kind === 'invite' ? (
                       <button
                         type="button"
                         className={softBtn.softBtnDanger}
-                        disabled={actionPendingId === `member-${member.id}`}
-                        onClick={() => handleRemoveMember(member.id)}
+                        disabled={actionPendingId === `invite-${entry.id}`}
+                        onClick={() => handleRevokeInvite(entry.id)}
+                      >
+                        Remove
+                      </button>
+                    ) : null}
+                    {canManage && entry.kind === 'member' && entry.role === 'admin' ? (
+                      <button
+                        type="button"
+                        className={softBtn.softBtnDanger}
+                        disabled={actionPendingId === `member-${entry.id}`}
+                        onClick={() => handleRemoveMember(entry.id)}
                       >
                         Remove
                       </button>
@@ -195,29 +242,6 @@ export default function AdminProfileTeamSection({ demoMode }) {
           ) : null}
 
           <div className="admin-profile-admin-card__below-list">
-            {team.pendingInvites?.length ? (
-              <>
-                <h3 className="admin-profile-team__subtitle">Pending invitations</h3>
-                <ul className="admin-team-list">
-                  {team.pendingInvites.map((invite) => (
-                    <li key={invite.id} className="admin-team-list__item">
-                      <span>{invite.email}</span>
-                      {canManage ? (
-                        <button
-                          type="button"
-                          className="admin-link-button"
-                          disabled={actionPendingId === `invite-${invite.id}`}
-                          onClick={() => handleRevokeInvite(invite.id)}
-                        >
-                          Revoke
-                        </button>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : null}
-
             {canManage ? (
               <div className="admin-profile-admin-invite">
                 <h3 className="admin-profile-team__subtitle">Invite admin</h3>
