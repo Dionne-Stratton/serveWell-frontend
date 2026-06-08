@@ -190,7 +190,7 @@ export default function AdminProfilePage() {
   }
 
   return (
-    <AdminLayout title="Your account">
+    <AdminLayout>
       {loading ? <p className="admin-loading">Loading profile…</p> : null}
       {error ? <p className="admin-error">{error}</p> : null}
 

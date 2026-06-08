@@ -5,15 +5,7 @@ import {
 import {
   confirmationKey,
 } from '../serve/volunteerFormUtils'
-
-function RequiredMark() {
-  return (
-    <span className="admin-label-required" aria-hidden>
-      {' '}
-      *
-    </span>
-  )
-}
+import AdminVolunteerFieldLabel from './AdminVolunteerFieldLabel'
 
 export default function AdminServingAreaInlineDetail({
   area,
@@ -63,13 +55,16 @@ export default function AdminServingAreaInlineDetail({
               />
               <span>
                 Confirmed
-                <RequiredMark />
+                <span className="admin-label-required" aria-hidden>
+                  {' '}
+                  *
+                </span>
               </span>
             </label>
             {fieldErrors[errorKey] ? (
-              <p className="admin-error-inline" id={`error-${errorKey}`}>
+              <span className="admin-field-error" id={`error-${errorKey}`} role="alert">
                 {fieldErrors[errorKey]}
-              </p>
+              </span>
             ) : null}
           </div>
         )
@@ -93,10 +88,14 @@ export default function AdminServingAreaInlineDetail({
 
       {detail.usesAreaSpecificFrequency ? (
         <div className="admin-field">
-          <label className="admin-label" htmlFor={`area-frequency-${area.id}`}>
+          <AdminVolunteerFieldLabel
+            htmlFor={`area-frequency-${area.id}`}
+            required
+            error={fieldErrors[`areaFrequency-${area.id}`]}
+            errorId={`error-areaFrequency-${area.id}`}
+          >
             Frequency for this area
-            <RequiredMark />
-          </label>
+          </AdminVolunteerFieldLabel>
           <select
             id={`area-frequency-${area.id}`}
             className="admin-input admin-input--select"
@@ -114,14 +113,6 @@ export default function AdminServingAreaInlineDetail({
               </option>
             ))}
           </select>
-          {fieldErrors[`areaFrequency-${area.id}`] ? (
-            <p
-              className="admin-error-inline"
-              id={`error-areaFrequency-${area.id}`}
-            >
-              {fieldErrors[`areaFrequency-${area.id}`]}
-            </p>
-          ) : null}
         </div>
       ) : null}
 

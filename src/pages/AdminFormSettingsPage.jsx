@@ -78,7 +78,7 @@ export default function AdminFormSettingsPage() {
 
   if (organizationSlug === DEMO_ORGANIZATION_SLUG) {
     return (
-      <AdminLayout title="Form settings">
+      <AdminLayout>
         <p className="admin-error">The demo form is read-only.</p>
         <p>
           <Link to={adminDashboardPath(organizationSlug)}>← Back to dashboard</Link>
@@ -115,7 +115,7 @@ export default function AdminFormSettingsPage() {
   }
 
   return (
-    <AdminLayout title="Volunteer form settings">
+    <AdminLayout>
       <p className="admin-back">
         <Link to={adminDashboardPath(organizationSlug)}>← Back to dashboard</Link>
       </p>

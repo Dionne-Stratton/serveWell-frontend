@@ -119,7 +119,7 @@ export default function AdminFormCreatePage() {
 
   if (isDemoOrg) {
     return (
-      <AdminLayout title="New volunteer form">
+      <AdminLayout>
         <p className="admin-back">
           <button
             type="button"
@@ -135,7 +135,7 @@ export default function AdminFormCreatePage() {
   }
 
   return (
-    <AdminLayout title="New volunteer form">
+    <AdminLayout>
       <p className="admin-back">
         <button
           type="button"

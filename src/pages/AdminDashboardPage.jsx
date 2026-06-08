@@ -137,7 +137,7 @@ export default function AdminDashboardPage({
   }
 
   return (
-    <AdminLayout title="Dashboard">
+    <AdminLayout>
       {loadError ? <p className="admin-error">{loadError}</p> : null}
 
       <section className="admin-dashboard-section" aria-labelledby="dashboard-action-heading">

@@ -97,7 +97,7 @@ export default function AdminFormViewPage({
   const openFormPath = isDemo ? demoVolunteerPath() : publicUrl
 
   return (
-    <AdminLayout title={formMeta?.name ? `View: ${formMeta.name}` : 'View form'}>
+    <AdminLayout>
       <p className="admin-back">
         <button
           type="button"

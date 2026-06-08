@@ -17,6 +17,7 @@ import {
   pushAdminSubmissionToPlanningCenter,
 } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
+import AdminToast from '../components/admin/AdminToast'
 import DeleteVolunteerSubmissionDialog from '../components/admin/DeleteVolunteerSubmissionDialog'
 import AdminSubmissionStatusSelect from '../components/admin/AdminSubmissionStatusSelect'
 import softBtn from '../styles/adminSoftButtons.module.css'
@@ -56,19 +57,9 @@ function IconRefresh() {
   )
 }
 
-function IconWarning() {
-  return (
-    <DetailIcon className="admin-detail-icon--warn">
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2 2 20h20L12 2zm0 5.5a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1zm0 10.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z" />
-      </svg>
-    </DetailIcon>
-  )
-}
-
 function IconCheckCircle() {
   return (
-    <DetailIcon className="admin-detail-icon--ok">
+    <DetailIcon>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
         <circle cx="12" cy="12" r="9" />
         <path d="m8 12.5 2.5 2.5L16 9.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -148,7 +139,8 @@ function formatPlanningCenterSyncedLine(submission) {
 export default function AdminSubmissionDetailPage() {
   const { id, organizationSlug: organizationSlugParam } = useParams()
   const navigate = useNavigate()
-  const { pathname } = useLocation()
+  const location = useLocation()
+  const { pathname } = location
   const { organization } = useAdminAuth()
   const organizationSlug = resolveAdminOrganizationSlug(
     pathname,
@@ -171,10 +163,10 @@ export default function AdminSubmissionDetailPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletePending, setDeletePending] = useState(false)
   const [deleteError, setDeleteError] = useState('')
-  const [saveNotice, setSaveNotice] = useState('')
+  const [planningCenterDirtyHint, setPlanningCenterDirtyHint] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
   const [markReviewPending, setMarkReviewPending] = useState(false)
   const [markReviewError, setMarkReviewError] = useState('')
-  const location = useLocation()
 
   const loadDetail = useCallback(async () => {
     setLoading(true)
@@ -200,15 +192,18 @@ export default function AdminSubmissionDetailPage() {
   }, [loadDetail])
 
   useEffect(() => {
+    setPlanningCenterDirtyHint(false)
+  }, [id])
+
+  useEffect(() => {
     if (!location.state?.submissionSaved) {
       return
     }
 
-    setSaveNotice(
-      location.state.planningCenterStale
-        ? 'Submission saved. This submission has been edited since it was last synced. Sync to Planning Center to update the external record.'
-        : 'Submission saved.',
-    )
+    if (location.state.planningCenterStale) {
+      setPlanningCenterDirtyHint(true)
+    }
+    setToastMessage('Submission saved.')
     navigate(pathname, { replace: true, state: null })
   }, [location.state, navigate, pathname])
 
@@ -319,21 +314,16 @@ export default function AdminSubmissionDetailPage() {
     isLinkedToPlanningCenter &&
     !stalePlanningCenterSync &&
     Boolean(submission?.planningCenterSyncedAt)
-  const showStaleSyncMessage =
-    stalePlanningCenterSync || Boolean(saveNotice && saveNotice.includes('synced'))
-  const showEditBanner = Boolean(
-    editPath || saveNotice || stalePlanningCenterSync || planningCenterUpToDate,
-  )
-  const editBannerTone = showStaleSyncMessage
-    ? 'warn'
-    : planningCenterUpToDate
-      ? 'synced'
-      : 'plain'
+  const planningCenterSyncDirty =
+    stalePlanningCenterSync || planningCenterDirtyHint
+  const planningCenterNothingToSync =
+    isLinkedToPlanningCenter && planningCenterUpToDate && !planningCenterSyncDirty
   const canPushToPlanningCenter =
     !demoMode &&
     isPlanningCenterConnected &&
     hasEmailOrPhone &&
-    !planningCenterPushPending
+    !planningCenterPushPending &&
+    !planningCenterNothingToSync
 
   let planningCenterDisabledReason = ''
   if (!demoMode && submission) {
@@ -346,6 +336,8 @@ export default function AdminSubmissionDetailPage() {
     } else if (!hasEmailOrPhone) {
       planningCenterDisabledReason =
         'This volunteer needs an email address or phone number before they can be added to Planning Center.'
+    } else if (planningCenterNothingToSync) {
+      planningCenterDisabledReason = 'Up to date — nothing to sync.'
     }
   }
 
@@ -374,7 +366,7 @@ export default function AdminSubmissionDetailPage() {
 
     try {
       await pushAdminSubmissionToPlanningCenter(id)
-      setSaveNotice('')
+      setPlanningCenterDirtyHint(false)
       await loadDetail()
     } catch (err) {
       setPlanningCenterPushError(
@@ -390,16 +382,21 @@ export default function AdminSubmissionDetailPage() {
   }
 
   return (
-    <AdminLayout
-      title={
-        submission
-          ? `${submission.firstName} ${submission.lastName}`
-          : 'Volunteer detail'
-      }
-    >
-      <p className="admin-back">
-        <Link to={volunteersPath}>← Back to volunteers</Link>
-      </p>
+    <AdminLayout>
+      <div className="admin-detail-top-nav">
+        <p className="admin-back">
+          <Link to={volunteersPath}>← Back to volunteers</Link>
+        </p>
+        {submission && editPath ? (
+          <Link
+            to={editPath}
+            className="admin-button admin-button--inline admin-button--compact admin-button--soft-blue admin-detail-top-nav__edit"
+          >
+            <IconPencil />
+            Edit submission
+          </Link>
+        ) : null}
+      </div>
 
       {loading ? <p className="admin-loading">Loading volunteer…</p> : null}
       {error ? <p className="admin-error">{error}</p> : null}
@@ -459,6 +456,7 @@ export default function AdminSubmissionDetailPage() {
                       type="button"
                       className={`admin-button admin-button--inline admin-button--planning-center admin-button--planning-center-outline${planningCenterPushPending ? ' admin-button--busy' : ''}`}
                       disabled={!canPushToPlanningCenter}
+                      title={planningCenterDisabledReason || undefined}
                       onClick={handleAddToPlanningCenter}
                     >
                       {planningCenterPushPending
@@ -516,69 +514,35 @@ export default function AdminSubmissionDetailPage() {
                 ) : null}
               </div>
               {!demoMode && planningCenterSyncedLine ? (
-                <div className="admin-detail-toolbar__pc-sync">
-                  <IconRefresh />
+                <div
+                  className={[
+                    'admin-detail-toolbar__pc-sync',
+                    planningCenterSyncDirty
+                      ? 'admin-detail-toolbar__pc-sync--dirty'
+                      : planningCenterUpToDate
+                        ? 'admin-detail-toolbar__pc-sync--clean'
+                        : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                >
+                  {planningCenterUpToDate && !planningCenterSyncDirty ? (
+                    <IconCheckCircle />
+                  ) : (
+                    <IconRefresh />
+                  )}
                   <p>{planningCenterSyncedLine}</p>
                 </div>
               ) : null}
             </div>
           </section>
 
-          {showEditBanner ? (
-            <div
-              className={[
-                'admin-detail-edit-banner',
-                editBannerTone === 'warn'
-                  ? 'admin-detail-edit-banner--warn'
-                  : editBannerTone === 'synced'
-                    ? 'admin-detail-edit-banner--synced'
-                    : 'admin-detail-edit-banner--plain',
-              ].join(' ')}
-            >
-              {saveNotice && !showStaleSyncMessage ? (
-                <p className="admin-success admin-detail-edit-banner__saved">{saveNotice}</p>
-              ) : null}
-              {showStaleSyncMessage ? (
-                <>
-                  <IconWarning />
-                  <div className="admin-detail-edit-banner__text">
-                    <p className="admin-detail-edit-banner__title">
-                      This submission has been edited since it was last synced.
-                    </p>
-                    <p className="admin-detail-edit-banner__subtitle">
-                      Sync to Planning Center to update the external record.
-                    </p>
-                  </div>
-                </>
-              ) : null}
-              {planningCenterUpToDate && !showStaleSyncMessage ? (
-                <>
-                  <IconCheckCircle />
-                  <div className="admin-detail-edit-banner__text">
-                    <p className="admin-detail-edit-banner__title">
-                      Up to date with Planning Center
-                    </p>
-                    <p className="admin-detail-edit-banner__subtitle">
-                      Matches your last sync. Edit here, then sync again if you change intake
-                      fields.
-                    </p>
-                  </div>
-                </>
-              ) : null}
-              {editPath ? (
-                <Link
-                  to={editPath}
-                  className="admin-button admin-button--soft-blue admin-button--inline admin-detail-edit-banner__edit"
-                >
-                  <IconPencil />
-                  Edit submission
-                </Link>
-              ) : null}
-            </div>
-          ) : null}
-
           <DetailSection title="Contact" titleIcon={<IconContact />}>
             <dl className="admin-dl">
+              <DetailRow
+                label="Name"
+                value={`${submission.firstName} ${submission.lastName}`.trim()}
+              />
               <DetailRow label="Email" value={submission.email} />
               <DetailRow label="Phone" value={submission.phone} />
               <DetailRow
@@ -747,6 +711,8 @@ export default function AdminSubmissionDetailPage() {
           }
         }}
       />
+
+      <AdminToast message={toastMessage} onDismiss={() => setToastMessage('')} />
     </AdminLayout>
   )
 }

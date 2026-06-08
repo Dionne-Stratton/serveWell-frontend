@@ -17,7 +17,7 @@ function isAdminAppRoute(pathname) {
   return isDemoAdminRoute(pathname) || /\/admin(\/|$)/.test(pathname)
 }
 
-export default function AdminLayout({ title, children }) {
+export default function AdminLayout({ children }) {
   const { admin, organization, logout } = useAdminAuth()
   const { pathname } = useLocation()
   const { organizationSlug: organizationSlugParam } = useParams()
@@ -31,6 +31,7 @@ export default function AdminLayout({ title, children }) {
   const backLink = resolveAdminPageBackLink(pathname, organizationSlugParam, organization)
   const profilePath = navSlug ? adminProfilePath(navSlug) : null
   const profileLabel = admin?.displayName?.trim() || admin?.email || 'Account'
+  const churchTitle = organization?.name?.trim() || null
 
   const headerAccount = (
     <div className="admin-top-account">
@@ -69,7 +70,7 @@ export default function AdminLayout({ title, children }) {
 
   return (
     <PageShell
-      title={title}
+      title={churchTitle}
       className="admin-page"
       backLink={backLink}
       headerEnd={headerAccount}

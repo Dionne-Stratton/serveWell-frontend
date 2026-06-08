@@ -7,6 +7,7 @@ import {
   servingAreaCategoryLabels,
 } from '../../constants/enums'
 import AdminServingAreaInlineDetail from './AdminServingAreaInlineDetail'
+import AdminVolunteerFieldLabel from './AdminVolunteerFieldLabel'
 import {
   buildSubmissionPayload,
   confirmationKey,
@@ -35,11 +36,18 @@ function scrollToElement(elementId) {
   }
 }
 
-function EditSection({ title, children, id }) {
+function EditSection({ title, children, id, sectionError }) {
   return (
     <section className="admin-detail-section admin-volunteer-edit__section" id={id}>
       <h2 className="admin-detail-section__title">
-        <span>{title}</span>
+        <span className="admin-label-row admin-label-row--section-title">
+          <span>{title}</span>
+          {sectionError ? (
+            <span className="admin-field-error" role="alert">
+              {sectionError}
+            </span>
+          ) : null}
+        </span>
       </h2>
       {children}
     </section>
@@ -213,13 +221,19 @@ export default function AdminVolunteerSubmissionEditForm({
 
       {submitError ? <p className="admin-error">{submitError}</p> : null}
 
+      <p className="admin-volunteer-edit__eyebrow">Editing Volunteer</p>
+
       <EditSection title="Contact" id="contact-section">
         <div className="admin-field-row">
           <div className="admin-field admin-field--grow">
-            <label className="admin-label" htmlFor="firstName">
+            <AdminVolunteerFieldLabel
+              htmlFor="firstName"
+              required
+              error={fieldErrors.firstName}
+              errorId="error-firstName"
+            >
               First name
-              <RequiredMark />
-            </label>
+            </AdminVolunteerFieldLabel>
             <input
               id="firstName"
               className="admin-input"
@@ -228,15 +242,16 @@ export default function AdminVolunteerSubmissionEditForm({
               value={form.firstName}
               onChange={(event) => updateField('firstName', event.target.value)}
             />
-            {fieldErrors.firstName ? (
-              <p className="admin-error-inline">{fieldErrors.firstName}</p>
-            ) : null}
           </div>
           <div className="admin-field admin-field--grow">
-            <label className="admin-label" htmlFor="lastName">
+            <AdminVolunteerFieldLabel
+              htmlFor="lastName"
+              required
+              error={fieldErrors.lastName}
+              errorId="error-lastName"
+            >
               Last name
-              <RequiredMark />
-            </label>
+            </AdminVolunteerFieldLabel>
             <input
               id="lastName"
               className="admin-input"
@@ -245,16 +260,17 @@ export default function AdminVolunteerSubmissionEditForm({
               value={form.lastName}
               onChange={(event) => updateField('lastName', event.target.value)}
             />
-            {fieldErrors.lastName ? (
-              <p className="admin-error-inline">{fieldErrors.lastName}</p>
-            ) : null}
           </div>
         </div>
         <div className="admin-field">
-          <label className="admin-label" htmlFor="email">
+          <AdminVolunteerFieldLabel
+            htmlFor="email"
+            required
+            error={fieldErrors.email}
+            errorId="error-email"
+          >
             Email
-            <RequiredMark />
-          </label>
+          </AdminVolunteerFieldLabel>
           <input
             id="email"
             className="admin-input"
@@ -263,12 +279,15 @@ export default function AdminVolunteerSubmissionEditForm({
             value={form.email}
             onChange={(event) => updateField('email', event.target.value)}
           />
-          {fieldErrors.email ? <p className="admin-error-inline">{fieldErrors.email}</p> : null}
         </div>
         <div className="admin-field">
-          <label className="admin-label" htmlFor="phone">
+          <AdminVolunteerFieldLabel
+            htmlFor="phone"
+            error={fieldErrors.phone}
+            errorId="error-phone"
+          >
             Phone
-          </label>
+          </AdminVolunteerFieldLabel>
           <p className="admin-help">Optional unless phone or text is the preferred contact method.</p>
           <input
             id="phone"
@@ -278,13 +297,16 @@ export default function AdminVolunteerSubmissionEditForm({
             value={form.phone}
             onChange={(event) => updateField('phone', event.target.value)}
           />
-          {fieldErrors.phone ? <p className="admin-error-inline">{fieldErrors.phone}</p> : null}
         </div>
         <div className="admin-field" id="preferredContactMethod">
-          <label className="admin-label" htmlFor="preferredContactMethodSelect">
+          <AdminVolunteerFieldLabel
+            htmlFor="preferredContactMethodSelect"
+            required
+            error={fieldErrors.preferredContactMethod}
+            errorId="error-preferredContactMethod"
+          >
             Preferred contact method
-            <RequiredMark />
-          </label>
+          </AdminVolunteerFieldLabel>
           <select
             id="preferredContactMethodSelect"
             className="admin-input admin-input--select"
@@ -298,9 +320,6 @@ export default function AdminVolunteerSubmissionEditForm({
               </option>
             ))}
           </select>
-          {fieldErrors.preferredContactMethod ? (
-            <p className="admin-error-inline">{fieldErrors.preferredContactMethod}</p>
-          ) : null}
         </div>
       </EditSection>
 
@@ -348,13 +367,14 @@ export default function AdminVolunteerSubmissionEditForm({
         </div>
       </EditSection>
 
-      <EditSection title="Serving areas" id="serving-areas-section">
+      <EditSection
+        title="Serving areas"
+        id="serving-areas-section"
+        sectionError={fieldErrors.servingAreas}
+      >
         <p className="admin-help">
           Select areas and set per-area options below each selection.
         </p>
-        {fieldErrors.servingAreas ? (
-          <p className="admin-error-inline">{fieldErrors.servingAreas}</p>
-        ) : null}
         {groupedAreas.map(([groupTitle, areas]) => (
           <div key={groupTitle} className="admin-volunteer-edit__area-group">
             <h3 className="admin-volunteer-edit__area-group-title">

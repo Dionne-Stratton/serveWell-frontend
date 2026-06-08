@@ -198,7 +198,7 @@ export default function AdminFormsListPage({
   const deleteButtonClass = softBtn.softBtnDanger
 
   return (
-    <AdminLayout title="Volunteer forms">
+    <AdminLayout>
       {isDemoOrg ? (
         <p className="admin-muted admin-forms-list__demo-note">
           Demo: you can open the volunteer form and view how this form is set up. Editing is

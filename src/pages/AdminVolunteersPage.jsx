@@ -162,7 +162,7 @@ export default function AdminVolunteersPage() {
   }
 
   return (
-    <AdminLayout title="Volunteers">
+    <AdminLayout>
       <form className="admin-filters" onSubmit={handleFilterSubmit}>
         <div className="admin-filters__row">
           <div className="admin-field">

@@ -665,7 +665,7 @@ export default function AdminFormEditPage() {
 
   if (!formSlug) {
     return (
-      <AdminLayout title="Edit form">
+      <AdminLayout>
         <p className="admin-back">
           <button type="button" className="admin-back-link" onClick={() => navigate(formsListPath)}>
             ← All forms
@@ -677,7 +677,7 @@ export default function AdminFormEditPage() {
   }
 
   return (
-    <AdminLayout title={formMeta?.name ? `Edit: ${formMeta.name}` : 'Edit form'}>
+    <AdminLayout>
       <p className="admin-back">
         <button type="button" className="admin-back-link" onClick={requestLeave}>
           ← All forms
@@ -700,7 +700,7 @@ export default function AdminFormEditPage() {
           {actionBar}
 
           <fieldset className="admin-fieldset">
-            <legend className="admin-fieldset__legend">Volunteer form page</legend>
+            <legend className="admin-fieldset__legend">Editing Form</legend>
             <div className="admin-field">
               <label className="admin-label" htmlFor="form-name">
                 Title
