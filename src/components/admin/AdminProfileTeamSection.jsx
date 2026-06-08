@@ -6,6 +6,7 @@ import {
   removeAdminTeamMember,
   revokeAdminTeamInvite,
 } from '../../api/client'
+import AdminToast from './AdminToast'
 import softBtn from '../../styles/adminSoftButtons.module.css'
 
 const ADMIN_MEMBER_LIST_STORAGE_KEY = 'servewell_profile_admin_member_list_expanded'
@@ -170,6 +171,7 @@ export default function AdminProfileTeamSection({ demoMode }) {
   const rosterCount = roster.length
 
   return (
+    <>
     <section className="admin-detail-section admin-profile-admin-card">
       <div className="admin-profile-admin-card__header">
         <h2 className="admin-detail-section__title admin-profile-admin-card__title">Admin</h2>
@@ -249,8 +251,8 @@ export default function AdminProfileTeamSection({ demoMode }) {
                   Anyone you invite will use your organization&apos;s shared Planning Center
                   connection in ServeWell—the same one connected on the dashboard.
                 </p>
-                <form className="admin-field-row" onSubmit={handleInvite}>
-                  <div className="admin-field admin-field--grow">
+                <form className="admin-field-row admin-profile-admin-invite__row" onSubmit={handleInvite}>
+                  <div className="admin-field admin-profile-admin-invite__field">
                     <label className="admin-label" htmlFor="profile-team-invite-email">
                       Email
                     </label>
@@ -272,7 +274,6 @@ export default function AdminProfileTeamSection({ demoMode }) {
                   </button>
                 </form>
                 {inviteError ? <p className="admin-error">{inviteError}</p> : null}
-                {inviteSuccess ? <p className="admin-success">{inviteSuccess}</p> : null}
               </div>
             ) : (
               <p className="admin-muted admin-profile-team__owner-note">
@@ -283,5 +284,7 @@ export default function AdminProfileTeamSection({ demoMode }) {
         </>
       ) : null}
     </section>
+    <AdminToast message={inviteSuccess} onDismiss={() => setInviteSuccess('')} />
+    </>
   )
 }

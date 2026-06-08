@@ -971,6 +971,25 @@
   line-height: 1.45;
 }
 
+.admin-profile-admin-invite__row {
+  align-items: flex-end;
+}
+
+.admin-profile-admin-invite__row .admin-profile-admin-invite__field {
+  flex: 1 1 auto;
+  max-width: min(37.8rem, calc(100% - 11rem));
+  min-width: 12rem;
+  margin-bottom: 0;
+}
+
+.admin-profile-admin-invite__row > button[type='submit'] {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+  padding: 0.65rem 0.85rem;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
 .admin-field--grow {
   flex: 1;
   min-width: 12rem;
