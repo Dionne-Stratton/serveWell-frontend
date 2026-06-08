@@ -16,6 +16,9 @@ export default function StaffLoginPage() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [flashSuccess, setFlashSuccess] = useState('')
+  const [sessionExpiredNotice, setSessionExpiredNotice] = useState(
+    Boolean(location.state?.sessionExpired),
+  )
 
   useEffect(() => {
     if (!loading && admin && organization?.slug) {
@@ -29,6 +32,14 @@ export default function StaffLoginPage() {
       return
     }
     setFlashSuccess(message)
+    navigate('/login', { replace: true, state: null })
+  }, [location.state, navigate])
+
+  useEffect(() => {
+    if (!location.state?.sessionExpired) {
+      return
+    }
+    setSessionExpiredNotice(true)
     navigate('/login', { replace: true, state: null })
   }, [location.state, navigate])
 
@@ -88,6 +99,11 @@ export default function StaffLoginPage() {
         <p className="lede">
           Sign in to your church&apos;s admin dashboard.
         </p>
+        {sessionExpiredNotice ? (
+          <p className="admin-help" role="status">
+            Your session expired. Sign in again to continue.
+          </p>
+        ) : null}
         <div className="admin-field">
           <label className="admin-label" htmlFor="staff-org-slug">
             Church URL slug

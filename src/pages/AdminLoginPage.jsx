@@ -17,6 +17,9 @@ export default function AdminLoginPage({ organizationSlug: organizationSlugProp 
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [sessionExpiredNotice, setSessionExpiredNotice] = useState(
+    Boolean(location.state?.sessionExpired),
+  );
 
   const redirectTo =
     location.state?.from ??
@@ -67,6 +70,11 @@ export default function AdminLoginPage({ organizationSlug: organizationSlugProp 
         <p className="lede">
           Staff sign-in for reviewing volunteer submissions.
         </p>
+        {sessionExpiredNotice ? (
+          <p className="admin-help" role="status">
+            Your session expired. Sign in again to continue.
+          </p>
+        ) : null}
         <div className="admin-field">
           <label className="admin-label" htmlFor="admin-email">
             Email

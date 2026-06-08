@@ -1,4 +1,5 @@
 import { getActiveAdminToken } from "../auth/apiAuthScope";
+import { notifyAdminSessionExpired } from "../auth/adminSessionExpiry";
 
 const defaultBaseUrl = "https://servewell-server.dionnestratton.workers.dev";
 
@@ -49,6 +50,15 @@ export async function apiRequest(path, options = {}) {
   if (!body.success) {
     const message = body.error?.message ?? "Something went wrong.";
     const code = body.error?.code;
+
+    if (
+      options.authenticated &&
+      (response.status === 401 || code === "UNAUTHORIZED")
+    ) {
+      notifyAdminSessionExpired();
+      throw new ApiError("Session expired.", "SESSION_EXPIRED");
+    }
+
     throw new ApiError(message, code);
   }
 

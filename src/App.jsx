@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom'
 import { AdminAuthProvider } from './auth/AdminAuthContext'
 import AdminRouteGuard from './components/admin/AdminRouteGuard'
+import AdminSessionExpiryRedirect from './components/admin/AdminSessionExpiryRedirect'
 import DemoAdminAutoAuth from './components/admin/DemoAdminAutoAuth'
 import { DEMO_ORGANIZATION_SLUG } from './constants/demo'
 import AdminDashboardDemoPage from './pages/AdminDashboardDemoPage'
@@ -44,6 +45,7 @@ import './App.css'
 function AppRoot() {
   return (
     <AdminAuthProvider>
+      <AdminSessionExpiryRedirect />
       <Outlet />
     </AdminAuthProvider>
   )
