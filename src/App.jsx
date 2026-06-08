@@ -28,9 +28,16 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ChurchSlugHintPage from './pages/ChurchSlugHintPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AdminProfilePage from './pages/AdminProfilePage'
-import AdminTeamPage from './pages/AdminTeamPage'
 import AcceptInvitePage from './pages/AcceptInvitePage'
-import { organizationAdminFormsPath } from './utils/organizationPaths'
+import { adminProfilePath, organizationAdminFormsPath } from './utils/organizationPaths'
+
+function RedirectAdminTeamToProfile() {
+  const { organizationSlug } = useParams()
+  if (!organizationSlug) {
+    return <Navigate to="/" replace />
+  }
+  return <Navigate to={adminProfilePath(organizationSlug)} replace />
+}
 import './App.css'
 
 function AppRoot() {
@@ -220,7 +227,7 @@ const router = createBrowserRouter([
         path: ':organizationSlug/admin/team',
         element: (
           <AdminRouteGuard>
-            <AdminTeamPage />
+            <RedirectAdminTeamToProfile />
           </AdminRouteGuard>
         ),
       },

@@ -67,8 +67,8 @@ Product and API details live in the parent folder:
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
 | `/:organizationSlug/admin/volunteers/:id` | Volunteer detail — status toolbar, PC sync, in-sync / stale banner, **Edit submission**, staff notes, **Delete** |
 | `/:organizationSlug/admin/volunteers/:id/edit` | Admin intake editor (card layout, dropdowns for single-choice fields; `/admin/submissions/:id/edit` redirects here). Demo org: no edit (API blocks PUT). |
-| `/:organizationSlug/admin/team` | Team members and invites (owner can invite/revoke/remove) |
-| `/:organizationSlug/admin/profile` | Profile; **notification email preferences**; password reset; **owner-only** danger zone to delete organization |
+| `/:organizationSlug/admin/profile` | Profile; organization edit (owner); **Admin** card (collapsible list, invites for owner); notification prefs; password reset; **owner-only** danger zone |
+| `/:organizationSlug/admin/team` | Redirects to profile (legacy URL) |
 | `/:organizationSlug/admin/forms` | Forms list + links to public URLs |
 | `/:organizationSlug/admin/forms/new` | Create form (template or blank) |
 | `/:organizationSlug/admin/forms/:formSlug/edit` | Edit form (sections, areas, acknowledgements; **Save changes** persists) |

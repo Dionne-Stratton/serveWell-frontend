@@ -11,6 +11,7 @@ import {
 } from '../api/client'
 import { useAdminAuth } from '../auth/useAdminAuth'
 import AdminLayout from '../components/admin/AdminLayout'
+import AdminProfileTeamSection from '../components/admin/AdminProfileTeamSection'
 import EditableOrganizationSection from '../components/admin/EditableOrganizationSection'
 import EditableProfileField from '../components/admin/EditableProfileField'
 import DeleteOrganizationDialog from '../components/admin/DeleteOrganizationDialog'
@@ -228,6 +229,8 @@ export default function AdminProfilePage() {
               onSave={handleSaveOrganization}
             />
           ) : null}
+
+          <AdminProfileTeamSection demoMode={demoMode} />
 
           <section className="admin-detail-section">
             <h2 className="admin-detail-section__title">Notifications</h2>

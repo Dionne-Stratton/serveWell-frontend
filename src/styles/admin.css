@@ -886,6 +886,84 @@
   margin-top: 0.15rem;
 }
 
+.admin-profile-admin-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-profile-admin-card__title {
+  margin: 0;
+}
+
+.admin-profile-admin-list__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.25rem 0.45rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-profile-admin-list__toggle:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.admin-profile-admin-list__chevron {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.admin-profile-admin-member-panel {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+}
+
+.admin-profile-admin-card__below-list {
+  margin-top: 0.25rem;
+}
+
+.admin-profile-admin-invite {
+  margin-top: 0.75rem;
+}
+
+.admin-profile-admin-card__below-list > .admin-profile-team__subtitle:first-child,
+.admin-profile-admin-invite > .admin-profile-team__subtitle {
+  margin-top: 0;
+}
+
+.admin-profile-admin-card__below-list > .admin-profile-team__subtitle:not(:first-child),
+.admin-profile-admin-invite > .admin-profile-team__subtitle {
+  margin-top: 0.75rem;
+}
+
+.admin-profile-team__subtitle {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.admin-profile-team__subtitle:first-of-type {
+  margin-top: 0;
+}
+
+.admin-profile-team__owner-note {
+  margin: 0.75rem 0 0;
+}
+
 .admin-team-invite-note {
   margin: -0.25rem 0 0.85rem;
   max-width: 42rem;
