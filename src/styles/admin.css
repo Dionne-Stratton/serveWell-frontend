@@ -1737,6 +1737,10 @@
   visibility: visible;
 }
 
+.admin-info-tip__bubble--wide {
+  max-width: 19rem;
+}
+
 .admin-detail-meta__date {
   margin-left: 0;
   font-size: 0.9rem;

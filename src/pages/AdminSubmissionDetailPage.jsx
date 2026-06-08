@@ -128,12 +128,15 @@ function formatAdminActorLabel(actor) {
   return name || email || ''
 }
 
+const PLANNING_CENTER_PUSH_OVERWRITE_NOTICE =
+  'Pushing overwrites this person’s volunteering data in Planning Center with what you have in ServeWell. If someone changed them in Planning Center after the last push, those changes will be lost—double-check before you push.'
+
 function formatPlanningCenterSyncedLine(submission) {
   if (!submission?.planningCenterSyncedAt || !submission?.planningCenterSyncedBy) {
     return null
   }
   const who = formatAdminActorLabel(submission.planningCenterSyncedBy)
-  return `Last synced to Planning Center ${formatDateTime(submission.planningCenterSyncedAt)} by ${who}`
+  return `Last pushed to Planning Center ${formatDateTime(submission.planningCenterSyncedAt)} by ${who}`
 }
 
 export default function AdminSubmissionDetailPage() {
@@ -337,9 +340,14 @@ export default function AdminSubmissionDetailPage() {
       planningCenterDisabledReason =
         'This volunteer needs an email address or phone number before they can be added to Planning Center.'
     } else if (planningCenterNothingToSync) {
-      planningCenterDisabledReason = 'Up to date — nothing to sync.'
+      planningCenterDisabledReason = 'Up to date — nothing to push.'
     }
   }
+
+  const showPlanningCenterPushOverwriteTip =
+    isLinkedToPlanningCenter &&
+    planningCenterSyncDirty &&
+    canPushToPlanningCenter
 
   async function handleConfirmDeleteSubmission() {
     setDeleteError('')
@@ -373,7 +381,7 @@ export default function AdminSubmissionDetailPage() {
         err instanceof ApiError
           ? err.message
           : isLinkedToPlanningCenter
-            ? 'Unable to sync this volunteer to Planning Center.'
+            ? 'Unable to push this volunteer to Planning Center.'
             : 'Unable to add this volunteer to Planning Center.',
       )
     } finally {
@@ -461,10 +469,10 @@ export default function AdminSubmissionDetailPage() {
                     >
                       {planningCenterPushPending
                         ? isLinkedToPlanningCenter
-                          ? 'Syncing…'
+                          ? 'Pushing…'
                           : 'Sending…'
                         : isLinkedToPlanningCenter
-                          ? 'Sync to Planning Center'
+                          ? 'Push to Planning Center'
                           : 'Add to Planning Center'}
                     </button>
                     {planningCenterDisabledReason ? (
@@ -478,6 +486,23 @@ export default function AdminSubmissionDetailPage() {
                         </button>
                         <span className="admin-info-tip__bubble" role="tooltip">
                           {planningCenterDisabledReason}
+                        </span>
+                      </span>
+                    ) : null}
+                    {showPlanningCenterPushOverwriteTip ? (
+                      <span className="admin-info-tip">
+                        <button
+                          type="button"
+                          className="admin-info-mark"
+                          aria-label={PLANNING_CENTER_PUSH_OVERWRITE_NOTICE}
+                        >
+                          i
+                        </button>
+                        <span
+                          className="admin-info-tip__bubble admin-info-tip__bubble--wide"
+                          role="tooltip"
+                        >
+                          {PLANNING_CENTER_PUSH_OVERWRITE_NOTICE}
                         </span>
                       </span>
                     ) : null}

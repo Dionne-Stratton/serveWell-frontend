@@ -233,7 +233,7 @@ export default function AdminDashboardPage({
           {!demoMode && needsPlanningCenterReconnect ? (
             <p className="admin-muted admin-integration-row__help admin-integration-row__help--warning">
               {isOrganizationOwner
-                ? 'The Planning Center sign-in has expired. Use Reconnect Planning Center to sync volunteers again.'
+                ? 'The Planning Center sign-in has expired. Use Reconnect Planning Center to push volunteers again.'
                 : 'The Planning Center sign-in has expired. Ask your organization owner to reconnect from this dashboard.'}
             </p>
           ) : null}
