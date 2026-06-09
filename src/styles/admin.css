@@ -2438,6 +2438,11 @@
   background: var(--surface);
 }
 
+.admin-dashboard-panel--help {
+  border-color: color-mix(in srgb, #f59e0b 38%, var(--border));
+  background: color-mix(in srgb, #b45309 18%, var(--surface));
+}
+
 .admin-dashboard-form-list {
   margin: 0;
   padding-left: 1.15rem;
@@ -2510,6 +2515,32 @@
   margin: 0.85rem 0 0;
   max-width: 42rem;
   line-height: 1.45;
+}
+
+.admin-dashboard-help__text {
+  margin: 0;
+  max-width: 42rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text-h);
+}
+
+.admin-dashboard-help__email {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+  white-space: nowrap;
+}
+
+.admin-page .admin-dashboard-help__email-link {
+  font-weight: 600;
+  color: var(--text-h);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.admin-page .admin-dashboard-help__email-link:hover {
+  color: color-mix(in srgb, #b45309 55%, var(--text-h));
 }
 
 .admin-forms-list__demo-note {
