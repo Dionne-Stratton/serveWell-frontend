@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ApiError, getAdminForms, getAdminFormDetail, getAdminSubmissions } from '../api/client'
+import {
+  ApiError,
+  getAdminForms,
+  getAdminFormDetail,
+  getAdminSubmissions,
+  getPlanningCenterImportSources,
+} from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import softBtn from '../styles/adminSoftButtons.module.css'
 import SubmissionListItem from '../components/admin/SubmissionListItem'
@@ -9,19 +15,34 @@ import { submissionStatusOptions } from '../constants/enums'
 const emptyFilters = {
   search: '',
   status: '',
-  formId: '',
+  source: '',
   formSectionId: '',
   includeArchived: false,
 }
 
 function filtersToQuery(filters) {
+  const source = filters.source?.trim() ?? ''
+  let formId
+  let planningCenterImportTabName
+
+  if (source.startsWith('form:')) {
+    formId = Number(source.slice(5))
+  } else if (source.startsWith('pc:')) {
+    planningCenterImportTabName = source.slice(3)
+  }
+
   return {
     search: filters.search.trim() || undefined,
     status: filters.status || undefined,
-    formId: filters.formId ? Number(filters.formId) : undefined,
+    formId: formId && !Number.isNaN(formId) ? formId : undefined,
+    planningCenterImportTabName: planningCenterImportTabName || undefined,
     formSectionId: filters.formSectionId ? Number(filters.formSectionId) : undefined,
     archived: filters.includeArchived ? undefined : false,
   }
+}
+
+function sourceUsesServeWellForm(source) {
+  return typeof source === 'string' && source.startsWith('form:')
 }
 
 function isAllowedStatus(value) {
@@ -36,6 +57,7 @@ export default function AdminVolunteersPage() {
 
   const [submissions, setSubmissions] = useState([])
   const [forms, setForms] = useState([])
+  const [importTabNames, setImportTabNames] = useState([])
   const [formSections, setFormSections] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -89,13 +111,20 @@ export default function AdminVolunteersPage() {
 
     async function loadForms() {
       try {
-        const data = await getAdminForms()
+        const [formsData, importSourcesData] = await Promise.all([
+          getAdminForms(),
+          getPlanningCenterImportSources().catch(() => ({
+            planningCenterImportTabNames: [],
+          })),
+        ])
         if (!cancelled) {
-          setForms(data.forms ?? [])
+          setForms(formsData.forms ?? [])
+          setImportTabNames(importSourcesData.planningCenterImportTabNames ?? [])
         }
       } catch {
         if (!cancelled) {
           setForms([])
+          setImportTabNames([])
         }
       }
     }
@@ -108,18 +137,20 @@ export default function AdminVolunteersPage() {
   }, [])
 
   useEffect(() => {
-    const formId = draftFilters.formId
+    const source = draftFilters.source
 
-    if (!formId) {
+    if (!sourceUsesServeWellForm(source)) {
       setFormSections([])
       return undefined
     }
+
+    const formId = Number(source.slice(5))
 
     let cancelled = false
 
     async function loadSections() {
       try {
-        const data = await getAdminFormDetail(Number(formId))
+        const data = await getAdminFormDetail(formId)
         if (!cancelled) {
           setFormSections(
             (data.sections ?? []).map((section) => ({
@@ -140,7 +171,7 @@ export default function AdminVolunteersPage() {
     return () => {
       cancelled = true
     }
-  }, [draftFilters.formId])
+  }, [draftFilters.source])
 
   function handleFilterSubmit(event) {
     event.preventDefault()
@@ -184,28 +215,41 @@ export default function AdminVolunteersPage() {
             />
           </div>
           <div className="admin-field">
-            <label className="admin-label" htmlFor="submission-form">
-              Form
+            <label className="admin-label" htmlFor="submission-source">
+              Form / source
             </label>
             <select
-              id="submission-form"
+              id="submission-source"
               className="admin-input admin-input--select"
-              value={draftFilters.formId}
+              value={draftFilters.source}
               onChange={(event) => {
-                const nextFormId = event.target.value
+                const nextSource = event.target.value
                 setDraftFilters((current) => ({
                   ...current,
-                  formId: nextFormId,
+                  source: nextSource,
                   formSectionId: '',
                 }))
               }}
             >
-              <option value="">All forms</option>
-              {forms.map((form) => (
-                <option key={form.id} value={String(form.id)}>
-                  {form.name}
-                </option>
-              ))}
+              <option value="">All forms &amp; sources</option>
+              {forms.length > 0 ? (
+                <optgroup label="ServeWell forms">
+                  {forms.map((form) => (
+                    <option key={`form-${form.id}`} value={`form:${form.id}`}>
+                      {form.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
+              {importTabNames.length > 0 ? (
+                <optgroup label="Planning Center imports">
+                  {importTabNames.map((tabName) => (
+                    <option key={`pc-${tabName}`} value={`pc:${tabName}`}>
+                      {tabName}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
             </select>
           </div>
           <div className="admin-field">
@@ -216,7 +260,7 @@ export default function AdminVolunteersPage() {
               id="submission-section"
               className="admin-input admin-input--select"
               value={draftFilters.formSectionId}
-              disabled={!draftFilters.formId}
+              disabled={!sourceUsesServeWellForm(draftFilters.source)}
               onChange={(event) =>
                 setDraftFilters((current) => ({
                   ...current,
@@ -225,7 +269,9 @@ export default function AdminVolunteersPage() {
               }
             >
               <option value="">
-                {draftFilters.formId ? 'All sections' : 'Choose a form first'}
+                {sourceUsesServeWellForm(draftFilters.source)
+                  ? 'All sections'
+                  : 'Choose a ServeWell form first'}
               </option>
               {formSections.map((section) => (
                 <option key={section.id} value={String(section.id)}>

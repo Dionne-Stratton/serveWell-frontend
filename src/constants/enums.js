@@ -11,7 +11,8 @@ export const frequencyOptions = [
   { value: 'twice_month', label: 'Twice per month' },
   { value: 'once_month', label: 'Once per month' },
   { value: 'occasionally', label: 'Occasionally' },
-  { value: 'flexible', label: 'Flexible / as needed' }
+  { value: 'flexible', label: 'Flexible / as needed' },
+  { value: 'not_sure', label: 'Not sure' }
 ]
 
 export const availabilityOptions = [

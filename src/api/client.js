@@ -9,10 +9,11 @@ export function getApiBaseUrl() {
 }
 
 export class ApiError extends Error {
-  constructor(message, code) {
+  constructor(message, code, fields = {}) {
     super(message);
     this.name = "ApiError";
     this.code = code;
+    Object.assign(this, fields);
   }
 }
 
@@ -59,7 +60,8 @@ export async function apiRequest(path, options = {}) {
       throw new ApiError("Session expired.", "SESSION_EXPIRED");
     }
 
-    throw new ApiError(message, code);
+    const { message: _m, code: _c, ...errorFields } = body.error ?? {};
+    throw new ApiError(message, code, errorFields);
   }
 
   return body.data;
@@ -233,6 +235,8 @@ export function getAdminSubmissions(filters = {}) {
     params.set("servingAreaId", String(filters.servingAreaId));
   if (filters.formSectionId)
     params.set("formSectionId", String(filters.formSectionId));
+  if (filters.planningCenterImportTabName)
+    params.set("planningCenterImportTabName", filters.planningCenterImportTabName);
   if (filters.search) params.set("search", filters.search);
 
   const query = params.toString();
@@ -329,6 +333,46 @@ export function disconnectPlanningCenterIntegration() {
   return apiRequest("/api/admin/integrations/planning-center/disconnect", {
     method: "POST",
     authenticated: true,
+  });
+}
+
+export function searchPlanningCenterPeople(search) {
+  const params = new URLSearchParams();
+  if (search?.trim()) {
+    params.set("search", search.trim());
+  }
+  const query = params.toString();
+  const path = query
+    ? `/api/admin/integrations/planning-center/people?${query}`
+    : "/api/admin/integrations/planning-center/people";
+  return apiRequest(path, { authenticated: true });
+}
+
+export function getPlanningCenterPeopleTabs() {
+  return apiRequest("/api/admin/integrations/planning-center/tabs", {
+    authenticated: true,
+  });
+}
+
+export function getPlanningCenterImportSources() {
+  return apiRequest("/api/admin/integrations/planning-center/import-sources", {
+    authenticated: true,
+  });
+}
+
+export function previewPlanningCenterImport(payload) {
+  return apiRequest("/api/admin/integrations/planning-center/import/preview", {
+    method: "POST",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function importPlanningCenterPerson(payload) {
+  return apiRequest("/api/admin/integrations/planning-center/import", {
+    method: "POST",
+    authenticated: true,
+    body: JSON.stringify(payload),
   });
 }
 

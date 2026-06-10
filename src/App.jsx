@@ -30,6 +30,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ChurchSlugHintPage from './pages/ChurchSlugHintPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import AdminProfilePage from './pages/AdminProfilePage'
+import AdminImportPage from './pages/AdminImportPage'
 import AcceptInvitePage from './pages/AcceptInvitePage'
 import { adminProfilePath, organizationAdminFormsPath } from './utils/organizationPaths'
 
@@ -232,6 +233,14 @@ const router = createBrowserRouter([
         element: (
           <AdminRouteGuard>
             <RedirectAdminTeamToProfile />
+          </AdminRouteGuard>
+        ),
+      },
+      {
+        path: ':organizationSlug/admin/import',
+        element: (
+          <AdminRouteGuard>
+            <AdminImportPage />
           </AdminRouteGuard>
         ),
       },

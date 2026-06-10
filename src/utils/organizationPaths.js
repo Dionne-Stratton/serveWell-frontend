@@ -52,6 +52,10 @@ export function organizationAdminPath(organizationSlug) {
   return `/${organizationSlug}/admin`
 }
 
+export function organizationAdminImportPath(organizationSlug) {
+  return `/${organizationSlug}/admin/import`
+}
+
 export function organizationAdminVolunteersPath(organizationSlug) {
   return `/${organizationSlug}/admin/volunteers`
 }
@@ -150,6 +154,13 @@ export function adminVolunteersPath(organizationSlug) {
     return demoAdminVolunteersPath()
   }
   return organizationAdminVolunteersPath(organizationSlug)
+}
+
+export function adminImportPath(organizationSlug) {
+  if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
+    return null
+  }
+  return organizationAdminImportPath(organizationSlug)
 }
 
 export function adminVolunteersFilteredPath(organizationSlug, status) {

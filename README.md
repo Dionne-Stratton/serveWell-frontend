@@ -64,6 +64,7 @@ Product and API details live in the parent folder:
 | `/:organizationSlug/forms/:formSlug` | Specific volunteer form |
 | `/:organizationSlug/admin/login` | Org admin login |
 | `/:organizationSlug/admin` | Admin home (counts, forms, Planning Center connect when API credentials are set) |
+| `/:organizationSlug/admin/import` | Planning Center import v1 (hidden on demo; requires PC connected) |
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
 | `/:organizationSlug/admin/volunteers/:id` | Volunteer detail — status toolbar, PC sync, in-sync / stale banner, **Edit submission**, staff notes, **Delete** |
 | `/:organizationSlug/admin/volunteers/:id/edit` | Admin intake editor (card layout, dropdowns for single-choice fields; `/admin/submissions/:id/edit` redirects here). Demo org: no edit (API blocks PUT). |

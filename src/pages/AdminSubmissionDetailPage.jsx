@@ -139,6 +139,15 @@ function formatPlanningCenterSyncedLine(submission) {
   return `Last pushed to Planning Center ${formatDateTime(submission.planningCenterSyncedAt)} by ${who}`
 }
 
+function formatPlanningCenterImportedLine(submission) {
+  if (!submission?.planningCenterImportedAt) {
+    return null
+  }
+  const who = formatAdminActorLabel(submission.planningCenterImportedBy)
+  const byClause = who ? ` by ${who}` : ''
+  return `Imported from Planning Center ${formatDateTime(submission.planningCenterImportedAt)}${byClause}`
+}
+
 export default function AdminSubmissionDetailPage() {
   const { id, organizationSlug: organizationSlugParam } = useParams()
   const navigate = useNavigate()
@@ -152,7 +161,6 @@ export default function AdminSubmissionDetailPage() {
   )
   const volunteersPath = adminVolunteersPath(organizationSlug)
   const demoMode = pathname.startsWith('/demo/admin')
-  const editPath = demoMode ? null : adminVolunteerEditPath(organizationSlug, id)
   const [detail, setDetail] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -298,6 +306,13 @@ export default function AdminSubmissionDetailPage() {
   }
 
   const submission = detail?.submission
+  const editPath =
+    demoMode || !submission?.formId
+      ? null
+      : adminVolunteerEditPath(organizationSlug, id)
+  const planningCenterImportedLine = submission
+    ? formatPlanningCenterImportedLine(submission)
+    : null
   const planningCenterSyncedLine = submission
     ? formatPlanningCenterSyncedLine(submission)
     : null
@@ -537,7 +552,17 @@ export default function AdminSubmissionDetailPage() {
                 {submission.isArchived ? (
                   <span className="admin-tag admin-tag--muted">Archived</span>
                 ) : null}
+                {submission.planningCenterImportedAt ? (
+                  <span className="admin-submission-card__pc-import-badge">
+                    Imported from Planning Center
+                  </span>
+                ) : null}
               </div>
+              {planningCenterImportedLine ? (
+                <p className="admin-muted admin-detail-toolbar__import-line">
+                  {planningCenterImportedLine}
+                </p>
+              ) : null}
               {!demoMode && planningCenterSyncedLine ? (
                 <div
                   className={[
@@ -564,6 +589,7 @@ export default function AdminSubmissionDetailPage() {
 
           <DetailSection title="Contact" titleIcon={<IconContact />}>
             <dl className="admin-dl">
+              <DetailRow label="Form / source" value={submission.formName} />
               <DetailRow
                 label="Name"
                 value={`${submission.firstName} ${submission.lastName}`.trim()}
@@ -576,6 +602,29 @@ export default function AdminSubmissionDetailPage() {
               />
             </dl>
           </DetailSection>
+
+          {submission.planningCenterImportedAt ? (
+            <DetailSection title="Imported Planning Center data">
+              {submission.planningCenterImportTabName ? (
+                <p className="admin-muted admin-detail-import-tab-name">
+                  Tab: {submission.planningCenterImportTabName}
+                </p>
+              ) : null}
+              {submission.planningCenterImportCustomFields?.length > 0 ? (
+                <dl className="admin-dl admin-dl--compact">
+                  {submission.planningCenterImportCustomFields.map((field) => (
+                    <DetailRow
+                      key={field.fieldDefinitionId}
+                      label={field.name}
+                      value={field.value?.trim() ? field.value : '—'}
+                    />
+                  ))}
+                </dl>
+              ) : (
+                <p className="admin-muted">No custom fields were on this tab.</p>
+              )}
+            </DetailSection>
+          ) : null}
 
           <DetailSection title="Serving preferences">
             <dl className="admin-dl">

@@ -4,6 +4,7 @@ import {
   adminDashboardPath,
   adminVolunteersPath,
   adminFormsPath,
+  adminImportPath,
 } from '../../utils/organizationPaths'
 
 function navClassName({ isActive }) {
@@ -31,6 +32,8 @@ export default function AdminNav() {
     return null
   }
 
+  const importPath = adminImportPath(slug)
+
   return (
     <nav className="admin-nav" aria-label="Admin">
       <NavLink to={adminDashboardPath(slug)} className={navClassName} end>
@@ -42,6 +45,11 @@ export default function AdminNav() {
       <NavLink to={adminFormsPath(slug)} className={navClassName}>
         Forms
       </NavLink>
+      {importPath ? (
+        <NavLink to={importPath} className={navClassName}>
+          Import
+        </NavLink>
+      ) : null}
     </nav>
   )
 }

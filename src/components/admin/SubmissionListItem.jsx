@@ -40,6 +40,11 @@ export default function SubmissionListItem({ submission, onStatusUpdated }) {
               Volunteer updated
             </span>
           ) : null}
+          {submission.planningCenterImportedAt ? (
+            <span className="admin-submission-card__pc-import-badge">
+              Imported from Planning Center
+            </span>
+          ) : null}
         </h2>
         <AdminSubmissionStatusSelect
           submissionId={submission.id}
@@ -50,6 +55,10 @@ export default function SubmissionListItem({ submission, onStatusUpdated }) {
         />
       </header>
       <dl className="admin-dl admin-dl--compact">
+        <div>
+          <dt>Form / source</dt>
+          <dd>{submission.formName ?? '—'}</dd>
+        </div>
         <div>
           <dt>Contact</dt>
           <dd>
