@@ -9,6 +9,7 @@ import {
 import RequiredMark from './RequiredMark'
 import ServingAreaInlineDetail from './ServingAreaInlineDetail'
 import VolunteerAlreadySubmittedSection from './VolunteerAlreadySubmittedSection'
+import BlackoutDatesFieldset from './BlackoutDatesFieldset'
 import {
   buildSubmissionPayload,
   confirmationKey,
@@ -33,7 +34,8 @@ function createEmptyFormState() {
     additionalNotes: '',
     selectedServingAreaIds: new Set(),
     interestByAreaId: {},
-    confirmations: {}
+    confirmations: {},
+    blackoutDates: []
   }
 }
 
@@ -223,7 +225,9 @@ export default function VolunteerForm({
     setSubmitError('')
     setValidationSummary([])
 
-    const errors = validateVolunteerForm(form, servingAreas)
+    const errors = validateVolunteerForm(form, servingAreas, {
+      allowPastBlackoutDates: volunteerSelfEdit || adminEdit,
+    })
     if (Object.keys(errors).length > 0) {
       showValidationFailures(errors)
       return
@@ -478,6 +482,13 @@ export default function VolunteerForm({
           ))}
         </div>
       </fieldset>
+
+      <BlackoutDatesFieldset
+        rows={form.blackoutDates}
+        onChange={(blackoutDates) => updateField('blackoutDates', blackoutDates)}
+        fieldErrors={fieldErrors}
+        variant="serve"
+      />
 
       {urgentAreas.length > 0 ? (
         <fieldset className="serve-fieldset serve-fieldset--urgent-needs">

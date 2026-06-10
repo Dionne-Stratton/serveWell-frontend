@@ -85,26 +85,24 @@ export default function VolunteerAlreadySubmittedSection({
         responses.
       </p>
       <div className="serve-already-submitted__form">
-        <div className="serve-field serve-already-submitted__field">
-          <label className="serve-label" htmlFor={`${sectionId}-email`}>
-            Email
-          </label>
-          <input
-            id={`${sectionId}-email`}
-            className="serve-input"
-            type="email"
-            autoComplete="email"
-            value={email}
-            disabled={previewOnly || pending}
-            onChange={handleEmailChange}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault()
-                void sendUpdateLink()
-              }
-            }}
-          />
-        </div>
+        <label className="serve-already-submitted__email-label" htmlFor={`${sectionId}-email`}>
+          Email:
+        </label>
+        <input
+          id={`${sectionId}-email`}
+          className="serve-input serve-already-submitted__email-input"
+          type="email"
+          autoComplete="email"
+          value={email}
+          disabled={previewOnly || pending}
+          onChange={handleEmailChange}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              void sendUpdateLink()
+            }
+          }}
+        />
         <button
           type="button"
           className="serve-button serve-button--secondary"

@@ -23,6 +23,7 @@ import AdminSubmissionStatusSelect from '../components/admin/AdminSubmissionStat
 import softBtn from '../styles/adminSoftButtons.module.css'
 import {
   formatAvailabilityList,
+  formatBlackoutDateRange,
   formatDateTime,
   labelExperience,
   labelFrequency,
@@ -641,6 +642,23 @@ export default function AdminSubmissionDetailPage() {
                 value={submission.openToSpecialEvents ? 'Open to helping' : 'Not selected'}
               />
             </dl>
+          </DetailSection>
+
+          <DetailSection title="Blackout dates">
+            {detail.blackoutDates?.length ? (
+              <ul className="admin-blackout-readonly-list">
+                {detail.blackoutDates.map((row) => (
+                  <li key={row.id}>
+                    <strong>{formatBlackoutDateRange(row.startDate, row.endDate)}</strong>
+                    {row.note?.trim() ? (
+                      <span className="admin-muted"> — {row.note.trim()}</span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="admin-muted">No blackout dates on file.</p>
+            )}
           </DetailSection>
 
           {detail.interests?.length ? (

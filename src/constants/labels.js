@@ -45,3 +45,19 @@ export function formatDateTime(iso) {
     return iso
   }
 }
+
+export function formatDateOnly(isoDate) {
+  if (!isoDate) return '—'
+  const [year, month, day] = isoDate.split('-').map(Number)
+  const date = new Date(year, month - 1, day)
+  if (Number.isNaN(date.getTime())) return isoDate
+  return date.toLocaleDateString(undefined, { dateStyle: 'medium' })
+}
+
+export function formatBlackoutDateRange(startDate, endDate) {
+  const startLabel = formatDateOnly(startDate)
+  if (!endDate || endDate === startDate) {
+    return startLabel
+  }
+  return `${startLabel} – ${formatDateOnly(endDate)}`
+}

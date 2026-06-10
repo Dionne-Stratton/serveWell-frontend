@@ -1,4 +1,8 @@
 import { frequencyOptions } from '../../constants/enums'
+import {
+  normalizeBlackoutDatesForPayload,
+  validateBlackoutDates,
+} from './blackoutDateUtils'
 
 const frequencyValues = new Set(frequencyOptions.map((option) => option.value))
 
@@ -60,7 +64,8 @@ export function buildSubmissionPayload(form, servingAreas) {
     experienceNotes: form.experienceNotes.trim() || null,
     additionalNotes: form.additionalNotes.trim() || null,
     interests,
-    requirementConfirmations
+    requirementConfirmations,
+    blackoutDates: normalizeBlackoutDatesForPayload(form.blackoutDates),
   }
 }
 
@@ -72,7 +77,7 @@ export function isValidEmail(value) {
   return emailPattern.test(value.trim())
 }
 
-export function validateVolunteerForm(form, servingAreas) {
+export function validateVolunteerForm(form, servingAreas, { allowPastBlackoutDates = false } = {}) {
   const errors = {}
 
   if (!form.firstName.trim()) errors.firstName = 'First name is required.'
@@ -122,6 +127,10 @@ export function validateVolunteerForm(form, servingAreas) {
     }
   }
 
+  validateBlackoutDates(form.blackoutDates, errors, 'blackoutDates', {
+    disallowPastDates: !allowPastBlackoutDates,
+  })
+
   return errors
 }
 
@@ -136,6 +145,7 @@ export function firstErrorScrollTarget(errors) {
     'phone',
     'preferredContactMethod',
     'overallFrequency',
+    'blackout-dates',
     'serving-areas-section'
   ]
 
@@ -223,6 +233,11 @@ export function submissionDetailToFormState(detail) {
     selectedServingAreaIds,
     interestByAreaId,
     confirmations,
+    blackoutDates: (detail.blackoutDates ?? []).map((row) => ({
+      startDate: row.startDate ?? '',
+      endDate: row.endDate === row.startDate ? '' : (row.endDate ?? ''),
+      note: row.note ?? '',
+    })),
   }
 }
 

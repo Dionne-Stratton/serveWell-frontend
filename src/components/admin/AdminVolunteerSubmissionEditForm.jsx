@@ -8,6 +8,7 @@ import {
 } from '../../constants/enums'
 import AdminServingAreaInlineDetail from './AdminServingAreaInlineDetail'
 import AdminVolunteerFieldLabel from './AdminVolunteerFieldLabel'
+import BlackoutDatesFieldset from '../serve/BlackoutDatesFieldset'
 import {
   buildSubmissionPayload,
   confirmationKey,
@@ -172,7 +173,7 @@ export default function AdminVolunteerSubmissionEditForm({
     setSubmitError('')
     setValidationSummary([])
 
-    const errors = validateVolunteerForm(form, servingAreas)
+    const errors = validateVolunteerForm(form, servingAreas, { allowPastBlackoutDates: true })
     if (Object.keys(errors).length > 0) {
       showValidationFailures(errors)
       return
@@ -365,6 +366,12 @@ export default function AdminVolunteerSubmissionEditForm({
             ))}
           </div>
         </div>
+        <BlackoutDatesFieldset
+          rows={form.blackoutDates ?? []}
+          onChange={(blackoutDates) => updateField('blackoutDates', blackoutDates)}
+          fieldErrors={fieldErrors}
+          variant="admin"
+        />
       </EditSection>
 
       <EditSection

@@ -1406,6 +1406,45 @@
   border: 0;
 }
 
+.admin-blackout-list,
+.admin-volunteer-edit__blackout .admin-blackout-list {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-blackout-row {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg) 35%, var(--surface));
+}
+
+.admin-blackout-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.admin-volunteer-edit__blackout {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.admin-blackout-readonly-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
 .admin-detail-volunteer-update-banner {
   --volunteer-update-accent: #e5a319;
 
@@ -2856,6 +2895,13 @@
 
 .admin-volunteer-edit__area-group:first-of-type {
   margin-top: 0.5rem;
+}
+
+.admin-volunteer-edit__subsection-title {
+  margin: 1.25rem 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-h);
 }
 
 .admin-volunteer-edit__area-group-title {
