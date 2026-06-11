@@ -60,14 +60,15 @@ Product and API details live in the parent folder:
 | `/demo/admin/forms` | Demo forms list (read-only via API) |
 | `/demo/admin/forms/:formSlug` | Demo form preview (read-only) |
 | `/:organizationSlug` | Redirect: admin session → `/:slug/admin`, else `/` (no public org landing) |
-| `/:organizationSlug/volunteer` | Org default volunteer form |
+| `/:organizationSlug/volunteer` | Org default volunteer form (blackout dates, “Already submitted?” update link) |
 | `/:organizationSlug/forms/:formSlug` | Specific volunteer form |
+| `/:organizationSlug/volunteer/update` | Volunteer self-edit from email link (`?token=`) |
 | `/:organizationSlug/admin/login` | Org admin login |
 | `/:organizationSlug/admin` | Admin home (counts, forms, Planning Center connect when API credentials are set) |
 | `/:organizationSlug/admin/import` | Planning Center import v1 (hidden on demo; requires PC connected) |
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
-| `/:organizationSlug/admin/volunteers/:id` | Volunteer detail — status toolbar, PC sync, in-sync / stale banner, **Edit submission**, staff notes, **Delete** |
-| `/:organizationSlug/admin/volunteers/:id/edit` | Admin intake editor (card layout, dropdowns for single-choice fields; `/admin/submissions/:id/edit` redirects here). Demo org: no edit (API blocks PUT). |
+| `/:organizationSlug/admin/volunteers/:id` | Volunteer detail — status toolbar, PC sync/import badge, blackout dates, in-sync / stale banner, **Edit submission**, staff notes, **Delete** |
+| `/:organizationSlug/admin/volunteers/:id/edit` | Admin intake editor (serving preferences include blackout dates; card layout). PC import rows: detail read-only, no edit. Demo org: no edit (API blocks PUT). `/admin/submissions/:id/edit` redirects here. |
 | `/:organizationSlug/admin/profile` | Profile; organization edit (owner); **Admin** card (collapsible list, invites for owner); notification prefs; password reset; **owner-only** danger zone |
 | `/:organizationSlug/admin/team` | Redirects to profile (legacy URL) |
 | `/:organizationSlug/admin/forms` | Forms list + links to public URLs |
@@ -80,7 +81,7 @@ Unknown paths redirect to `/`.
 ## Local smoke test
 
 1. Apply local D1 migrations and start the API (`serveWell-server`: `npm run dev`).
-2. **Demo:** open `/demo/volunteer`, submit a response (email required). Open `/demo/admin/volunteers` for submissions.
+2. **Demo:** open `/demo/volunteer`, submit a response (email required; optional blackout dates). Open `/demo/admin/volunteers` for submissions.
 3. **Real org:** register at `/signup` or use seed admin `church@example.com` / `temporary-password` with organization slug `demo` at `/login` or `/:slug/admin/login`.
 4. Dashboard: set search/status/form/archived filters, click **Apply filters**. Change status on a row or detail page (saves immediately). On a real org (`/:slug/admin`), use **Connect Planning Center** when the server has OAuth secrets configured.
 5. Volunteer detail (non-demo): **Edit submission** → change intake → **Save changes** → detail shows save notice; if linked to PC, use **Sync to Planning Center** after intake edits.

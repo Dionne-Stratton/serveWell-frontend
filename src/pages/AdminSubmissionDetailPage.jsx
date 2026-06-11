@@ -19,6 +19,7 @@ import {
 import AdminLayout from '../components/admin/AdminLayout'
 import AdminToast from '../components/admin/AdminToast'
 import DeleteVolunteerSubmissionDialog from '../components/admin/DeleteVolunteerSubmissionDialog'
+import VolunteerUpdateReviewAlert from '../components/admin/VolunteerUpdateReviewAlert'
 import AdminSubmissionStatusSelect from '../components/admin/AdminSubmissionStatusSelect'
 import softBtn from '../styles/adminSoftButtons.module.css'
 import {
@@ -426,43 +427,13 @@ export default function AdminSubmissionDetailPage() {
       {error ? <p className="admin-error">{error}</p> : null}
 
       {submission?.volunteerUpdateReviewNeeded && submission.volunteerSelfUpdatedAt ? (
-        <div className="admin-detail-volunteer-update-banner" role="status">
-          <div className="admin-detail-volunteer-update-banner__accent" aria-hidden="true" />
-          <div className="admin-detail-volunteer-update-banner__icon-wrap" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
-              <path
-                d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <div className="admin-detail-volunteer-update-banner__content">
-            <p className="admin-detail-volunteer-update-banner__title">
-              Volunteer updated this submission on{' '}
-              {formatDateTime(submission.volunteerSelfUpdatedAt)}.
-            </p>
-            <p className="admin-detail-volunteer-update-banner__subtitle">
-              This update needs your review.
-            </p>
-            {markReviewError ? (
-              <p className="admin-error admin-detail-volunteer-update-banner__error">
-                {markReviewError}
-              </p>
-            ) : null}
-          </div>
-          <button
-            type="button"
-            className={`admin-detail-volunteer-update-banner__action${markReviewPending ? ' admin-detail-volunteer-update-banner__action--busy' : ''}`}
-            disabled={markReviewPending}
-            onClick={handleMarkVolunteerUpdateReviewed}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="m5 12.5 2.5 2.5L19 5.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span>{markReviewPending ? 'Saving…' : 'Mark update reviewed'}</span>
-          </button>
-        </div>
+        <VolunteerUpdateReviewAlert
+          submission={submission}
+          detail={detail}
+          markReviewPending={markReviewPending}
+          markReviewError={markReviewError}
+          onMarkReviewed={handleMarkVolunteerUpdateReviewed}
+        />
       ) : null}
 
       {submission ? (
