@@ -16,7 +16,7 @@ import {
 const STEPS = [
   'Schedule basics',
   'Serving areas',
-  'Service times',
+  'Events',
   'Staffing needs',
   'Review',
 ]
@@ -352,7 +352,7 @@ export default function CreateScheduleWizard({
                 {state.customAreaNames.length > 1 ? (
                   <button
                     type="button"
-                    className="admin-link-button"
+                    className="admin-danger-button admin-danger-button--compact"
                     onClick={() => {
                       const next = state.customAreaNames.filter((_, i) => i !== index)
                       updateState({ customAreaNames: next.length ? next : [''] })
@@ -382,14 +382,14 @@ export default function CreateScheduleWizard({
     if (step === 3) {
       return (
         <div className="admin-schedule-wizard__step">
-          <p className="admin-help">Add each recurring service time for this schedule.</p>
+          <p className="admin-help">Add each event for this schedule (one-off or recurring).</p>
           {fieldErrors.rhythms ? <p className="admin-error-inline">{fieldErrors.rhythms}</p> : null}
           <ul className="admin-schedule-wizard__rhythm-list">
             {state.rhythms.map((rhythm, index) => (
               <li key={rhythm.clientId} className="admin-schedule-wizard__rhythm-card">
                 <div className="admin-field">
                   <label className="admin-label" htmlFor={`rhythm-name-${index}`}>
-                    Name
+                    Event name
                   </label>
                   <input
                     id={`rhythm-name-${index}`}
@@ -451,14 +451,14 @@ export default function CreateScheduleWizard({
                 {state.rhythms.length > 1 ? (
                   <button
                     type="button"
-                    className="admin-link-button"
+                    className="admin-danger-button admin-danger-button--compact"
                     onClick={() =>
                       updateState({
                         rhythms: state.rhythms.filter((_, i) => i !== index),
                       })
                     }
                   >
-                    Remove time
+                    Remove event
                   </button>
                 ) : null}
               </li>
@@ -466,10 +466,10 @@ export default function CreateScheduleWizard({
           </ul>
           <button
             type="button"
-            className={`admin-button admin-button--inline ${softBtn.softBtn}`}
+            className={`admin-button--inline ${softBtn.softBtn}`}
             onClick={() => updateState({ rhythms: [...state.rhythms, emptyRhythm()] })}
           >
-            Add service time
+            Add event
           </button>
         </div>
       )
@@ -479,12 +479,12 @@ export default function CreateScheduleWizard({
       return (
         <div className="admin-schedule-wizard__step">
           <p className="admin-help">
-            For each service time, add how many volunteers you need in each connected area.
+            For each event, add how many volunteers you need in each connected area.
           </p>
           {state.rhythms.map((rhythm, rhythmIndex) => (
             <section key={rhythm.clientId} className="admin-schedule-wizard__staff-section">
               <h3 className="admin-schedule-wizard__staff-title">
-                {rhythm.name.trim() || 'Unnamed time'} — {labelDayOfWeek(rhythm.dayOfWeek)},{' '}
+                {rhythm.name.trim() || 'Unnamed event'} — {labelDayOfWeek(rhythm.dayOfWeek)},{' '}
                 {formatScheduleTime(rhythm.startTime)}
               </h3>
               <ul className="admin-schedule-wizard__req-list">
@@ -564,7 +564,7 @@ export default function CreateScheduleWizard({
                     </div>
                     <button
                       type="button"
-                      className="admin-link-button admin-schedule-wizard__req-remove"
+                      className="admin-danger-button admin-danger-button--compact admin-schedule-wizard__req-remove"
                       onClick={() => {
                         const rhythms = state.rhythms.map((r, i) => {
                           if (i !== rhythmIndex) {

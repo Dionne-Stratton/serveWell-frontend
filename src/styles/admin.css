@@ -652,13 +652,15 @@
 .admin-button--secondary {
   width: auto;
   margin-top: 0;
-  background: #ffffff;
-  color: #1a5fb4;
-  border-color: #1a5fb4;
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  color: color-mix(in srgb, var(--accent) 72%, #fff);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
 }
 
 .admin-button--secondary:hover:not(:disabled) {
-  background: #eff6ff;
+  background: color-mix(in srgb, var(--accent) 32%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+  color: color-mix(in srgb, var(--accent) 85%, #fff);
 }
 
 .admin-button--inline {
@@ -1058,12 +1060,373 @@
   border-radius: 10px;
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg) 62%, var(--surface));
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-schedule-card__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-schedule-card__link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.admin-schedule-card__link:hover .admin-schedule-card__title {
+  color: var(--accent, var(--link));
+}
+
+.admin-schedule-card__delete {
+  flex-shrink: 0;
+}
+
+.admin-schedule-detail-section {
+  margin-bottom: 1.75rem;
+  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 62%, var(--surface));
+}
+
+.admin-schedule-detail-section__title {
+  margin: 0 0 0.85rem;
+  font-size: 1.05rem;
+  color: var(--text-h);
+}
+
+.admin-schedule-detail-section__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-schedule-detail-section__actions {
+  margin-top: 0.35rem;
+}
+
+.admin-schedule-detail-area-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-schedule-detail-area-list li {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.admin-schedule-detail-area-list__entry {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.45rem;
+  max-width: 100%;
+}
+
+.admin-schedule-detail-area-list__label {
+  display: inline;
+}
+
+.admin-schedule-detail-area-list__entry .admin-dismiss-x {
+  flex-shrink: 0;
+  position: static;
+  top: auto;
+  padding: 0.1rem;
+}
+
+.admin-schedule-detail-area-list__entry .admin-dismiss-x__icon {
+  transform: translateY(0.05em);
+}
+
+.admin-schedule-detail-add-row {
+  margin-top: 0.5rem;
 }
 
 .admin-schedule-card__title {
   margin: 0 0 0.35rem;
   font-size: 1.05rem;
   color: var(--text-h);
+}
+
+.admin-schedule-detail-add-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.admin-schedule-detail-add-controls .admin-input {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.admin-schedule-detail-rhythm-list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.admin-schedule-detail-rhythm {
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface, var(--bg));
+}
+
+.admin-schedule-detail-rhythm-remove {
+  align-self: end;
+}
+
+.admin-page .admin-trash-button {
+  background: transparent;
+  border: none;
+  width: auto;
+  margin-top: 0;
+}
+
+.admin-page .admin-dismiss-x,
+.admin-page .admin-danger-button {
+  margin-top: 0;
+}
+
+.admin-page .admin-dismiss-x {
+  vertical-align: middle;
+}
+
+.admin-page .admin-danger-button {
+  width: auto;
+}
+
+.admin-trash-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0.2rem;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-h);
+  cursor: pointer;
+  line-height: 0;
+  transition: color 0.15s ease;
+}
+
+.admin-trash-button:hover:not(:disabled) {
+  color: #f87171;
+  background: transparent;
+}
+
+.admin-trash-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #f87171 45%, transparent);
+}
+
+.admin-trash-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.admin-trash-button svg {
+  display: block;
+}
+
+.admin-schedule-detail-section .admin-schedule-wizard__rhythm-row,
+.admin-schedule-detail-section .admin-schedule-wizard__req-row {
+  align-items: end;
+}
+
+.admin-schedule-detail-section .admin-schedule-wizard__rhythm-row .admin-field,
+.admin-schedule-detail-section .admin-schedule-wizard__req-row .admin-field {
+  margin-bottom: 0;
+}
+
+.admin-label--invisible {
+  visibility: hidden;
+  user-select: none;
+}
+
+.admin-schedule-detail-row-action {
+  margin-bottom: 0;
+}
+
+.admin-schedule-detail-row-action__button-wrap {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: calc(0.65rem * 2 + 1rem * 1.35 + 4px);
+}
+
+@media (min-width: 640px) {
+  .admin-schedule-detail-rhythm .admin-schedule-wizard__rhythm-row {
+    grid-template-columns: 1.2fr 1fr min(9rem, 28%) auto;
+    align-items: end;
+  }
+
+  .admin-schedule-detail-section .admin-schedule-wizard__req-row {
+    grid-template-columns: 1fr min(6rem, 25%) auto;
+    align-items: end;
+  }
+}
+
+.admin-page .admin-schedule-detail-section .admin-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border: 2px solid rgba(96, 165, 250, 0.55);
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.22);
+  color: #bfdbfe;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.admin-page .admin-schedule-detail-section .admin-link-button:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.34);
+  border-color: rgba(147, 197, 253, 0.65);
+  color: #dbeafe;
+}
+
+.admin-page .admin-schedule-detail-section .admin-button--inline:not(.admin-button) {
+  width: auto;
+}
+
+.admin-page .admin-schedule-detail-section__actions .admin-button {
+  width: auto;
+}
+
+.admin-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: auto;
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border: 2px solid rgba(96, 165, 250, 0.55);
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.22);
+  color: #bfdbfe;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.admin-secondary-button:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.34);
+  border-color: rgba(147, 197, 253, 0.65);
+  color: #dbeafe;
+}
+
+.admin-secondary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-danger-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: auto;
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border: 2px solid rgba(248, 113, 113, 0.5);
+  border-radius: 8px;
+  background: rgba(220, 38, 38, 0.22);
+  color: #fecaca;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.admin-danger-button:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.34);
+  border-color: rgba(252, 165, 165, 0.65);
+  color: #fee2e2;
+}
+
+.admin-danger-button--compact {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+}
+
+.admin-dismiss-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0.15rem;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #f87171;
+  line-height: 0;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.admin-dismiss-x:hover:not(:disabled) {
+  color: #fca5a5;
+  background: transparent;
+}
+
+.admin-dismiss-x:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #f87171 40%, transparent);
+}
+
+.admin-dismiss-x__icon {
+  display: block;
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.admin-dismiss-x:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .admin-schedule-card__meta {
@@ -2681,15 +3044,15 @@
 
 .admin-page .admin-form-card__actions a.admin-form-card-btn--primary,
 .admin-page .admin-form-card__actions a.admin-form-card-btn--primary:visited {
-  color: #1a5fb4;
-  background: #eff6ff;
-  border-color: #bfdbfe;
+  color: color-mix(in srgb, var(--accent) 72%, #fff);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
 }
 
 .admin-page .admin-form-card__actions a.admin-form-card-btn--primary:hover {
-  color: #154a8f;
-  background: #dbeafe;
-  border-color: #93c5fd;
+  color: color-mix(in srgb, var(--accent) 85%, #fff);
+  background: color-mix(in srgb, var(--accent) 32%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
 }
 
 .admin-form-card__actions .admin-button--compact {
@@ -2697,52 +3060,52 @@
   font-size: 0.78rem;
 }
 
-.admin-form-card__actions .admin-button.admin-button--soft-blue {
-  background: #eff6ff;
-  color: #1a5fb4;
-  border: 2px solid #bfdbfe;
+.admin-page .admin-form-card__actions .admin-button.admin-button--soft-blue {
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  color: color-mix(in srgb, var(--accent) 72%, #fff);
+  border: 2px solid color-mix(in srgb, var(--accent) 50%, var(--border));
 }
 
-.admin-form-card__actions .admin-button.admin-button--soft-blue:hover:not(:disabled) {
-  background: #dbeafe;
-  border-color: #93c5fd;
-  color: #154a8f;
+.admin-page .admin-form-card__actions .admin-button.admin-button--soft-blue:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 32%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+  color: color-mix(in srgb, var(--accent) 85%, #fff);
 }
 
 .admin-form-card__actions .admin-button.admin-button--danger-soft {
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 2px solid #fecaca;
+  background: rgba(220, 38, 38, 0.2);
+  color: #fecaca;
+  border: 2px solid rgba(248, 113, 113, 0.5);
 }
 
 .admin-form-card__actions .admin-button.admin-button--danger-soft:hover:not(:disabled) {
-  background: #fee2e2;
-  border-color: #fca5a5;
-  color: #991b1b;
+  background: rgba(220, 38, 38, 0.32);
+  border-color: rgba(252, 165, 165, 0.65);
+  color: #fee2e2;
 }
 
 .admin-button--soft-blue {
-  background: #eff6ff;
-  color: #1a5fb4;
-  border-color: #bfdbfe;
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  color: color-mix(in srgb, var(--accent) 72%, #fff);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
 }
 
 .admin-button--soft-blue:hover:not(:disabled) {
-  background: #dbeafe;
-  border-color: #93c5fd;
-  color: #154a8f;
+  background: color-mix(in srgb, var(--accent) 32%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--border));
+  color: color-mix(in srgb, var(--accent) 85%, #fff);
 }
 
 .admin-button--danger-soft {
-  background: #fef2f2;
-  color: #b91c1c;
-  border-color: #fecaca;
+  background: rgba(220, 38, 38, 0.2);
+  color: #fecaca;
+  border-color: rgba(248, 113, 113, 0.5);
 }
 
 .admin-button--danger-soft:hover:not(:disabled) {
-  background: #fee2e2;
-  border-color: #fca5a5;
-  color: #991b1b;
+  background: rgba(220, 38, 38, 0.32);
+  border-color: rgba(252, 165, 165, 0.65);
+  color: #fee2e2;
 }
 
 .admin-page .admin-inline-actions a.admin-form-card__add-link,

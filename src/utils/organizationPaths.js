@@ -178,6 +178,21 @@ export function adminSchedulesPath(organizationSlug) {
   return organizationAdminSchedulesPath(organizationSlug)
 }
 
+export function organizationAdminScheduleDetailPath(organizationSlug, scheduleId) {
+  return `/${organizationSlug}/admin/schedules/${scheduleId}`
+}
+
+export function demoAdminScheduleDetailPath(scheduleId) {
+  return `/demo/admin/schedules/${scheduleId}`
+}
+
+export function adminScheduleDetailPath(organizationSlug, scheduleId) {
+  if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
+    return demoAdminScheduleDetailPath(scheduleId)
+  }
+  return organizationAdminScheduleDetailPath(organizationSlug, scheduleId)
+}
+
 export function adminVolunteersFilteredPath(organizationSlug, status) {
   const base = adminVolunteersPath(organizationSlug)
   if (!status) {

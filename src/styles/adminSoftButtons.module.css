@@ -21,17 +21,18 @@
     color 0.15s ease;
 }
 
+/* Admin UI uses a dark shell — secondary actions stay on dark surfaces, not white fills */
 .softBtn,
 .softBtn:visited {
-  background-color: #eff6ff !important;
-  color: #1a5fb4 !important;
-  border-color: #93c5fd !important;
+  background-color: rgba(37, 99, 235, 0.22) !important;
+  color: #bfdbfe !important;
+  border-color: rgba(96, 165, 250, 0.55) !important;
 }
 
 .softBtn:hover:not(:disabled) {
-  background-color: #dbeafe !important;
-  color: #154a8f !important;
-  border-color: #60a5fa !important;
+  background-color: rgba(37, 99, 235, 0.34) !important;
+  color: #dbeafe !important;
+  border-color: rgba(147, 197, 253, 0.65) !important;
   text-decoration: none;
 }
 
@@ -41,15 +42,15 @@
 }
 
 .softBtnDanger {
-  background-color: #fef2f2 !important;
-  color: #b91c1c !important;
-  border-color: #fca5a5 !important;
+  background-color: rgba(220, 38, 38, 0.2) !important;
+  color: #fecaca !important;
+  border-color: rgba(248, 113, 113, 0.5) !important;
 }
 
 .softBtnDanger:hover:not(:disabled) {
-  background-color: #fee2e2 !important;
-  color: #991b1b !important;
-  border-color: #f87171 !important;
+  background-color: rgba(220, 38, 38, 0.32) !important;
+  color: #fee2e2 !important;
+  border-color: rgba(252, 165, 165, 0.65) !important;
 }
 
 .softBtnDanger:disabled {
@@ -87,31 +88,4 @@
   padding: 0.48rem 0.75rem;
   font-size: 0.81rem;
   line-height: 1.35;
-}
-
-@media (prefers-color-scheme: dark) {
-  .softBtn,
-  .softBtn:visited {
-    background-color: rgba(37, 99, 235, 0.22) !important;
-    color: #bfdbfe !important;
-    border-color: rgba(96, 165, 250, 0.55) !important;
-  }
-
-  .softBtn:hover:not(:disabled) {
-    background-color: rgba(37, 99, 235, 0.34) !important;
-    color: #dbeafe !important;
-    border-color: rgba(147, 197, 253, 0.65) !important;
-  }
-
-  .softBtnDanger {
-    background-color: rgba(220, 38, 38, 0.2) !important;
-    color: #fecaca !important;
-    border-color: rgba(248, 113, 113, 0.5) !important;
-  }
-
-  .softBtnDanger:hover:not(:disabled) {
-    background-color: rgba(220, 38, 38, 0.32) !important;
-    color: #fee2e2 !important;
-    border-color: rgba(252, 165, 165, 0.65) !important;
-  }
 }

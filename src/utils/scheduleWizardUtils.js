@@ -119,7 +119,7 @@ export function validateWizardStep(step, state) {
 
   if (step === 3) {
     if (state.rhythms.length === 0) {
-      errors.rhythms = 'Add at least one service time.'
+      errors.rhythms = 'Add at least one event.'
       return errors
     }
 

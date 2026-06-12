@@ -491,3 +491,40 @@ export function createAdminSchedule(payload) {
     body: JSON.stringify(payload),
   });
 }
+
+export function getAdminSchedule(scheduleId) {
+  return apiRequest(`/api/admin/schedules/${scheduleId}`, {
+    authenticated: true,
+  });
+}
+
+export function patchAdminSchedule(scheduleId, payload) {
+  return apiRequest(`/api/admin/schedules/${scheduleId}`, {
+    method: "PATCH",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function putAdminScheduleServingAreas(scheduleId, payload) {
+  return apiRequest(`/api/admin/schedules/${scheduleId}/serving-areas`, {
+    method: "PUT",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function putAdminScheduleRhythms(scheduleId, payload) {
+  return apiRequest(`/api/admin/schedules/${scheduleId}/rhythms`, {
+    method: "PUT",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteAdminSchedule(scheduleId) {
+  return apiRequest(`/api/admin/schedules/${scheduleId}`, {
+    method: "DELETE",
+    authenticated: true,
+  });
+}
