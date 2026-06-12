@@ -87,7 +87,7 @@ export default function AdminScheduleDetailPage() {
 
   const loadAll = useCallback(async () => {
     if (!Number.isInteger(scheduleId) || scheduleId < 1) {
-      setLoadError('Invalid schedule.')
+      setLoadError('Invalid template.')
       setLoading(false)
       return
     }
@@ -104,7 +104,7 @@ export default function AdminScheduleDetailPage() {
       setCatalogForms(Array.isArray(catalog?.forms) ? catalog.forms : [])
       applyDetailToState(detail, { setScheduleMeta, setName, setServingAreas, setRhythms })
     } catch (err) {
-      setLoadError(err instanceof ApiError ? err.message : 'Unable to load schedule.')
+      setLoadError(err instanceof ApiError ? err.message : 'Unable to load template.')
     } finally {
       setLoading(false)
     }
@@ -123,7 +123,7 @@ export default function AdminScheduleDetailPage() {
     const trimmed = name.trim()
 
     if (!trimmed) {
-      setNameError('Schedule name is required.')
+      setNameError('Template name is required.')
       return
     }
 
@@ -132,7 +132,7 @@ export default function AdminScheduleDetailPage() {
     try {
       const updated = await patchAdminSchedule(scheduleId, { name: trimmed })
       syncFromDetail(updated)
-      setToastMessage('Schedule name saved.')
+      setToastMessage('Template name saved.')
     } catch (err) {
       setNameError(err instanceof ApiError ? err.message : 'Unable to save name.')
     } finally {
@@ -342,9 +342,9 @@ export default function AdminScheduleDetailPage() {
 
     try {
       await deleteAdminSchedule(scheduleId)
-      navigate(listPath, { replace: true, state: { scheduleDeleted: true } })
+      navigate(listPath, { replace: true, state: { templateDeleted: true } })
     } catch (err) {
-      setDeleteError(err instanceof ApiError ? err.message : 'Unable to delete schedule.')
+      setDeleteError(err instanceof ApiError ? err.message : 'Unable to delete template.')
     } finally {
       setDeleting(false)
     }
@@ -363,30 +363,44 @@ export default function AdminScheduleDetailPage() {
 
       {!loading && !loadError ? (
         <>
-          <header className="admin-page-header">
+          <header className="admin-page-header admin-page-header--stacked-actions">
             <div>
-              <h1 className="admin-page-title">Schedule</h1>
+              <p className="admin-schedule-template-eyebrow admin-muted">Schedule template</p>
+              <h1 className="admin-page-title">{name.trim() || 'Untitled template'}</h1>
               <p className="admin-page-subtitle admin-muted">
-                {labelScheduleType(scheduleMeta.scheduleType)}
+                {labelScheduleType(scheduleMeta.scheduleType)} · Reusable pattern for generating
+                volunteer schedules
               </p>
             </div>
-            <button
-              type="button"
-              className="admin-danger-button"
-              onClick={() => {
-                setDeleteError('')
-                setDeleteOpen(true)
-              }}
-            >
-              Delete schedule
-            </button>
+            <div className="admin-page-header__actions">
+              <button
+                type="button"
+                className="admin-button admin-button--inline"
+                disabled
+                aria-disabled="true"
+                title="Coming soon"
+              >
+                Create schedule from template
+              </button>
+              <span className="admin-schedules-hub-section__soon admin-muted">Coming soon</span>
+              <button
+                type="button"
+                className="admin-danger-button"
+                onClick={() => {
+                  setDeleteError('')
+                  setDeleteOpen(true)
+                }}
+              >
+                Delete template
+              </button>
+            </div>
           </header>
 
           <section className="admin-schedule-detail-section">
-            <h2 className="admin-schedule-detail-section__title">Schedule name</h2>
+            <h2 className="admin-schedule-detail-section__title">Template name</h2>
             <div className="admin-schedule-detail-section__body">
               <label className="admin-label" htmlFor="schedule-detail-name">
-                Name
+                Template name
               </label>
               <input
                 id="schedule-detail-name"
@@ -703,6 +717,7 @@ export default function AdminScheduleDetailPage() {
         scheduleName={name}
         deleting={deleting}
         error={deleteError}
+        variant="template"
         onConfirm={() => void confirmDeleteSchedule()}
         onCancel={() => setDeleteOpen(false)}
       />

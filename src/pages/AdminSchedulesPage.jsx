@@ -17,7 +17,7 @@ import { adminScheduleDetailPath } from '../utils/organizationPaths'
 export default function AdminSchedulesPage() {
   const { organizationSlug } = useParams()
   const location = useLocation()
-  const [schedules, setSchedules] = useState([])
+  const [templates, setTemplates] = useState([])
   const [catalogForms, setCatalogForms] = useState([])
   const [listLoading, setListLoading] = useState(true)
   const [listError, setListError] = useState('')
@@ -30,16 +30,16 @@ export default function AdminSchedulesPage() {
   const [deleteError, setDeleteError] = useState('')
   const [deleting, setDeleting] = useState(false)
 
-  const loadSchedules = useCallback(async () => {
+  const loadTemplates = useCallback(async () => {
     setListLoading(true)
     setListError('')
 
     try {
       const data = await getAdminSchedules()
-      setSchedules(Array.isArray(data?.schedules) ? data.schedules : [])
+      setTemplates(Array.isArray(data?.schedules) ? data.schedules : [])
     } catch (err) {
-      setSchedules([])
-      setListError(err instanceof ApiError ? err.message : 'Unable to load schedules.')
+      setTemplates([])
+      setListError(err instanceof ApiError ? err.message : 'Unable to load schedule templates.')
     } finally {
       setListLoading(false)
     }
@@ -64,12 +64,12 @@ export default function AdminSchedulesPage() {
   }, [])
 
   useEffect(() => {
-    void loadSchedules()
-  }, [loadSchedules])
+    void loadTemplates()
+  }, [loadTemplates])
 
   useEffect(() => {
-    if (location.state?.scheduleDeleted) {
-      setToastMessage('Schedule deleted.')
+    if (location.state?.templateDeleted) {
+      setToastMessage('Template deleted.')
       window.history.replaceState({}, document.title)
     }
   }, [location.state])
@@ -82,7 +82,7 @@ export default function AdminSchedulesPage() {
   }
 
   function handleSaved(created) {
-    setSchedules((current) => [
+    setTemplates((current) => [
       {
         id: created.id,
         name: created.name,
@@ -94,6 +94,7 @@ export default function AdminSchedulesPage() {
       },
       ...current,
     ])
+    setToastMessage('Template created.')
   }
 
   async function confirmDeleteFromList() {
@@ -106,11 +107,11 @@ export default function AdminSchedulesPage() {
 
     try {
       await deleteAdminSchedule(deleteTarget.id)
-      setSchedules((current) => current.filter((row) => row.id !== deleteTarget.id))
+      setTemplates((current) => current.filter((row) => row.id !== deleteTarget.id))
       setDeleteTarget(null)
-      setToastMessage('Schedule deleted.')
+      setToastMessage('Template deleted.')
     } catch (err) {
-      setDeleteError(err instanceof ApiError ? err.message : 'Unable to delete schedule.')
+      setDeleteError(err instanceof ApiError ? err.message : 'Unable to delete template.')
     } finally {
       setDeleting(false)
     }
@@ -122,59 +123,93 @@ export default function AdminSchedulesPage() {
         <div>
           <h1 className="admin-page-title">Schedules</h1>
           <p className="admin-page-subtitle">
-            Set up events and staffing needs for your serving areas.
+            Manage active volunteer schedules and reusable templates you generate them from.
           </p>
         </div>
-        <button
-          type="button"
-          className="admin-button"
-          onClick={openWizard}
-        >
-          Create schedule
-        </button>
       </header>
 
-      {listLoading ? <p className="admin-loading">Loading…</p> : null}
-      {listError ? <p className="admin-error">{listError}</p> : null}
-
-      {!listLoading && !listError && schedules.length === 0 ? (
-        <div className="admin-empty-state">
-          <p>No schedules yet. Create one to connect serving areas with events and staffing.</p>
+      <section className="admin-schedules-hub-section" aria-labelledby="active-schedules-heading">
+        <div className="admin-schedules-hub-section__header">
+          <h2 id="active-schedules-heading" className="admin-schedules-hub-section__title">
+            Active &amp; Upcoming Schedules
+          </h2>
+          <span className="admin-schedules-hub-section__action-wrap">
+            <button
+              type="button"
+              className="admin-button admin-button--inline"
+              disabled
+              aria-disabled="true"
+              title="Coming soon"
+            >
+              Create schedule
+            </button>
+            <span className="admin-schedules-hub-section__soon admin-muted">Coming soon</span>
+          </span>
         </div>
-      ) : null}
+        <div className="admin-empty-state">
+          <p>
+            No active schedules yet. Create a schedule from one of your templates when you&apos;re
+            ready.
+          </p>
+        </div>
+      </section>
 
-      {!listLoading && !listError && schedules.length > 0 ? (
-        <ul className="admin-schedule-list">
-          {schedules.map((schedule) => (
-            <li key={schedule.id} className="admin-schedule-card">
-              <div className="admin-schedule-card__main">
-                <Link
-                  to={adminScheduleDetailPath(organizationSlug, schedule.id)}
-                  className="admin-schedule-card__link"
+      <section className="admin-schedules-hub-section" aria-labelledby="schedule-templates-heading">
+        <div className="admin-schedules-hub-section__header">
+          <h2 id="schedule-templates-heading" className="admin-schedules-hub-section__title">
+            Schedule Templates
+          </h2>
+          <button type="button" className="admin-button admin-button--inline" onClick={openWizard}>
+            Create schedule template
+          </button>
+        </div>
+        <p className="admin-help admin-schedules-hub-section__lead">
+          Templates define serving areas, events, and staffing needs. Use them to build actual
+          schedules later.
+        </p>
+
+        {listLoading ? <p className="admin-loading">Loading templates…</p> : null}
+        {listError ? <p className="admin-error">{listError}</p> : null}
+
+        {!listLoading && !listError && templates.length === 0 ? (
+          <div className="admin-empty-state">
+            <p>No templates yet. Create one to set up events and staffing for your serving areas.</p>
+          </div>
+        ) : null}
+
+        {!listLoading && !listError && templates.length > 0 ? (
+          <ul className="admin-schedule-list">
+            {templates.map((template) => (
+              <li key={template.id} className="admin-schedule-card">
+                <div className="admin-schedule-card__main">
+                  <Link
+                    to={adminScheduleDetailPath(organizationSlug, template.id)}
+                    className="admin-schedule-card__link"
+                  >
+                    <h3 className="admin-schedule-card__title">{template.name}</h3>
+                    <p className="admin-schedule-card__meta admin-muted">
+                      Template · {template.rhythmCount} event{template.rhythmCount === 1 ? '' : 's'}{' '}
+                      · {template.servingAreaCount} serving area
+                      {template.servingAreaCount === 1 ? '' : 's'} · Updated{' '}
+                      {formatDateTime(template.updatedAt ?? template.createdAt)}
+                    </p>
+                  </Link>
+                </div>
+                <button
+                  type="button"
+                  className={`${softBtn.softBtnDanger} admin-schedule-card__delete`}
+                  onClick={() => {
+                    setDeleteError('')
+                    setDeleteTarget(template)
+                  }}
                 >
-                  <h2 className="admin-schedule-card__title">{schedule.name}</h2>
-                  <p className="admin-schedule-card__meta admin-muted">
-                    {schedule.rhythmCount} event{schedule.rhythmCount === 1 ? '' : 's'} ·{' '}
-                    {schedule.servingAreaCount} serving area
-                    {schedule.servingAreaCount === 1 ? '' : 's'} · Created{' '}
-                    {formatDateTime(schedule.createdAt)}
-                  </p>
-                </Link>
-              </div>
-              <button
-                type="button"
-                className={`${softBtn.softBtnDanger} admin-schedule-card__delete`}
-                onClick={() => {
-                  setDeleteError('')
-                  setDeleteTarget(schedule)
-                }}
-              >
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </section>
 
       <CreateScheduleWizard
         open={wizardOpen}
@@ -191,6 +226,7 @@ export default function AdminSchedulesPage() {
         scheduleName={deleteTarget?.name}
         deleting={deleting}
         error={deleteError}
+        variant="template"
         onConfirm={() => void confirmDeleteFromList()}
         onCancel={() => setDeleteTarget(null)}
       />

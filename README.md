@@ -66,16 +66,16 @@ Product and API details live in the parent folder:
 | `/:organizationSlug/admin/login` | Org admin login |
 | `/:organizationSlug/admin` | Admin home (counts, forms, Planning Center connect when API credentials are set) |
 | `/:organizationSlug/admin/import` | Planning Center import v1 (hidden on demo; requires PC connected) |
-| `/:organizationSlug/admin/schedules` | Schedules list and create wizard (also `/demo/admin/schedules`) |
+| `/:organizationSlug/admin/schedules` | Schedules hub: **Active & upcoming schedules** (empty until generated schedules ship) and **Schedule templates** (create template wizard). Demo: `/demo/admin/schedules`. |
+| `/:organizationSlug/admin/schedules/:id` | Schedule **template** detail — edit name, serving areas, events & staffing; delete template. **Create schedule from template** is UI placeholder (coming soon). |
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
 | `/:organizationSlug/admin/volunteers/:id` | Volunteer detail — status toolbar, PC sync/import badge, blackout dates, in-sync / stale banner, **Edit submission**, staff notes, **Delete** |
 | `/:organizationSlug/admin/volunteers/:id/edit` | Admin intake editor (serving preferences include blackout dates; card layout). PC import rows: detail read-only, no edit. Demo org: no edit (API blocks PUT). `/admin/submissions/:id/edit` redirects here. |
 | `/:organizationSlug/admin/profile` | Profile; organization edit (owner); **Admin** card (collapsible list, invites for owner); notification prefs; password reset; **owner-only** danger zone |
 | `/:organizationSlug/admin/team` | Redirects to profile (legacy URL) |
-| `/:organizationSlug/admin/forms` | Forms list + links to public URLs |
+| `/:organizationSlug/admin/forms` | Forms hub — **Active forms** and **Inactive forms**; public URLs, activate/deactivate, **Add new form** |
 | `/:organizationSlug/admin/forms/new` | Create form (template or blank) |
 | `/:organizationSlug/admin/forms/:formSlug/edit` | Edit form (sections, areas, acknowledgements; **Save changes** persists) |
-| `/:organizationSlug/admin/schedules` | Schedules list and create wizard |
 | `/:organizationSlug/admin/form` | Legacy redirect → `/admin/forms` |
 
 Unknown paths redirect to `/`.
@@ -87,8 +87,9 @@ Unknown paths redirect to `/`.
 3. **Real org:** register at `/signup` or use seed admin `church@example.com` / `temporary-password` with organization slug `demo` at `/login` or `/:slug/admin/login`.
 4. Dashboard: set search/status/form/archived filters, click **Apply filters**. Change status on a row or detail page (saves immediately). On a real org (`/:slug/admin`), use **Connect Planning Center** when the server has OAuth secrets configured.
 5. Volunteer detail (non-demo): **Edit submission** → change intake → **Save changes** → detail shows save notice; if linked to PC, use **Sync to Planning Center** after intake edits.
-6. Forms (non-demo orgs): list → **New form** → edit → **Save changes**. Share `/:slug/forms/:formSlug` from the forms list (or set `VITE_PUBLIC_SITE_URL` for copy-link URLs).
-7. **Team (non-demo):** owner opens `/:slug/admin/team`, invites by email; invitee uses `/accept-invite`. **Forgot password:** `/forgot-password` with org slug + email.
+6. Forms (non-demo orgs): **Active forms** / **Inactive forms** on `/:slug/admin/forms` → **Add new form** → edit → **Save changes**. Activate/deactivate moves cards between sections. Share `/:slug/forms/:formSlug` from the list (or set `VITE_PUBLIC_SITE_URL` for copy-link URLs).
+7. Schedules (non-demo orgs): `/:slug/admin/schedules` — create **schedule templates** (wizard); open a template to edit events & staffing. Generated dated schedules are not implemented yet (top section is placeholder).
+8. **Team (non-demo):** owner opens `/:slug/admin/team`, invites by email; invitee uses `/accept-invite`. **Forgot password:** `/forgot-password` with org slug + email.
 
 Demo org forms are read-only on the API; the UI still shows forms for browsing.
 

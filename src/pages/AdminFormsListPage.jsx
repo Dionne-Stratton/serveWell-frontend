@@ -197,110 +197,167 @@ export default function AdminFormsListPage({
   const cardButtonClass = softBtn.softBtn
   const deleteButtonClass = softBtn.softBtnDanger
 
+  const activeForms = forms.filter((form) => form.isActive !== false)
+  const inactiveForms = forms.filter((form) => form.isActive === false)
+
+  function renderFormCard(form, { inactiveSection = false } = {}) {
+    const publicUrl = publicVolunteerFormUrl(organizationSlug, form.slug)
+    const volunteerViewPath = isDemoOrg
+      ? demoVolunteerPath()
+      : `/${organizationSlug}/forms/${form.slug}`
+    const linkCopied = copiedFormId === form.id
+    const cardClassName = inactiveSection
+      ? 'admin-form-card admin-form-card--inactive'
+      : 'admin-form-card'
+
+    return (
+      <article key={form.id} className={cardClassName}>
+        <header className="admin-form-card__header">
+          <h3 className="admin-form-card__title">{form.name}</h3>
+        </header>
+
+        <p className="admin-form-card__url">
+          <span className="admin-form-card__url-line">
+            <span className="admin-form-card__url-text">{publicUrl}</span>
+            <button
+              type="button"
+              className="admin-copy-link-btn"
+              aria-label={linkCopied ? 'Copied' : 'Copy link'}
+              title={linkCopied ? 'Copied' : 'Copy link'}
+              onClick={() => handleCopy(form, publicUrl)}
+            >
+              {linkCopied ? <CopiedIcon /> : <CopyLinkIcon />}
+            </button>
+          </span>
+        </p>
+
+        <div className={styles.actions}>
+          <a
+            className={`${cardButtonClass} ${styles.viewLink}`}
+            href={volunteerViewPath}
+            target="_blank"
+            rel="noreferrer"
+            title="Opens in new tab"
+          >
+            View
+            <ExternalLinkIcon />
+          </a>
+          {isDemoOrg ? (
+            <Link
+              className={cardButtonClass}
+              to={adminFormSetupPath(organizationSlug, form.slug)}
+            >
+              View setup
+            </Link>
+          ) : (
+            <>
+              <Link
+                className={cardButtonClass}
+                to={organizationAdminFormEditPath(organizationSlug, form.slug)}
+              >
+                Edit
+              </Link>
+              <button
+                type="button"
+                className={cardButtonClass}
+                onClick={() => handleSetFormActive(form, !form.isActive)}
+              >
+                {form.isActive !== false ? 'Deactivate' : 'Activate'}
+              </button>
+              <button
+                type="button"
+                className={deleteButtonClass}
+                onClick={() => handleDelete(form)}
+              >
+                Delete
+              </button>
+            </>
+          )}
+        </div>
+      </article>
+    )
+  }
+
   return (
     <AdminLayout>
+      <header className="admin-page-header">
+        <div>
+          <h1 className="admin-page-title">Forms</h1>
+          <p className="admin-page-subtitle">
+            Active forms accept new volunteer submissions. Inactive forms keep their link but turn
+            submissions off.
+          </p>
+        </div>
+      </header>
+
       {isDemoOrg ? (
         <p className="admin-muted admin-forms-list__demo-note">
           Demo: you can open the volunteer form and view how this form is set up. Editing is
           disabled here.
         </p>
-      ) : (
-        <p className="admin-inline-actions">
-          <Link
-            className={softBtn.saveBtn}
-            to={organizationAdminFormNewPath(organizationSlug)}
-          >
-            + Add New
-          </Link>
-        </p>
-      )}
+      ) : null}
+
       {loading ? <p className="admin-loading">Loading forms…</p> : null}
       {error ? <p className="admin-error">{error}</p> : null}
 
       {!loading && !error ? (
-        <div className="admin-form-card-list">
-          {forms.length === 0 ? (
-            <p className="admin-muted">No volunteer forms yet.</p>
-          ) : (
-            forms.map((form) => {
-              const publicUrl = publicVolunteerFormUrl(organizationSlug, form.slug)
-              const volunteerViewPath = isDemoOrg
-                ? demoVolunteerPath()
-                : `/${organizationSlug}/forms/${form.slug}`
-              const linkCopied = copiedFormId === form.id
+        <>
+          <section className="admin-schedules-hub-section" aria-labelledby="active-forms-heading">
+            <div className="admin-schedules-hub-section__header">
+              <h2 id="active-forms-heading" className="admin-schedules-hub-section__title">
+                Active Forms
+              </h2>
+              {!isDemoOrg ? (
+                <Link
+                  className="admin-button admin-button--inline"
+                  to={organizationAdminFormNewPath(organizationSlug)}
+                >
+                  Add new form
+                </Link>
+              ) : null}
+            </div>
+            <p className="admin-help admin-schedules-hub-section__lead">
+              These forms are live for volunteers. Share the link on your website or in
+              announcements.
+            </p>
 
-              return (
-                <article key={form.id} className="admin-form-card">
-                  <header className="admin-form-card__header">
-                    <h2 className="admin-form-card__title">{form.name}</h2>
-                    {!form.isActive ? (
-                      <span className="admin-form-card__badge">Inactive</span>
-                    ) : null}
-                  </header>
+            {activeForms.length === 0 ? (
+              <div className="admin-empty-state">
+                <p>
+                  {forms.length === 0
+                    ? 'No volunteer forms yet. Add a form to start collecting sign-ups.'
+                    : 'No active forms. Activate a form below or add a new one.'}
+                </p>
+              </div>
+            ) : (
+              <div className="admin-form-card-list">
+                {activeForms.map((form) => renderFormCard(form))}
+              </div>
+            )}
+          </section>
 
-                  <p className="admin-form-card__url">
-                    <span className="admin-form-card__url-line">
-                      <span className="admin-form-card__url-text">{publicUrl}</span>
-                      <button
-                        type="button"
-                        className="admin-copy-link-btn"
-                        aria-label={linkCopied ? 'Copied' : 'Copy link'}
-                        title={linkCopied ? 'Copied' : 'Copy link'}
-                        onClick={() => handleCopy(form, publicUrl)}
-                      >
-                        {linkCopied ? <CopiedIcon /> : <CopyLinkIcon />}
-                      </button>
-                    </span>
-                  </p>
+          <section className="admin-schedules-hub-section" aria-labelledby="inactive-forms-heading">
+            <div className="admin-schedules-hub-section__header">
+              <h2 id="inactive-forms-heading" className="admin-schedules-hub-section__title">
+                Inactive Forms
+              </h2>
+            </div>
+            <p className="admin-help admin-schedules-hub-section__lead">
+              Deactivated forms do not accept new submissions. Existing volunteer records are
+              unchanged.
+            </p>
 
-                  <div className={styles.actions}>
-                    <a
-                      className={`${cardButtonClass} ${styles.viewLink}`}
-                      href={volunteerViewPath}
-                      target="_blank"
-                      rel="noreferrer"
-                      title="Opens in new tab"
-                    >
-                      View
-                      <ExternalLinkIcon />
-                    </a>
-                    {isDemoOrg ? (
-                      <Link
-                        className={cardButtonClass}
-                        to={adminFormSetupPath(organizationSlug, form.slug)}
-                      >
-                        View setup
-                      </Link>
-                    ) : (
-                      <>
-                        <Link
-                          className={cardButtonClass}
-                          to={organizationAdminFormEditPath(organizationSlug, form.slug)}
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          type="button"
-                          className={cardButtonClass}
-                          onClick={() => handleSetFormActive(form, !form.isActive)}
-                        >
-                          {form.isActive ? 'Deactivate' : 'Activate'}
-                        </button>
-                        <button
-                          type="button"
-                          className={deleteButtonClass}
-                          onClick={() => handleDelete(form)}
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </article>
-              )
-            })
-          )}
-        </div>
+            {inactiveForms.length === 0 ? (
+              <div className="admin-empty-state">
+                <p>No inactive forms.</p>
+              </div>
+            ) : (
+              <div className="admin-form-card-list">
+                {inactiveForms.map((form) => renderFormCard(form, { inactiveSection: true }))}
+              </div>
+            )}
+          </section>
+        </>
       ) : null}
     </AdminLayout>
   )

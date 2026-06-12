@@ -14,7 +14,7 @@ import {
 } from '../../utils/scheduleWizardUtils'
 
 const STEPS = [
-  'Schedule basics',
+  'Template basics',
   'Serving areas',
   'Events',
   'Staffing needs',
@@ -192,7 +192,7 @@ export default function CreateScheduleWizard({
   async function handleSave() {
     const errors = validateWizardStep(4, state)
     if (!state.name.trim()) {
-      errors.name = 'Schedule name is required.'
+      errors.name = 'Template name is required.'
     }
 
     if (Object.keys(errors).length > 0) {
@@ -216,7 +216,7 @@ export default function CreateScheduleWizard({
       onClose()
     } catch (error) {
       setSubmitError(
-        error instanceof ApiError ? error.message : 'Unable to save this schedule.',
+        error instanceof ApiError ? error.message : 'Unable to save this template.',
       )
       setStep(5)
     } finally {
@@ -230,7 +230,7 @@ export default function CreateScheduleWizard({
         <div className="admin-schedule-wizard__step">
           <div className="admin-field">
             <label className="admin-label" htmlFor="schedule-wizard-name">
-              Schedule name
+              Template name
             </label>
             <input
               id="schedule-wizard-name"
@@ -242,7 +242,7 @@ export default function CreateScheduleWizard({
           </div>
           <div className="admin-field">
             <label className="admin-label" htmlFor="schedule-wizard-type">
-              Schedule type
+              Template type
             </label>
             <select
               id="schedule-wizard-type"
@@ -382,7 +382,7 @@ export default function CreateScheduleWizard({
     if (step === 3) {
       return (
         <div className="admin-schedule-wizard__step">
-          <p className="admin-help">Add each event for this schedule (one-off or recurring).</p>
+          <p className="admin-help">Add each event for this template (one-off or recurring).</p>
           {fieldErrors.rhythms ? <p className="admin-error-inline">{fieldErrors.rhythms}</p> : null}
           <ul className="admin-schedule-wizard__rhythm-list">
             {state.rhythms.map((rhythm, index) => (
@@ -669,7 +669,7 @@ export default function CreateScheduleWizard({
         aria-labelledby="create-schedule-wizard-title"
       >
         <h2 id="create-schedule-wizard-title" className="admin-dialog__title">
-          Create schedule
+          Create schedule template
         </h2>
         <ol className="admin-schedule-wizard__steps" aria-label="Wizard progress">
           {STEPS.map((label, index) => {
@@ -714,7 +714,7 @@ export default function CreateScheduleWizard({
               disabled={saving}
               onClick={() => void handleSave()}
             >
-              {saving ? 'Saving…' : 'Save schedule'}
+              {saving ? 'Saving…' : 'Save template'}
             </button>
           )}
         </div>

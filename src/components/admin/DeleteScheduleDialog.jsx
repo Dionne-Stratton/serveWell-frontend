@@ -7,12 +7,14 @@ export default function DeleteScheduleDialog({
   error,
   onConfirm,
   onCancel,
+  variant = 'template',
 }) {
   if (!open) {
     return null
   }
 
-  const titleName = scheduleName?.trim() || 'this schedule'
+  const isTemplate = variant === 'template'
+  const titleName = scheduleName?.trim() || (isTemplate ? 'this template' : 'this schedule')
 
   return (
     <div className="admin-dialog-backdrop" role="presentation">
@@ -28,8 +30,9 @@ export default function DeleteScheduleDialog({
         </h2>
         <div id="delete-schedule-dialog-desc" className="admin-dialog__body">
           <p>
-            This permanently removes the schedule, its events, and staffing needs.
-            This cannot be undone.
+            {isTemplate
+              ? 'This permanently removes the template, its events, and staffing needs. This cannot be undone.'
+              : 'This permanently removes the schedule, its events, and staffing needs. This cannot be undone.'}
           </p>
           {error ? <p className="admin-error">{error}</p> : null}
         </div>
@@ -40,7 +43,7 @@ export default function DeleteScheduleDialog({
             disabled={deleting}
             onClick={onConfirm}
           >
-            {deleting ? 'Deleting…' : 'Delete schedule'}
+            {deleting ? 'Deleting…' : isTemplate ? 'Delete template' : 'Delete schedule'}
           </button>
           <button type="button" className={softBtn.softBtn} disabled={deleting} onClick={onCancel}>
             Cancel

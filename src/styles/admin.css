@@ -1434,6 +1434,93 @@
   font-size: 0.88rem;
 }
 
+.admin-schedules-hub-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-schedules-hub-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.admin-schedules-hub-section__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.admin-schedules-hub-section__title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.admin-schedules-hub-section__lead {
+  margin: 0 0 1rem;
+  max-width: 42rem;
+}
+
+.admin-schedules-hub-section__action-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.65rem;
+}
+
+.admin-schedules-hub-section__soon {
+  font-size: 0.85rem;
+}
+
+.admin-schedules-hub-section__header .admin-button.admin-button--inline {
+  padding: 0.35rem 0.625rem;
+  font-size: 0.875rem;
+}
+
+.admin-page .admin-schedules-hub-section__header a.admin-button.admin-button--inline,
+.admin-page .admin-schedules-hub-section__header a.admin-button.admin-button--inline:visited {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.admin-page .admin-schedules-hub-section__header a.admin-button.admin-button--inline:hover {
+  color: #ffffff;
+}
+
+.admin-schedules-hub-section__header .admin-button.admin-button--inline:not(:disabled) {
+  color: #ffffff;
+}
+
+.admin-page-header--stacked-actions .admin-page-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.admin-schedule-template-eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-page-header--stacked-actions {
+  align-items: flex-start;
+}
+
+.admin-page .admin-page-header .admin-button.admin-button--inline:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .admin-page-header {
   display: flex;
   flex-wrap: wrap;
@@ -2915,6 +3002,15 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
+}
+
+.admin-form-card--inactive {
+  background: color-mix(in srgb, var(--surface) 92%, var(--muted) 8%);
+  border-color: color-mix(in srgb, var(--border) 85%, transparent);
+}
+
+.admin-form-card--inactive .admin-form-card__title {
+  color: var(--muted);
 }
 
 .admin-form-card__header {
