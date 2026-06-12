@@ -473,3 +473,21 @@ export function deleteAdminRequirement(requirementId) {
     authenticated: true,
   });
 }
+
+export function getAdminSchedules() {
+  return apiRequest("/api/admin/schedules", { authenticated: true });
+}
+
+export function getAdminScheduleServingAreaOptions() {
+  return apiRequest("/api/admin/schedules/serving-area-options", {
+    authenticated: true,
+  });
+}
+
+export function createAdminSchedule(payload) {
+  return apiRequest("/api/admin/schedules", {
+    method: "POST",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}

@@ -163,6 +163,21 @@ export function adminImportPath(organizationSlug) {
   return organizationAdminImportPath(organizationSlug)
 }
 
+export function organizationAdminSchedulesPath(organizationSlug) {
+  return `/${organizationSlug}/admin/schedules`
+}
+
+export function demoAdminSchedulesPath() {
+  return '/demo/admin/schedules'
+}
+
+export function adminSchedulesPath(organizationSlug) {
+  if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
+    return demoAdminSchedulesPath()
+  }
+  return organizationAdminSchedulesPath(organizationSlug)
+}
+
 export function adminVolunteersFilteredPath(organizationSlug, status) {
   const base = adminVolunteersPath(organizationSlug)
   if (!status) {

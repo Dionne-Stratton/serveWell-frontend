@@ -66,6 +66,7 @@ Product and API details live in the parent folder:
 | `/:organizationSlug/admin/login` | Org admin login |
 | `/:organizationSlug/admin` | Admin home (counts, forms, Planning Center connect when API credentials are set) |
 | `/:organizationSlug/admin/import` | Planning Center import v1 (hidden on demo; requires PC connected) |
+| `/:organizationSlug/admin/schedules` | Schedules list and create wizard (also `/demo/admin/schedules`) |
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
 | `/:organizationSlug/admin/volunteers/:id` | Volunteer detail — status toolbar, PC sync/import badge, blackout dates, in-sync / stale banner, **Edit submission**, staff notes, **Delete** |
 | `/:organizationSlug/admin/volunteers/:id/edit` | Admin intake editor (serving preferences include blackout dates; card layout). PC import rows: detail read-only, no edit. Demo org: no edit (API blocks PUT). `/admin/submissions/:id/edit` redirects here. |
@@ -74,6 +75,7 @@ Product and API details live in the parent folder:
 | `/:organizationSlug/admin/forms` | Forms list + links to public URLs |
 | `/:organizationSlug/admin/forms/new` | Create form (template or blank) |
 | `/:organizationSlug/admin/forms/:formSlug/edit` | Edit form (sections, areas, acknowledgements; **Save changes** persists) |
+| `/:organizationSlug/admin/schedules` | Schedules list and create wizard |
 | `/:organizationSlug/admin/form` | Legacy redirect → `/admin/forms` |
 
 Unknown paths redirect to `/`.
