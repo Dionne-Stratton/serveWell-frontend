@@ -539,10 +539,39 @@ export function getAdminGeneratedSchedule(generatedScheduleId) {
   });
 }
 
+export function deleteAdminGeneratedSchedule(generatedScheduleId) {
+  return apiRequest(`/api/admin/generated-schedules/${generatedScheduleId}`, {
+    method: "DELETE",
+    authenticated: true,
+  });
+}
+
 export function createAdminGeneratedSchedule(payload) {
   return apiRequest("/api/admin/generated-schedules", {
     method: "POST",
     authenticated: true,
     body: JSON.stringify(payload),
   });
+}
+
+export function getAdminGeneratedScheduleOccurrence(generatedScheduleId, occurrenceId) {
+  return apiRequest(
+    `/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}`,
+    { authenticated: true },
+  );
+}
+
+export function patchAdminGeneratedScheduleOccurrenceStaffing(
+  generatedScheduleId,
+  occurrenceId,
+  payload,
+) {
+  return apiRequest(
+    `/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}`,
+    {
+      method: "PATCH",
+      authenticated: true,
+      body: JSON.stringify(payload),
+    },
+  );
 }

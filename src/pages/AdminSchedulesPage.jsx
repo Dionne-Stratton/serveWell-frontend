@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   ApiError,
+  deleteAdminGeneratedSchedule,
   deleteAdminSchedule,
   getAdminGeneratedSchedules,
   getAdminScheduleServingAreaOptions,
@@ -13,7 +14,7 @@ import CreateGeneratedScheduleDialog from '../components/admin/CreateGeneratedSc
 import CreateScheduleWizard from '../components/admin/CreateScheduleWizard'
 import DeleteScheduleDialog from '../components/admin/DeleteScheduleDialog'
 import GeneratedScheduleStatus from '../components/admin/GeneratedScheduleStatus'
-import { formatDateTime } from '../constants/labels'
+import { formatBlackoutDateRange, formatDateTime } from '../constants/labels'
 import { labelScheduleType } from '../constants/schedule'
 import softBtn from '../styles/adminSoftButtons.module.css'
 import {
@@ -106,6 +107,11 @@ export default function AdminSchedulesPage() {
       window.history.replaceState({}, document.title)
     }
 
+    if (location.state?.generatedScheduleDeleted) {
+      setToastMessage('Schedule deleted.')
+      window.history.replaceState({}, document.title)
+    }
+
     if (location.state?.createGeneratedFromTemplateId) {
       setCreateScheduleTemplateId(location.state.createGeneratedFromTemplateId)
       setCreateScheduleOpen(true)
@@ -159,12 +165,25 @@ export default function AdminSchedulesPage() {
     setDeleting(true)
 
     try {
-      await deleteAdminSchedule(deleteTarget.id)
-      setTemplates((current) => current.filter((row) => row.id !== deleteTarget.id))
-      setDeleteTarget(null)
-      setToastMessage('Template deleted.')
+      if (deleteTarget.kind === 'generated') {
+        await deleteAdminGeneratedSchedule(deleteTarget.id)
+        setGeneratedSchedules((current) => current.filter((row) => row.id !== deleteTarget.id))
+        setDeleteTarget(null)
+        setToastMessage('Schedule deleted.')
+      } else {
+        await deleteAdminSchedule(deleteTarget.id)
+        setTemplates((current) => current.filter((row) => row.id !== deleteTarget.id))
+        setDeleteTarget(null)
+        setToastMessage('Template deleted.')
+      }
     } catch (err) {
-      setDeleteError(err instanceof ApiError ? err.message : 'Unable to delete template.')
+      setDeleteError(
+        err instanceof ApiError
+          ? err.message
+          : deleteTarget.kind === 'generated'
+            ? 'Unable to delete schedule.'
+            : 'Unable to delete template.',
+      )
     } finally {
       setDeleting(false)
     }
@@ -229,12 +248,23 @@ export default function AdminSchedulesPage() {
                       <GeneratedScheduleStatus status={row.status} />
                       <span className="admin-muted">
                         {' '}
-                        · {row.occurrenceCount} event
+                        · {formatBlackoutDateRange(row.startDate, row.endDate)} ·{' '}
+                        {row.occurrenceCount} event
                         {row.occurrenceCount === 1 ? '' : 's'} · From {row.templateName}
                       </span>
                     </p>
                   </Link>
                 </div>
+                <button
+                  type="button"
+                  className={`${softBtn.softBtnDanger} admin-schedule-card__delete`}
+                  onClick={() => {
+                    setDeleteError('')
+                    setDeleteTarget({ kind: 'generated', id: row.id, name: row.name })
+                  }}
+                >
+                  Delete
+                </button>
               </li>
             ))}
           </ul>
@@ -288,7 +318,7 @@ export default function AdminSchedulesPage() {
                   className={`${softBtn.softBtnDanger} admin-schedule-card__delete`}
                   onClick={() => {
                     setDeleteError('')
-                    setDeleteTarget(template)
+                    setDeleteTarget({ kind: 'template', id: template.id, name: template.name })
                   }}
                 >
                   Delete
@@ -325,7 +355,7 @@ export default function AdminSchedulesPage() {
         scheduleName={deleteTarget?.name}
         deleting={deleting}
         error={deleteError}
-        variant="template"
+        variant={deleteTarget?.kind === 'generated' ? 'generated' : 'template'}
         onConfirm={() => void confirmDeleteFromList()}
         onCancel={() => setDeleteTarget(null)}
       />

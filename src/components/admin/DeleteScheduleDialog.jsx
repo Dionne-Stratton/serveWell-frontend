@@ -14,6 +14,7 @@ export default function DeleteScheduleDialog({
   }
 
   const isTemplate = variant === 'template'
+  const isGenerated = variant === 'generated'
   const titleName = scheduleName?.trim() || (isTemplate ? 'this template' : 'this schedule')
 
   return (
@@ -32,7 +33,9 @@ export default function DeleteScheduleDialog({
           <p>
             {isTemplate
               ? 'This permanently removes the template, its events, and staffing needs. This cannot be undone.'
-              : 'This permanently removes the schedule, its events, and staffing needs. This cannot be undone.'}
+              : isGenerated
+                ? 'This permanently removes this created schedule, its events, and staffing needs. The schedule template is not affected. This cannot be undone.'
+                : 'This permanently removes the schedule, its events, and staffing needs. This cannot be undone.'}
           </p>
           {error ? <p className="admin-error">{error}</p> : null}
         </div>

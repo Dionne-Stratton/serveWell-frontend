@@ -92,30 +92,9 @@ export function formatCompactUsDateRange(startDate, endDate) {
   return formatBlackoutDateRange(startDate, endDate)
 }
 
-/** Default name when creating a generated schedule from a template. */
-export function suggestGeneratedScheduleName(
-  templateName,
-  scheduleType,
-  { startDate, endDate, month, year } = {},
-) {
-  if (scheduleType === 'monthly' && month && year) {
-    const label = new Date(year, month - 1, 1).toLocaleDateString(US_DATE_LOCALE, {
-      month: 'long',
-      year: 'numeric',
-    })
-    return `${label} Schedule`
-  }
-
-  const template = templateName?.trim()
-  if (scheduleType === 'special_event' && template && startDate && endDate) {
-    return `${template} — ${formatCompactUsDateRange(startDate, endDate)}`
-  }
-
-  if (template && startDate && endDate) {
-    return `${template} — ${formatCompactUsDateRange(startDate, endDate)}`
-  }
-
-  return ''
+/** Default name when creating a generated schedule from a template (template name only; dates live in overview). */
+export function suggestGeneratedScheduleName(templateName) {
+  return templateName?.trim() ?? ''
 }
 
 /** @deprecated Use stored generated schedule name for display. */

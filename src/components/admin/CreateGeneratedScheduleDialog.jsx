@@ -76,22 +76,6 @@ function initialDateState() {
 
 
 
-function datesReadyForSuggestion(scheduleType, dates) {
-
-  if (scheduleType === 'monthly') {
-
-    return Boolean(dates.month && dates.year)
-
-  }
-
-
-
-  return Boolean(dates.startDate && dates.endDate)
-
-}
-
-
-
 export default function CreateGeneratedScheduleDialog({
 
   open,
@@ -173,38 +157,12 @@ export default function CreateGeneratedScheduleDialog({
 
 
   const suggestedName = useMemo(() => {
-
-    if (!selectedTemplate || !datesReadyForSuggestion(scheduleType, dates)) {
-
+    if (!selectedTemplate) {
       return ''
-
     }
 
-
-
-    if (scheduleType === 'monthly') {
-
-      return suggestGeneratedScheduleName(selectedTemplate.name, scheduleType, {
-
-        month: dates.month,
-
-        year: dates.year,
-
-      })
-
-    }
-
-
-
-    return suggestGeneratedScheduleName(selectedTemplate.name, scheduleType, {
-
-      startDate: dates.startDate,
-
-      endDate: dates.endDate,
-
-    })
-
-  }, [selectedTemplate, scheduleType, dates])
+    return suggestGeneratedScheduleName(selectedTemplate.name)
+  }, [selectedTemplate])
 
 
 

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { ApiError, getAdminGeneratedSchedule } from '../api/client'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ApiError, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
+import DeleteScheduleDialog from '../components/admin/DeleteScheduleDialog'
+import GeneratedOccurrenceDetailDialog from '../components/admin/GeneratedOccurrenceDetailDialog'
 import GeneratedScheduleStatus from '../components/admin/GeneratedScheduleStatus'
 import { formatBlackoutDateRange, formatDateOnly } from '../constants/labels'
 import { formatScheduleTime, labelScheduleType } from '../constants/schedule'
@@ -10,11 +12,38 @@ import {
   adminSchedulesPath,
 } from '../utils/organizationPaths'
 
+function mergeOccurrenceIntoSchedule(schedule, updatedOccurrence) {
+  if (!schedule || !updatedOccurrence) {
+    return schedule
+  }
+
+  return {
+    ...schedule,
+    occurrences: schedule.occurrences.map((occ) =>
+      occ.id === updatedOccurrence.id
+        ? {
+            id: updatedOccurrence.id,
+            occurrenceDate: updatedOccurrence.occurrenceDate,
+            name: updatedOccurrence.name,
+            startTime: updatedOccurrence.startTime,
+            templateRhythmId: updatedOccurrence.templateRhythmId,
+            requirements: updatedOccurrence.requirements,
+          }
+        : occ,
+    ),
+  }
+}
+
 export default function AdminGeneratedScheduleDetailPage() {
   const { organizationSlug, id } = useParams()
+  const navigate = useNavigate()
   const [schedule, setSchedule] = useState(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+  const [activeOccurrenceId, setActiveOccurrenceId] = useState(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -35,6 +64,27 @@ export default function AdminGeneratedScheduleDetailPage() {
     void load()
   }, [load])
 
+  function handleOccurrenceSaved(updatedOccurrence) {
+    setSchedule((current) => mergeOccurrenceIntoSchedule(current, updatedOccurrence))
+  }
+
+  async function confirmDeleteSchedule() {
+    setDeleteError('')
+    setDeleting(true)
+
+    try {
+      await deleteAdminGeneratedSchedule(id)
+      navigate(adminSchedulesPath(organizationSlug), {
+        replace: true,
+        state: { generatedScheduleDeleted: true },
+      })
+    } catch (err) {
+      setDeleteError(err instanceof ApiError ? err.message : 'Unable to delete schedule.')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <AdminLayout>
       <p className="admin-detail-top-nav">
@@ -52,6 +102,18 @@ export default function AdminGeneratedScheduleDetailPage() {
             <div>
               <p className="admin-schedule-template-eyebrow admin-muted">Generated schedule</p>
               <h1 className="admin-page-title">{schedule.name}</h1>
+            </div>
+            <div className="admin-page-header__actions">
+              <button
+                type="button"
+                className="admin-danger-button"
+                onClick={() => {
+                  setDeleteError('')
+                  setDeleteOpen(true)
+                }}
+              >
+                Delete schedule
+              </button>
             </div>
           </header>
 
@@ -82,7 +144,7 @@ export default function AdminGeneratedScheduleDetailPage() {
               </div>
             </dl>
             <p className="admin-help admin-generated-schedule-overview-help">
-              Click an event later to edit assignments, add notes, or attach resources.
+              Click an event to view details and edit staffing for that date only.
             </p>
           </section>
 
@@ -93,31 +155,55 @@ export default function AdminGeneratedScheduleDetailPage() {
             ) : (
               <ul className="admin-generated-occurrence-list">
                 {schedule.occurrences.map((occurrence) => (
-                  <li key={occurrence.id} className="admin-generated-occurrence-card">
-                    <header className="admin-generated-occurrence-card__header">
-                      <h3 className="admin-generated-occurrence-card__title">
-                        {formatDateOnly(occurrence.occurrenceDate)}
-                      </h3>
-                      <p className="admin-muted admin-generated-occurrence-card__meta">
-                        {occurrence.name} · {formatScheduleTime(occurrence.startTime)}
-                      </p>
-                    </header>
-                    {occurrence.requirements.length ? (
-                      <ul className="admin-generated-occurrence-card__staffing">
-                        {occurrence.requirements.map((req) => (
-                          <li key={req.id}>
-                            {req.displayName}: {req.assignedCount}/{req.neededCount} assigned
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="admin-muted">No staffing needs defined.</p>
-                    )}
+                  <li key={occurrence.id}>
+                    <button
+                      type="button"
+                      className="admin-generated-occurrence-card admin-generated-occurrence-card--clickable"
+                      onClick={() => setActiveOccurrenceId(occurrence.id)}
+                    >
+                      <header className="admin-generated-occurrence-card__header">
+                        <h3 className="admin-generated-occurrence-card__title">
+                          {formatDateOnly(occurrence.occurrenceDate)}
+                        </h3>
+                        <p className="admin-muted admin-generated-occurrence-card__meta">
+                          {occurrence.name} · {formatScheduleTime(occurrence.startTime)}
+                        </p>
+                      </header>
+                      {occurrence.requirements.length ? (
+                        <ul className="admin-generated-occurrence-card__staffing">
+                          {occurrence.requirements.map((req) => (
+                            <li key={req.id}>
+                              {req.displayName}: {req.assignedCount}/{req.neededCount} assigned
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="admin-muted">No staffing needs defined.</p>
+                      )}
+                    </button>
                   </li>
                 ))}
               </ul>
             )}
           </section>
+
+          <GeneratedOccurrenceDetailDialog
+            open={activeOccurrenceId != null}
+            generatedScheduleId={schedule.id}
+            occurrenceId={activeOccurrenceId}
+            onClose={() => setActiveOccurrenceId(null)}
+            onSaved={handleOccurrenceSaved}
+          />
+
+          <DeleteScheduleDialog
+            open={deleteOpen}
+            scheduleName={schedule.name}
+            deleting={deleting}
+            error={deleteError}
+            variant="generated"
+            onConfirm={() => void confirmDeleteSchedule()}
+            onCancel={() => setDeleteOpen(false)}
+          />
         </>
       ) : null}
     </AdminLayout>
