@@ -1,6 +1,9 @@
-import { useCallback, useEffect, useId, useMemo, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import {
   ApiError,
+  createAdminGeneratedOccurrenceAssignment,
+  deleteAdminGeneratedOccurrenceAssignment,
+  getAdminGeneratedOccurrenceEligibleVolunteers,
   getAdminGeneratedScheduleOccurrence,
   patchAdminGeneratedScheduleOccurrenceStaffing,
 } from '../../api/client'
@@ -66,6 +69,213 @@ function validateRows(rows, templateServingAreas) {
   return ''
 }
 
+function RequirementAssignmentBlock({
+  requirement,
+  generatedScheduleId,
+  occurrenceId,
+  onOccurrenceUpdated,
+  onError,
+}) {
+  const [eligible, setEligible] = useState([])
+  const [eligibleStatus, setEligibleStatus] = useState('loading')
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState('')
+  const [assigning, setAssigning] = useState(false)
+  const [removingId, setRemovingId] = useState(null)
+  const onErrorRef = useRef(onError)
+
+  onErrorRef.current = onError
+
+  const isFull = requirement.assignedCount >= requirement.neededCount
+  const canAssign = Boolean(requirement.scheduleServingAreaId) && !isFull
+  const eligibleReady = eligibleStatus === 'ready'
+  const eligiblePending = !eligibleReady
+  const noEligibleVolunteers = eligibleReady && eligible.length === 0
+  const showVolunteerPicker = eligibleReady && eligible.length > 0
+
+  const loadEligible = useCallback(async () => {
+    if (!canAssign) {
+      setEligible([])
+      setEligibleStatus('ready')
+      return
+    }
+
+    setEligibleStatus('loading')
+
+    try {
+      const data = await getAdminGeneratedOccurrenceEligibleVolunteers(
+        generatedScheduleId,
+        occurrenceId,
+        requirement.id,
+      )
+      setEligible(Array.isArray(data?.volunteers) ? data.volunteers : [])
+      setEligibleStatus('ready')
+    } catch (err) {
+      setEligible([])
+      setEligibleStatus('ready')
+      onErrorRef.current(
+        err instanceof ApiError ? err.message : 'Unable to load volunteers.',
+      )
+    }
+  }, [canAssign, generatedScheduleId, occurrenceId, requirement.id])
+
+  useEffect(() => {
+    setSelectedSubmissionId('')
+    void loadEligible()
+  }, [loadEligible, requirement.assignedCount, requirement.assignments?.length])
+
+  async function handleAssign() {
+    if (!selectedSubmissionId) {
+      onError('Choose a volunteer to assign.')
+      return
+    }
+
+    setAssigning(true)
+    onError('')
+
+    try {
+      const data = await createAdminGeneratedOccurrenceAssignment(
+        generatedScheduleId,
+        occurrenceId,
+        {
+          requirementId: requirement.id,
+          submissionId: Number(selectedSubmissionId),
+        },
+      )
+      onOccurrenceUpdated(data.occurrence)
+      setSelectedSubmissionId('')
+      void loadEligible()
+    } catch (err) {
+      onError(err instanceof ApiError ? err.message : 'Unable to assign volunteer.')
+    } finally {
+      setAssigning(false)
+    }
+  }
+
+  async function handleRemove(assignmentId) {
+    setRemovingId(assignmentId)
+    onError('')
+
+    try {
+      const data = await deleteAdminGeneratedOccurrenceAssignment(
+        generatedScheduleId,
+        occurrenceId,
+        assignmentId,
+      )
+      onOccurrenceUpdated(data.occurrence)
+      void loadEligible()
+    } catch (err) {
+      onError(err instanceof ApiError ? err.message : 'Unable to remove assignment.')
+    } finally {
+      setRemovingId(null)
+    }
+  }
+
+  const assignments = requirement.assignments ?? []
+
+  return (
+    <article className="admin-generated-occurrence-assignment-block">
+      <header className="admin-generated-occurrence-assignment-block__header">
+        <h4 className="admin-generated-occurrence-assignment-block__title">{requirement.displayName}</h4>
+        <p className="admin-muted admin-generated-occurrence-assignment-block__counts">
+          {requirement.assignedCount}/{requirement.neededCount} assigned
+          {isFull ? (
+            <span className="admin-generated-occurrence-assignment-block__full-badge"> · Fully staffed</span>
+          ) : null}
+        </p>
+      </header>
+
+      {assignments.length ? (
+        <ul className="admin-generated-occurrence-assignment-block__volunteers">
+          {assignments.map((assignment) => (
+            <li key={assignment.id}>
+              <span>{assignment.displayName}</span>
+              <button
+                type="button"
+                className="admin-danger-button admin-danger-button--compact"
+                disabled={removingId === assignment.id}
+                onClick={() => void handleRemove(assignment.id)}
+              >
+                {removingId === assignment.id ? 'Removing…' : 'Remove'}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="admin-muted admin-generated-occurrence-assignment-block__empty">
+          No volunteers assigned yet.
+        </p>
+      )}
+
+      {canAssign ? (
+        <div
+          className={`admin-generated-occurrence-assignment-block__assign-row${eligiblePending ? ' admin-generated-occurrence-assignment-block__assign-row--pending' : ''}`}
+        >
+          <div className="admin-field admin-generated-occurrence-assignment-block__select-field">
+            <label className="admin-label" htmlFor={`assign-volunteer-${requirement.id}`}>
+              Volunteer
+            </label>
+            {eligiblePending ? (
+              <p
+                id={`assign-volunteer-${requirement.id}`}
+                className="admin-generated-occurrence-dialog__area-readonly admin-generated-occurrence-assignment-block__loading"
+                aria-live="polite"
+              >
+                Loading volunteers…
+              </p>
+            ) : noEligibleVolunteers ? (
+              <p
+                id={`assign-volunteer-${requirement.id}`}
+                className="admin-generated-occurrence-dialog__area-readonly admin-generated-occurrence-assignment-block__no-eligible"
+              >
+                No eligible active volunteers for this serving area
+              </p>
+            ) : (
+              <select
+                id={`assign-volunteer-${requirement.id}`}
+                className="admin-input"
+                value={selectedSubmissionId}
+                disabled={assigning}
+                onChange={(event) => setSelectedSubmissionId(event.target.value)}
+              >
+                <option value="">Select volunteer…</option>
+                {eligible.map((volunteer) => (
+                  <option key={volunteer.submissionId} value={volunteer.submissionId}>
+                    {volunteer.displayName}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+          {showVolunteerPicker ? (
+            <div className="admin-field admin-generated-occurrence-assignment-block__assign-action">
+              <span className="admin-label admin-label--invisible" aria-hidden="true">
+                Assign
+              </span>
+              <div className="admin-schedule-detail-row-action__button-wrap">
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  disabled={assigning || !selectedSubmissionId}
+                  onClick={() => void handleAssign()}
+                >
+                  {assigning ? 'Assigning…' : 'Assign volunteer'}
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {!requirement.scheduleServingAreaId ? (
+        <p className="admin-help">
+          This staffing row is not linked to a form serving area, so volunteer assignment is not
+          available.
+        </p>
+      ) : null}
+    </article>
+  )
+}
+
 export default function GeneratedOccurrenceDetailDialog({
   open,
   generatedScheduleId,
@@ -77,10 +287,23 @@ export default function GeneratedOccurrenceDetailDialog({
   const formId = useId()
   const [occurrence, setOccurrence] = useState(null)
   const [rows, setRows] = useState([])
+  const [staffingMode, setStaffingMode] = useState('view')
   const [loading, setLoading] = useState(false)
   const [loadError, setLoadError] = useState('')
   const [saveError, setSaveError] = useState('')
+  const [assignmentError, setAssignmentError] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const applyOccurrence = useCallback(
+    (next) => {
+      setOccurrence(next)
+      if (staffingMode === 'view') {
+        setRows(rowsFromOccurrence(next))
+      }
+      onSaved?.(next)
+    },
+    [onSaved, staffingMode],
+  )
 
   const load = useCallback(async () => {
     if (!generatedScheduleId || !occurrenceId) {
@@ -95,6 +318,7 @@ export default function GeneratedOccurrenceDetailDialog({
       const next = data.occurrence ?? null
       setOccurrence(next)
       setRows(rowsFromOccurrence(next))
+      setStaffingMode('view')
     } catch (err) {
       setOccurrence(null)
       setRows([])
@@ -122,7 +346,13 @@ export default function GeneratedOccurrenceDetailDialog({
 
     function onKeyDown(event) {
       if (event.key === 'Escape') {
-        onClose()
+        if (staffingMode === 'edit') {
+          setStaffingMode('view')
+          setRows(rowsFromOccurrence(occurrence))
+          setSaveError('')
+        } else {
+          onClose()
+        }
       }
     }
 
@@ -131,7 +361,7 @@ export default function GeneratedOccurrenceDetailDialog({
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [open, onClose])
+  }, [open, onClose, occurrence, staffingMode])
 
   const templateServingAreas = occurrence?.templateServingAreas ?? []
 
@@ -139,6 +369,18 @@ export default function GeneratedOccurrenceDetailDialog({
     () => new Set(rows.map((row) => row.scheduleServingAreaId).filter(Boolean)),
     [rows],
   )
+
+  function startStaffingEdit() {
+    setRows(rowsFromOccurrence(occurrence))
+    setSaveError('')
+    setStaffingMode('edit')
+  }
+
+  function cancelStaffingEdit() {
+    setRows(rowsFromOccurrence(occurrence))
+    setSaveError('')
+    setStaffingMode('view')
+  }
 
   function updateRow(clientId, patch) {
     setRows((current) =>
@@ -157,7 +399,7 @@ export default function GeneratedOccurrenceDetailDialog({
     setSaveError('')
   }
 
-  async function handleSave(event) {
+  async function handleSaveStaffing(event) {
     event.preventDefault()
 
     const validationError = validateRows(rows, templateServingAreas)
@@ -188,6 +430,7 @@ export default function GeneratedOccurrenceDetailDialog({
       const updated = data.occurrence ?? null
       setOccurrence(updated)
       setRows(rowsFromOccurrence(updated))
+      setStaffingMode('view')
       onSaved?.(updated)
     } catch (err) {
       setSaveError(err instanceof ApiError ? err.message : 'Unable to save staffing changes.')
@@ -201,6 +444,7 @@ export default function GeneratedOccurrenceDetailDialog({
   }
 
   const showForm = !loading && !loadError && occurrence
+  const requirements = occurrence?.requirements ?? []
 
   return (
     <div className="admin-dialog-backdrop" role="presentation" onClick={onClose}>
@@ -225,7 +469,7 @@ export default function GeneratedOccurrenceDetailDialog({
           {loadError ? <p className="admin-error">{loadError}</p> : null}
 
           {showForm ? (
-            <form id={formId} onSubmit={(event) => void handleSave(event)}>
+            <>
               <dl className="admin-dl admin-dl--compact admin-generated-occurrence-dialog__summary">
                 <div>
                   <dt>Event</dt>
@@ -242,116 +486,146 @@ export default function GeneratedOccurrenceDetailDialog({
               </dl>
 
               <section className="admin-generated-occurrence-dialog__section">
-                <h3 className="admin-generated-occurrence-dialog__section-title">Staffing needs</h3>
-                <p className="admin-help">
-                  Changes apply to this event only and do not update the schedule template.
-                </p>
+                <div className="admin-generated-occurrence-dialog__section-head">
+                  <h3 className="admin-generated-occurrence-dialog__section-title">Staffing needs</h3>
+                  {staffingMode === 'view' ? (
+                    <button
+                      type="button"
+                      className="admin-secondary-button"
+                      onClick={startStaffingEdit}
+                    >
+                      Edit staffing needs
+                    </button>
+                  ) : null}
+                </div>
 
-                {rows.length === 0 ? (
-                  <p className="admin-muted">No staffing needs yet.</p>
+                {staffingMode === 'view' ? (
+                  <>
+                    {requirements.length === 0 ? (
+                      <p className="admin-muted">No staffing needs yet.</p>
+                    ) : (
+                      <ul className="admin-generated-occurrence-staffing-summary">
+                        {requirements.map((req) => (
+                          <li key={req.id}>
+                            {req.displayName}: {req.assignedCount}/{req.neededCount} assigned
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {requirements.length === 0 ? (
+                      <button
+                        type="button"
+                        className="admin-secondary-button"
+                        onClick={startStaffingEdit}
+                      >
+                        Edit staffing needs
+                      </button>
+                    ) : null}
+                  </>
                 ) : (
-                  <ul className="admin-schedule-wizard__req-list admin-generated-occurrence-dialog__req-list">
-                    {rows.map((row) => {
-                      const isExisting = row.id != null && row.scheduleServingAreaId
-                      const areaOptions = templateServingAreas.filter(
-                        (area) =>
-                          String(area.id) === row.scheduleServingAreaId ||
-                          !usedServingAreaIds.has(String(area.id)),
-                      )
+                  <form id={formId} onSubmit={(event) => void handleSaveStaffing(event)}>
+                    <p className="admin-help">
+                      Changes apply to this event only and do not update the schedule template.
+                    </p>
 
-                      return (
-                        <li key={row.clientId} className="admin-schedule-wizard__req-row">
-                          <div className="admin-field">
-                            <label className="admin-label" htmlFor={`occ-area-${row.clientId}`}>
-                              Serving area
-                            </label>
-                            {isExisting ? (
-                              <p
-                                id={`occ-area-${row.clientId}`}
-                                className="admin-generated-occurrence-dialog__area-readonly"
-                              >
-                                {row.displayName ||
-                                  templateServingAreas.find(
-                                    (a) => String(a.id) === row.scheduleServingAreaId,
-                                  )?.displayName ||
-                                  '—'}
-                              </p>
-                            ) : (
-                              <select
-                                id={`occ-area-${row.clientId}`}
-                                className="admin-input"
-                                value={row.scheduleServingAreaId}
-                                onChange={(event) =>
-                                  updateRow(row.clientId, {
-                                    scheduleServingAreaId: event.target.value,
-                                  })
-                                }
-                              >
-                                <option value="">Select…</option>
-                                {areaOptions.map((area) => (
-                                  <option key={area.id} value={area.id}>
-                                    {area.displayName}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-                          </div>
-                          <div className="admin-field admin-schedule-wizard__count-field">
-                            <label className="admin-label" htmlFor={`occ-count-${row.clientId}`}>
-                              Needed
-                            </label>
-                            <input
-                              id={`occ-count-${row.clientId}`}
-                              className="admin-input admin-input--compact"
-                              inputMode="numeric"
-                              value={row.neededCount}
-                              onChange={(event) =>
-                                updateRow(row.clientId, { neededCount: event.target.value })
-                              }
-                            />
-                          </div>
-                          <div className="admin-field admin-schedule-detail-row-action">
-                            <span className="admin-label admin-label--invisible" aria-hidden="true">
-                              Remove
-                            </span>
-                            <div className="admin-schedule-detail-row-action__button-wrap">
-                              <button
-                                type="button"
-                                className="admin-danger-button admin-danger-button--compact"
-                                onClick={() => removeRow(row.clientId)}
-                              >
-                                Remove
-                              </button>
-                            </div>
-                          </div>
-                          {row.assignedCount != null && row.assignedCount > 0 ? (
-                            <p className="admin-help admin-generated-occurrence-dialog__assigned-hint">
-                              {row.assignedCount} assigned for this event
-                            </p>
-                          ) : null}
-                        </li>
-                      )
-                    })}
-                  </ul>
+                    {rows.length === 0 ? (
+                      <p className="admin-muted">No staffing needs yet.</p>
+                    ) : (
+                      <ul className="admin-schedule-wizard__req-list admin-generated-occurrence-dialog__req-list">
+                        {rows.map((row) => {
+                          const isExisting = row.id != null && row.scheduleServingAreaId
+                          const areaOptions = templateServingAreas.filter(
+                            (area) =>
+                              String(area.id) === row.scheduleServingAreaId ||
+                              !usedServingAreaIds.has(String(area.id)),
+                          )
+
+                          return (
+                            <li key={row.clientId} className="admin-schedule-wizard__req-row">
+                              <div className="admin-field">
+                                <label className="admin-label" htmlFor={`occ-area-${row.clientId}`}>
+                                  Serving area
+                                </label>
+                                {isExisting ? (
+                                  <p
+                                    id={`occ-area-${row.clientId}`}
+                                    className="admin-generated-occurrence-dialog__area-readonly"
+                                  >
+                                    {row.displayName ||
+                                      templateServingAreas.find(
+                                        (a) => String(a.id) === row.scheduleServingAreaId,
+                                      )?.displayName ||
+                                      '—'}
+                                  </p>
+                                ) : (
+                                  <select
+                                    id={`occ-area-${row.clientId}`}
+                                    className="admin-input"
+                                    value={row.scheduleServingAreaId}
+                                    onChange={(event) =>
+                                      updateRow(row.clientId, {
+                                        scheduleServingAreaId: event.target.value,
+                                      })
+                                    }
+                                  >
+                                    <option value="">Select…</option>
+                                    {areaOptions.map((area) => (
+                                      <option key={area.id} value={area.id}>
+                                        {area.displayName}
+                                      </option>
+                                    ))}
+                                  </select>
+                                )}
+                              </div>
+                              <div className="admin-field admin-schedule-wizard__count-field">
+                                <label className="admin-label" htmlFor={`occ-count-${row.clientId}`}>
+                                  Needed
+                                </label>
+                                <input
+                                  id={`occ-count-${row.clientId}`}
+                                  className="admin-input admin-input--compact"
+                                  inputMode="numeric"
+                                  value={row.neededCount}
+                                  onChange={(event) =>
+                                    updateRow(row.clientId, { neededCount: event.target.value })
+                                  }
+                                />
+                              </div>
+                              <div className="admin-field admin-schedule-detail-row-action">
+                                <span className="admin-label admin-label--invisible" aria-hidden="true">
+                                  Remove
+                                </span>
+                                <div className="admin-schedule-detail-row-action__button-wrap">
+                                  <button
+                                    type="button"
+                                    className="admin-danger-button admin-danger-button--compact"
+                                    onClick={() => removeRow(row.clientId)}
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    )}
+
+                    <button
+                      type="button"
+                      className="admin-secondary-button"
+                      onClick={addRow}
+                      disabled={templateServingAreas.length === 0}
+                    >
+                      Add serving area
+                    </button>
+                    {saveError ? <p className="admin-error">{saveError}</p> : null}
+                  </form>
                 )}
-
-                <button
-                  type="button"
-                  className="admin-secondary-button"
-                  onClick={addRow}
-                  disabled={templateServingAreas.length === 0}
-                >
-                  Add serving area
-                </button>
-                {templateServingAreas.length === 0 ? (
-                  <p className="admin-help">
-                    Connect serving areas on the schedule template before adding staffing here.
-                  </p>
-                ) : null}
               </section>
 
               <section
-                className="admin-generated-occurrence-dialog__section admin-generated-occurrence-dialog__section--placeholder"
+                className="admin-generated-occurrence-dialog__section"
                 aria-labelledby="occ-assignments-heading"
               >
                 <h3
@@ -360,9 +634,26 @@ export default function GeneratedOccurrenceDetailDialog({
                 >
                   Assignments
                 </h3>
-                <p className="admin-muted admin-generated-occurrence-dialog__placeholder">
-                  Volunteer assignments for this event will appear here.
-                </p>
+                {assignmentError ? <p className="admin-error">{assignmentError}</p> : null}
+                {requirements.length === 0 ? (
+                  <p className="admin-muted">Add staffing needs before assigning volunteers.</p>
+                ) : (
+                  <div className="admin-generated-occurrence-assignment-list">
+                    {requirements.map((req) => (
+                      <RequirementAssignmentBlock
+                        key={req.id}
+                        requirement={req}
+                        generatedScheduleId={generatedScheduleId}
+                        occurrenceId={occurrenceId}
+                        onOccurrenceUpdated={(next) => {
+                          setAssignmentError('')
+                          applyOccurrence(next)
+                        }}
+                        onError={setAssignmentError}
+                      />
+                    ))}
+                  </div>
+                )}
               </section>
 
               <section
@@ -391,14 +682,15 @@ export default function GeneratedOccurrenceDetailDialog({
                   Links and files for this event will be available in a future update.
                 </p>
               </section>
-
-              {saveError ? <p className="admin-error">{saveError}</p> : null}
-            </form>
+            </>
           ) : null}
         </div>
 
-        {showForm ? (
+        {showForm && staffingMode === 'edit' ? (
           <div className="admin-dialog__footer admin-dialog__actions">
+            <button type="button" className="admin-secondary-button" onClick={cancelStaffingEdit}>
+              Cancel
+            </button>
             <button type="submit" form={formId} className="admin-button" disabled={saving}>
               {saving ? 'Saving…' : 'Save'}
             </button>

@@ -575,3 +575,43 @@ export function patchAdminGeneratedScheduleOccurrenceStaffing(
     },
   );
 }
+
+export function getAdminGeneratedOccurrenceEligibleVolunteers(
+  generatedScheduleId,
+  occurrenceId,
+  requirementId,
+) {
+  return apiRequest(
+    `/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}/requirements/${requirementId}/eligible-volunteers`,
+    { authenticated: true },
+  );
+}
+
+export function createAdminGeneratedOccurrenceAssignment(
+  generatedScheduleId,
+  occurrenceId,
+  payload,
+) {
+  return apiRequest(
+    `/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}/assignments`,
+    {
+      method: "POST",
+      authenticated: true,
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export function deleteAdminGeneratedOccurrenceAssignment(
+  generatedScheduleId,
+  occurrenceId,
+  assignmentId,
+) {
+  return apiRequest(
+    `/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}/assignments/${assignmentId}`,
+    {
+      method: "DELETE",
+      authenticated: true,
+    },
+  );
+}
