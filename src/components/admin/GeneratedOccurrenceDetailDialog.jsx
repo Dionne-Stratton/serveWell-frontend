@@ -179,7 +179,7 @@ function RequirementAssignmentBlock({
         <p className="admin-muted admin-generated-occurrence-assignment-block__counts">
           {requirement.assignedCount}/{requirement.neededCount} assigned
           {isFull ? (
-            <span className="admin-generated-occurrence-assignment-block__full-badge"> · Fully staffed</span>
+            <span className="admin-generated-occurrence-assignment-block__full-badge"> · Fully covered</span>
           ) : null}
         </p>
       </header>

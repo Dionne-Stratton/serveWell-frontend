@@ -4,9 +4,10 @@ import { ApiError, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule } fro
 import AdminLayout from '../components/admin/AdminLayout'
 import DeleteScheduleDialog from '../components/admin/DeleteScheduleDialog'
 import GeneratedOccurrenceDetailDialog from '../components/admin/GeneratedOccurrenceDetailDialog'
+import GeneratedOccurrenceEventCard from '../components/admin/GeneratedOccurrenceEventCard'
 import GeneratedScheduleStatus from '../components/admin/GeneratedScheduleStatus'
-import { formatBlackoutDateRange, formatDateOnly } from '../constants/labels'
-import { formatScheduleTime, labelScheduleType } from '../constants/schedule'
+import { formatBlackoutDateRange } from '../constants/labels'
+import { labelScheduleType } from '../constants/schedule'
 import {
   adminScheduleDetailPath,
   adminSchedulesPath,
@@ -41,6 +42,7 @@ export default function AdminGeneratedScheduleDetailPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [activeOccurrenceId, setActiveOccurrenceId] = useState(null)
+  const [expandedOccurrenceIds, setExpandedOccurrenceIds] = useState(() => new Set())
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [deleting, setDeleting] = useState(false)
@@ -66,6 +68,18 @@ export default function AdminGeneratedScheduleDetailPage() {
 
   function handleOccurrenceSaved(updatedOccurrence) {
     setSchedule((current) => mergeOccurrenceIntoSchedule(current, updatedOccurrence))
+  }
+
+  function toggleOccurrenceExpanded(occurrenceId) {
+    setExpandedOccurrenceIds((current) => {
+      const next = new Set(current)
+      if (next.has(occurrenceId)) {
+        next.delete(occurrenceId)
+      } else {
+        next.add(occurrenceId)
+      }
+      return next
+    })
   }
 
   async function confirmDeleteSchedule() {
@@ -144,7 +158,8 @@ export default function AdminGeneratedScheduleDetailPage() {
               </div>
             </dl>
             <p className="admin-help admin-generated-schedule-overview-help">
-              Click an event to view details and edit staffing for that date only.
+              Click an event to open details. Use Show staffing on a card to expand the breakdown
+              without leaving the list.
             </p>
           </section>
 
@@ -156,31 +171,12 @@ export default function AdminGeneratedScheduleDetailPage() {
               <ul className="admin-generated-occurrence-list">
                 {schedule.occurrences.map((occurrence) => (
                   <li key={occurrence.id}>
-                    <button
-                      type="button"
-                      className="admin-generated-occurrence-card admin-generated-occurrence-card--clickable"
-                      onClick={() => setActiveOccurrenceId(occurrence.id)}
-                    >
-                      <header className="admin-generated-occurrence-card__header">
-                        <h3 className="admin-generated-occurrence-card__title">
-                          {formatDateOnly(occurrence.occurrenceDate)}
-                        </h3>
-                        <p className="admin-muted admin-generated-occurrence-card__meta">
-                          {occurrence.name} · {formatScheduleTime(occurrence.startTime)}
-                        </p>
-                      </header>
-                      {occurrence.requirements.length ? (
-                        <ul className="admin-generated-occurrence-card__staffing">
-                          {occurrence.requirements.map((req) => (
-                            <li key={req.id}>
-                              {req.displayName}: {req.assignedCount}/{req.neededCount} assigned
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="admin-muted">No staffing needs defined.</p>
-                      )}
-                    </button>
+                    <GeneratedOccurrenceEventCard
+                      occurrence={occurrence}
+                      expanded={expandedOccurrenceIds.has(occurrence.id)}
+                      onToggleExpanded={toggleOccurrenceExpanded}
+                      onOpen={setActiveOccurrenceId}
+                    />
                   </li>
                 ))}
               </ul>
