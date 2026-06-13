@@ -528,3 +528,21 @@ export function deleteAdminSchedule(scheduleId) {
     authenticated: true,
   });
 }
+
+export function getAdminGeneratedSchedules() {
+  return apiRequest("/api/admin/generated-schedules", { authenticated: true });
+}
+
+export function getAdminGeneratedSchedule(generatedScheduleId) {
+  return apiRequest(`/api/admin/generated-schedules/${generatedScheduleId}`, {
+    authenticated: true,
+  });
+}
+
+export function createAdminGeneratedSchedule(payload) {
+  return apiRequest("/api/admin/generated-schedules", {
+    method: "POST",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}

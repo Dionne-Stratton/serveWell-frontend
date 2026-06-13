@@ -193,6 +193,21 @@ export function adminScheduleDetailPath(organizationSlug, scheduleId) {
   return organizationAdminScheduleDetailPath(organizationSlug, scheduleId)
 }
 
+export function organizationAdminGeneratedScheduleDetailPath(organizationSlug, generatedScheduleId) {
+  return `/${organizationSlug}/admin/schedules/generated/${generatedScheduleId}`
+}
+
+export function demoAdminGeneratedScheduleDetailPath(generatedScheduleId) {
+  return `/demo/admin/schedules/generated/${generatedScheduleId}`
+}
+
+export function adminGeneratedScheduleDetailPath(organizationSlug, generatedScheduleId) {
+  if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
+    return demoAdminGeneratedScheduleDetailPath(generatedScheduleId)
+  }
+  return organizationAdminGeneratedScheduleDetailPath(organizationSlug, generatedScheduleId)
+}
+
 export function adminVolunteersFilteredPath(organizationSlug, status) {
   const base = adminVolunteersPath(organizationSlug)
   if (!status) {

@@ -33,6 +33,7 @@ import AdminProfilePage from './pages/AdminProfilePage'
 import AdminImportPage from './pages/AdminImportPage'
 import AdminSchedulesPage from './pages/AdminSchedulesPage'
 import AdminScheduleDetailPage from './pages/AdminScheduleDetailPage'
+import AdminGeneratedScheduleDetailPage from './pages/AdminGeneratedScheduleDetailPage'
 import AcceptInvitePage from './pages/AcceptInvitePage'
 import { adminProfilePath, organizationAdminFormsPath } from './utils/organizationPaths'
 
@@ -155,6 +156,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'demo/admin/schedules/generated/:id',
+        element: (
+          <DemoAdminAutoAuth>
+            <AdminGeneratedScheduleDetailPage />
+          </DemoAdminAutoAuth>
+        ),
+      },
+      {
         path: 'demo/admin/schedules/:id',
         element: (
           <DemoAdminAutoAuth>
@@ -267,6 +276,14 @@ const router = createBrowserRouter([
         element: (
           <AdminRouteGuard>
             <AdminSchedulesPage />
+          </AdminRouteGuard>
+        ),
+      },
+      {
+        path: ':organizationSlug/admin/schedules/generated/:id',
+        element: (
+          <AdminRouteGuard>
+            <AdminGeneratedScheduleDetailPage />
           </AdminRouteGuard>
         ),
       },

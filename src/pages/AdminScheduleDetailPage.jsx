@@ -17,6 +17,7 @@ import {
   formatScheduleTime,
   labelDayOfWeek,
   labelScheduleType,
+  scheduleTypeOptions,
 } from '../constants/schedule'
 import { adminSchedulesPath } from '../utils/organizationPaths'
 import {
@@ -35,11 +36,8 @@ import { normalizeStartTime } from '../utils/scheduleEditValidation'
 import '../styles/admin.css'
 
 function applyDetailToState(detail, setters) {
-  setters.setScheduleMeta({
-    scheduleType: detail.scheduleType,
-    updatedAt: detail.updatedAt,
-  })
   setters.setName(detail.name ?? '')
+  setters.setScheduleType(detail.scheduleType ?? 'monthly')
   setters.setServingAreas(servingAreasFromDetail(detail.servingAreas))
   setters.setRhythms((detail.rhythms ?? []).map(rhythmFromDetail))
 }
@@ -52,8 +50,8 @@ export default function AdminScheduleDetailPage() {
 
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
-  const [scheduleMeta, setScheduleMeta] = useState({ scheduleType: 'monthly', updatedAt: '' })
   const [name, setName] = useState('')
+  const [scheduleType, setScheduleType] = useState('monthly')
   const [servingAreas, setServingAreas] = useState([])
   const [rhythms, setRhythms] = useState([])
   const [catalogForms, setCatalogForms] = useState([])
@@ -102,7 +100,12 @@ export default function AdminScheduleDetailPage() {
       ])
 
       setCatalogForms(Array.isArray(catalog?.forms) ? catalog.forms : [])
-      applyDetailToState(detail, { setScheduleMeta, setName, setServingAreas, setRhythms })
+      applyDetailToState(detail, {
+        setName,
+        setScheduleType,
+        setServingAreas,
+        setRhythms,
+      })
     } catch (err) {
       setLoadError(err instanceof ApiError ? err.message : 'Unable to load template.')
     } finally {
@@ -115,10 +118,15 @@ export default function AdminScheduleDetailPage() {
   }, [loadAll])
 
   function syncFromDetail(detail) {
-    applyDetailToState(detail, { setScheduleMeta, setName, setServingAreas, setRhythms })
+    applyDetailToState(detail, {
+      setName,
+      setScheduleType,
+      setServingAreas,
+      setRhythms,
+    })
   }
 
-  async function saveName() {
+  async function saveTemplateBasics() {
     setNameError('')
     const trimmed = name.trim()
 
@@ -130,11 +138,14 @@ export default function AdminScheduleDetailPage() {
     setNameSaving(true)
 
     try {
-      const updated = await patchAdminSchedule(scheduleId, { name: trimmed })
+      const updated = await patchAdminSchedule(scheduleId, {
+        name: trimmed,
+        scheduleType,
+      })
       syncFromDetail(updated)
-      setToastMessage('Template name saved.')
+      setToastMessage('Template details saved.')
     } catch (err) {
-      setNameError(err instanceof ApiError ? err.message : 'Unable to save name.')
+      setNameError(err instanceof ApiError ? err.message : 'Unable to save template details.')
     } finally {
       setNameSaving(false)
     }
@@ -368,21 +379,22 @@ export default function AdminScheduleDetailPage() {
               <p className="admin-schedule-template-eyebrow admin-muted">Schedule template</p>
               <h1 className="admin-page-title">{name.trim() || 'Untitled template'}</h1>
               <p className="admin-page-subtitle admin-muted">
-                {labelScheduleType(scheduleMeta.scheduleType)} · Reusable pattern for generating
-                volunteer schedules
+                {labelScheduleType(scheduleType)} · Reusable pattern for generating volunteer
+                schedules
               </p>
             </div>
             <div className="admin-page-header__actions">
               <button
                 type="button"
                 className="admin-button admin-button--inline"
-                disabled
-                aria-disabled="true"
-                title="Coming soon"
+                onClick={() =>
+                  navigate(adminSchedulesPath(organizationSlug), {
+                    state: { createGeneratedFromTemplateId: scheduleId },
+                  })
+                }
               >
                 Create schedule from template
               </button>
-              <span className="admin-schedules-hub-section__soon admin-muted">Coming soon</span>
               <button
                 type="button"
                 className="admin-danger-button"
@@ -397,7 +409,7 @@ export default function AdminScheduleDetailPage() {
           </header>
 
           <section className="admin-schedule-detail-section">
-            <h2 className="admin-schedule-detail-section__title">Template name</h2>
+            <h2 className="admin-schedule-detail-section__title">Template details</h2>
             <div className="admin-schedule-detail-section__body">
               <label className="admin-label" htmlFor="schedule-detail-name">
                 Template name
@@ -408,15 +420,34 @@ export default function AdminScheduleDetailPage() {
                 value={name}
                 onChange={(event) => setName(event.target.value)}
               />
+              <label className="admin-label" htmlFor="schedule-detail-type">
+                Template type
+              </label>
+              <select
+                id="schedule-detail-type"
+                className="admin-input admin-input--select"
+                value={scheduleType}
+                onChange={(event) => setScheduleType(event.target.value)}
+              >
+                {scheduleTypeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <p className="admin-help">
+                Monthly templates generate schedules by calendar month. Special event templates use
+                a custom start and end date when you create a schedule.
+              </p>
               {nameError ? <p className="admin-error">{nameError}</p> : null}
               <div className="admin-schedule-detail-section__actions">
                 <button
                   type="button"
                   className="admin-button"
                   disabled={nameSaving}
-                  onClick={() => void saveName()}
+                  onClick={() => void saveTemplateBasics()}
                 >
-                  {nameSaving ? 'Saving…' : 'Save name'}
+                  {nameSaving ? 'Saving…' : 'Save details'}
                 </button>
               </div>
             </div>

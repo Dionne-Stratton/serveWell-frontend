@@ -18,6 +18,31 @@ export function latestIsoDate(...values) {
   return present.sort().at(-1)
 }
 
+/** Last calendar day of month (1–12) as YYYY-MM-DD. */
+export function monthEndIsoDateLocal(year, month) {
+  const lastDay = new Date(year, month, 0).getDate()
+  const m = String(month).padStart(2, '0')
+  const d = String(lastDay).padStart(2, '0')
+  return `${year}-${m}-${d}`
+}
+
+/** Validate one start/end range (same rules as blackout dates on the public form). */
+export function validateSingleDateRange(startDate, endDate, { disallowPastDates = true } = {}) {
+  const start = startDate?.trim() ?? ''
+  const end = endDate?.trim() ?? ''
+
+  if (!start || !end) {
+    return 'Start and end dates are required.'
+  }
+
+  const errors = {}
+  validateBlackoutDates([{ startDate: start, endDate: end, note: '' }], errors, 'range', {
+    disallowPastDates,
+  })
+
+  return Object.values(errors)[0] ?? ''
+}
+
 export function emptyBlackoutDateRow() {
   return { startDate: '', endDate: '', note: '' }
 }

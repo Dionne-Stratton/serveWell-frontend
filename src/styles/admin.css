@@ -1099,6 +1099,10 @@
   color: var(--text-h);
 }
 
+.admin-help.admin-generated-schedule-overview-help {
+  margin-top: 1rem;
+}
+
 .admin-schedule-detail-section__body {
   display: flex;
   flex-direction: column;
@@ -1495,6 +1499,104 @@
 
 .admin-schedules-hub-section__header .admin-button.admin-button--inline:not(:disabled) {
   color: #ffffff;
+}
+
+.admin-dialog--narrow {
+  max-width: 28rem;
+}
+
+.admin-dialog__actions--spaced-top {
+  margin-top: 1.35rem;
+}
+
+.admin-page input[type="number"].admin-input,
+.admin-dialog input[type="number"].admin-input,
+.admin-page input[type="date"].admin-input,
+.admin-dialog input[type="date"].admin-input {
+  color-scheme: dark;
+}
+
+.admin-generated-schedule-date-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .admin-generated-schedule-date-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-generated-schedule-range-preview {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+}
+
+.admin-generated-schedule-name-field {
+  margin-top: 1rem;
+}
+
+.admin-generated-occurrence-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.admin-generated-occurrence-card {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.admin-generated-occurrence-card__header {
+  margin-bottom: 0.5rem;
+}
+
+.admin-generated-occurrence-card__title {
+  margin: 0 0 0.15rem;
+  font-size: 1.05rem;
+}
+
+.admin-generated-occurrence-card__meta {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.admin-generated-occurrence-card__staffing {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--text);
+}
+
+.admin-generated-occurrence-card__staffing li {
+  margin-bottom: 0.2rem;
+}
+
+.admin-generated-schedule-status {
+  font-weight: 600;
+  font-size: inherit;
+}
+
+.admin-generated-schedule-status--draft {
+  color: #fbbf24;
+}
+
+.admin-generated-schedule-status--published {
+  color: #4ade80;
+}
+
+.admin-generated-schedule-status--archived {
+  color: #f87171;
+}
+
+.admin-schedule-card__meta .admin-generated-schedule-status {
+  font-size: 0.88rem;
 }
 
 .admin-page-header--stacked-actions .admin-page-header__actions {

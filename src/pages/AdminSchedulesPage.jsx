@@ -1,29 +1,42 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   ApiError,
   deleteAdminSchedule,
+  getAdminGeneratedSchedules,
   getAdminScheduleServingAreaOptions,
   getAdminSchedules,
 } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import AdminToast from '../components/admin/AdminToast'
+import CreateGeneratedScheduleDialog from '../components/admin/CreateGeneratedScheduleDialog'
 import CreateScheduleWizard from '../components/admin/CreateScheduleWizard'
 import DeleteScheduleDialog from '../components/admin/DeleteScheduleDialog'
+import GeneratedScheduleStatus from '../components/admin/GeneratedScheduleStatus'
 import { formatDateTime } from '../constants/labels'
+import { labelScheduleType } from '../constants/schedule'
 import softBtn from '../styles/adminSoftButtons.module.css'
-import { adminScheduleDetailPath } from '../utils/organizationPaths'
+import {
+  adminGeneratedScheduleDetailPath,
+  adminScheduleDetailPath,
+} from '../utils/organizationPaths'
 
 export default function AdminSchedulesPage() {
   const { organizationSlug } = useParams()
   const location = useLocation()
+  const navigate = useNavigate()
   const [templates, setTemplates] = useState([])
+  const [generatedSchedules, setGeneratedSchedules] = useState([])
   const [catalogForms, setCatalogForms] = useState([])
   const [listLoading, setListLoading] = useState(true)
+  const [generatedLoading, setGeneratedLoading] = useState(true)
   const [listError, setListError] = useState('')
+  const [generatedError, setGeneratedError] = useState('')
   const [catalogError, setCatalogError] = useState('')
   const [catalogLoading, setCatalogLoading] = useState(false)
   const [wizardOpen, setWizardOpen] = useState(false)
+  const [createScheduleOpen, setCreateScheduleOpen] = useState(false)
+  const [createScheduleTemplateId, setCreateScheduleTemplateId] = useState(null)
   const [toastMessage, setToastMessage] = useState('')
 
   const [deleteTarget, setDeleteTarget] = useState(null)
@@ -42,6 +55,25 @@ export default function AdminSchedulesPage() {
       setListError(err instanceof ApiError ? err.message : 'Unable to load schedule templates.')
     } finally {
       setListLoading(false)
+    }
+  }, [])
+
+  const loadGeneratedSchedules = useCallback(async () => {
+    setGeneratedLoading(true)
+    setGeneratedError('')
+
+    try {
+      const data = await getAdminGeneratedSchedules()
+      setGeneratedSchedules(
+        Array.isArray(data?.generatedSchedules) ? data.generatedSchedules : [],
+      )
+    } catch (err) {
+      setGeneratedSchedules([])
+      setGeneratedError(
+        err instanceof ApiError ? err.message : 'Unable to load generated schedules.',
+      )
+    } finally {
+      setGeneratedLoading(false)
     }
   }, [])
 
@@ -65,20 +97,34 @@ export default function AdminSchedulesPage() {
 
   useEffect(() => {
     void loadTemplates()
-  }, [loadTemplates])
+    void loadGeneratedSchedules()
+  }, [loadTemplates, loadGeneratedSchedules])
 
   useEffect(() => {
     if (location.state?.templateDeleted) {
       setToastMessage('Template deleted.')
       window.history.replaceState({}, document.title)
     }
+
+    if (location.state?.createGeneratedFromTemplateId) {
+      setCreateScheduleTemplateId(location.state.createGeneratedFromTemplateId)
+      setCreateScheduleOpen(true)
+      window.history.replaceState({}, document.title)
+    }
   }, [location.state])
+
+  const canCreateSchedule = templates.length > 0 && !listLoading
 
   function openWizard() {
     setWizardOpen(true)
     if (!catalogForms.length && !catalogLoading) {
       void loadCatalog()
     }
+  }
+
+  function openCreateScheduleDialog() {
+    setCreateScheduleTemplateId(null)
+    setCreateScheduleOpen(true)
   }
 
   function handleSaved(created) {
@@ -95,6 +141,13 @@ export default function AdminSchedulesPage() {
       ...current,
     ])
     setToastMessage('Template created.')
+  }
+
+  function handleGeneratedCreated(created) {
+    setCreateScheduleOpen(false)
+    setCreateScheduleTemplateId(null)
+    void loadGeneratedSchedules()
+    navigate(adminGeneratedScheduleDetailPath(organizationSlug, created.id))
   }
 
   async function confirmDeleteFromList() {
@@ -137,21 +190,55 @@ export default function AdminSchedulesPage() {
             <button
               type="button"
               className="admin-button admin-button--inline"
-              disabled
-              aria-disabled="true"
-              title="Coming soon"
+              disabled={!canCreateSchedule}
+              onClick={openCreateScheduleDialog}
             >
               Create schedule
             </button>
-            <span className="admin-schedules-hub-section__soon admin-muted">Coming soon</span>
+            {!canCreateSchedule && !listLoading ? (
+              <span className="admin-schedules-hub-section__soon admin-muted">
+                Add a schedule template first
+              </span>
+            ) : null}
           </span>
         </div>
-        <div className="admin-empty-state">
-          <p>
-            No active schedules yet. Create a schedule from one of your templates when you&apos;re
-            ready.
-          </p>
-        </div>
+
+        {generatedLoading ? <p className="admin-loading">Loading schedules…</p> : null}
+        {generatedError ? <p className="admin-error">{generatedError}</p> : null}
+
+        {!generatedLoading && !generatedError && generatedSchedules.length === 0 ? (
+          <div className="admin-empty-state">
+            <p>
+              No active schedules yet. Create a schedule from one of your templates when you&apos;re
+              ready.
+            </p>
+          </div>
+        ) : null}
+
+        {!generatedLoading && !generatedError && generatedSchedules.length > 0 ? (
+          <ul className="admin-schedule-list">
+            {generatedSchedules.map((row) => (
+              <li key={row.id} className="admin-schedule-card">
+                <div className="admin-schedule-card__main">
+                  <Link
+                    to={adminGeneratedScheduleDetailPath(organizationSlug, row.id)}
+                    className="admin-schedule-card__link"
+                  >
+                    <h3 className="admin-schedule-card__title">{row.name}</h3>
+                    <p className="admin-schedule-card__meta">
+                      <GeneratedScheduleStatus status={row.status} />
+                      <span className="admin-muted">
+                        {' '}
+                        · {row.occurrenceCount} event
+                        {row.occurrenceCount === 1 ? '' : 's'} · From {row.templateName}
+                      </span>
+                    </p>
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </section>
 
       <section className="admin-schedules-hub-section" aria-labelledby="schedule-templates-heading">
@@ -188,8 +275,9 @@ export default function AdminSchedulesPage() {
                   >
                     <h3 className="admin-schedule-card__title">{template.name}</h3>
                     <p className="admin-schedule-card__meta admin-muted">
-                      Template · {template.rhythmCount} event{template.rhythmCount === 1 ? '' : 's'}{' '}
-                      · {template.servingAreaCount} serving area
+                      Template · {labelScheduleType(template.scheduleType)} · {template.rhythmCount}{' '}
+                      event{template.rhythmCount === 1 ? '' : 's'} · {template.servingAreaCount}{' '}
+                      serving area
                       {template.servingAreaCount === 1 ? '' : 's'} · Updated{' '}
                       {formatDateTime(template.updatedAt ?? template.createdAt)}
                     </p>
@@ -210,6 +298,17 @@ export default function AdminSchedulesPage() {
           </ul>
         ) : null}
       </section>
+
+      <CreateGeneratedScheduleDialog
+        open={createScheduleOpen}
+        templates={templates}
+        initialTemplateId={createScheduleTemplateId}
+        onClose={() => {
+          setCreateScheduleOpen(false)
+          setCreateScheduleTemplateId(null)
+        }}
+        onCreated={handleGeneratedCreated}
+      />
 
       <CreateScheduleWizard
         open={wizardOpen}

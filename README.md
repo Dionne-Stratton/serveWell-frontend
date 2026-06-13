@@ -66,8 +66,9 @@ Product and API details live in the parent folder:
 | `/:organizationSlug/admin/login` | Org admin login |
 | `/:organizationSlug/admin` | Admin home (counts, forms, Planning Center connect when API credentials are set) |
 | `/:organizationSlug/admin/import` | Planning Center import v1 (hidden on demo; requires PC connected) |
-| `/:organizationSlug/admin/schedules` | Schedules hub: **Active & upcoming schedules** (empty until generated schedules ship) and **Schedule templates** (create template wizard). Demo: `/demo/admin/schedules`. |
-| `/:organizationSlug/admin/schedules/:id` | Schedule **template** detail — edit name, serving areas, events & staffing; delete template. **Create schedule from template** is UI placeholder (coming soon). |
+| `/:organizationSlug/admin/schedules` | Schedules hub: **Active & upcoming schedules** (draft generated schedules) and **Schedule templates** (create template wizard). Demo: `/demo/admin/schedules`. |
+| `/:organizationSlug/admin/schedules/generated/:id` | Generated schedule detail — draft status, date range, template link, service dates with staffing counts. |
+| `/:organizationSlug/admin/schedules/:id` | Schedule **template** detail — edit name, serving areas, events & staffing; delete template; **Create schedule from template**. |
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
 | `/:organizationSlug/admin/volunteers/:id` | Volunteer detail — status toolbar, PC sync/import badge, blackout dates, in-sync / stale banner, **Edit submission**, staff notes, **Delete** |
 | `/:organizationSlug/admin/volunteers/:id/edit` | Admin intake editor (serving preferences include blackout dates; card layout). PC import rows: detail read-only, no edit. Demo org: no edit (API blocks PUT). `/admin/submissions/:id/edit` redirects here. |
