@@ -311,7 +311,7 @@ export default function AdminImportPage() {
               </label>
               <select
                 id="import-tab-select"
-                className="admin-select"
+                className="admin-input admin-input--select"
                 value={tabId}
                 onChange={(event) => {
                   setTabId(event.target.value)

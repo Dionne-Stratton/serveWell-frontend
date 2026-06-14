@@ -499,6 +499,11 @@
   caret-color: var(--text-h);
 }
 
+.admin-page select.admin-input option {
+  background-color: var(--surface);
+  color: var(--text-h);
+}
+
 .admin-page .admin-input:hover,
 .admin-page .admin-textarea:hover {
   border-color: var(--muted);
@@ -1142,6 +1147,59 @@
 
 .admin-schedule-wizard__count-field .admin-input {
   max-width: 6rem;
+}
+
+.admin-dialog--schedule-wizard .admin-schedule-wizard__req-row .admin-field {
+  margin-bottom: 0;
+}
+
+.admin-dialog--schedule-wizard .admin-link-button:not(.admin-schedule-wizard__toggle) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  margin: 0;
+  padding: 0.45rem 0.75rem;
+  border: 2px solid rgba(96, 165, 250, 0.55);
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.22);
+  color: #bfdbfe;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.admin-dialog--schedule-wizard .admin-link-button:not(.admin-schedule-wizard__toggle):hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.34);
+  border-color: rgba(147, 197, 253, 0.65);
+  color: #dbeafe;
+}
+
+.admin-dialog--schedule-wizard .admin-schedule-wizard__toggle.admin-link-button {
+  flex-shrink: 0;
+  padding: 0.32rem 0.55rem;
+  border: 2px solid rgba(96, 165, 250, 0.45);
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.12);
+  color: #bfdbfe;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.admin-dialog--schedule-wizard .admin-schedule-wizard__toggle.admin-link-button:hover:not(:disabled) {
+  background: rgba(37, 99, 235, 0.28);
+  border-color: rgba(147, 197, 253, 0.55);
+  color: #dbeafe;
 }
 
 .admin-schedule-wizard__review-rhythm {
@@ -2638,6 +2696,10 @@
 .admin-blackout-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.admin-volunteer-edit__blackout .admin-blackout-add {
+  margin-top: 0.75rem;
 }
 
 .admin-volunteer-edit__blackout {
@@ -4368,7 +4430,7 @@
   align-items: center;
   gap: 0.65rem 1rem;
   margin: 1.5rem 0 0;
-  padding: 0.85rem 0;
+  padding: 0.85rem 1.1rem;
   border-top: 1px solid var(--border);
   background: color-mix(in srgb, var(--surface) 92%, var(--bg));
   backdrop-filter: blur(10px);

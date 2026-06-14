@@ -562,25 +562,32 @@ export default function CreateScheduleWizard({
                         </p>
                       ) : null}
                     </div>
-                    <button
-                      type="button"
-                      className="admin-danger-button admin-danger-button--compact admin-schedule-wizard__req-remove"
-                      onClick={() => {
-                        const rhythms = state.rhythms.map((r, i) => {
-                          if (i !== rhythmIndex) {
-                            return r
-                          }
+                    <div className="admin-field admin-schedule-detail-row-action">
+                      <span className="admin-label admin-label--invisible" aria-hidden="true">
+                        Remove
+                      </span>
+                      <div className="admin-schedule-detail-row-action__button-wrap">
+                        <button
+                          type="button"
+                          className="admin-danger-button admin-danger-button--compact"
+                          onClick={() => {
+                            const rhythms = state.rhythms.map((r, i) => {
+                              if (i !== rhythmIndex) {
+                                return r
+                              }
 
-                          return {
-                            ...r,
-                            requirements: r.requirements.filter((_, j) => j !== rowIndex),
-                          }
-                        })
-                        updateState({ rhythms })
-                      }}
-                    >
-                      Remove
-                    </button>
+                              return {
+                                ...r,
+                                requirements: r.requirements.filter((_, j) => j !== rowIndex),
+                              }
+                            })
+                            updateState({ rhythms })
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
                   </li>
                 ))}
               </ul>

@@ -23,6 +23,7 @@ export function servingAreaKey(servingAreaId, customName) {
 export function rhythmFromDetail(rhythm) {
   return {
     clientId: newTempId('rhythm'),
+    id: rhythm.id ?? null,
     name: rhythm.name ?? '',
     dayOfWeek: rhythm.dayOfWeek ?? 'sunday',
     startTime: rhythm.startTime ?? '09:00',
@@ -73,6 +74,7 @@ export function buildServingAreasPutPayload(localAreas) {
 export function buildRhythmsPutPayload(localRhythms) {
   return {
     rhythms: localRhythms.map((rhythm) => ({
+      ...(Number.isInteger(rhythm.id) && rhythm.id > 0 ? { id: rhythm.id } : {}),
       name: rhythm.name.trim(),
       dayOfWeek: rhythm.dayOfWeek,
       startTime: rhythm.startTime,

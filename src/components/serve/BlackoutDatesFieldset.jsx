@@ -33,7 +33,9 @@ export default function BlackoutDatesFieldset({
   const helpClass = isServe ? 'serve-help' : 'admin-help'
   const rowClass = isServe ? 'serve-blackout-row' : 'admin-blackout-row'
   const actionsClass = isServe ? 'serve-blackout-actions' : 'admin-blackout-actions'
-  const addButtonClass = isServe ? 'serve-button serve-button--secondary' : `${''}`.trim() || 'admin-button admin-button--inline admin-button--soft-blue'
+  const addButtonClass = isServe
+    ? 'serve-button serve-button--secondary serve-blackout-add'
+    : 'admin-secondary-button admin-blackout-add'
 
   const today = disallowPastDates ? todayIsoDateLocal() : null
 
@@ -122,7 +124,11 @@ export default function BlackoutDatesFieldset({
               <div className={actionsClass}>
                 <button
                   type="button"
-                  className={isServe ? 'serve-link-button' : 'admin-link-button'}
+                  className={
+                    isServe
+                      ? 'serve-link-button'
+                      : 'admin-danger-button admin-danger-button--compact'
+                  }
                   onClick={() => removeRow(index)}
                 >
                   Remove
@@ -133,15 +139,7 @@ export default function BlackoutDatesFieldset({
           })}
         </ul>
       )}
-      <button
-        type="button"
-        className={
-          isServe
-            ? 'serve-button serve-button--secondary serve-blackout-add'
-            : 'admin-button admin-button--inline admin-button--soft-blue'
-        }
-        onClick={addRow}
-      >
+      <button type="button" className={addButtonClass} onClick={addRow}>
         Add blackout date
       </button>
     </fieldset>

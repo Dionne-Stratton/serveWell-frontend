@@ -93,7 +93,7 @@ export function buildCreateSchedulePayload(state, catalogForms) {
 
   return {
     name: state.name.trim(),
-    scheduleType: 'monthly',
+    scheduleType: state.scheduleType,
     servingAreas,
     rhythms,
     nameByServingAreaId,
