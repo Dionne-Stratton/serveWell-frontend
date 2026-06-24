@@ -2021,6 +2021,67 @@
   align-items: center;
 }
 
+.admin-generated-occurrence-notes__groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.admin-generated-occurrence-notes__group-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-generated-occurrence-notes__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.admin-generated-occurrence-notes__item {
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg) 40%, var(--surface));
+}
+
+.admin-generated-occurrence-notes__text {
+  margin: 0 0 0.55rem;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+
+.admin-generated-occurrence-notes__item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-generated-occurrence-notes__editor-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-generated-occurrence-notes__textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.admin-generated-occurrence-notes__add {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
 .admin-dialog__actions--spaced-top {
   margin-top: 1.35rem;
 }

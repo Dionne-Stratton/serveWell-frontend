@@ -583,6 +583,43 @@ export function patchAdminGeneratedScheduleOccurrenceStaffing(
   );
 }
 
+export function createAdminGeneratedOccurrenceNote(generatedScheduleId, occurrenceId, payload) {
+  return apiRequest(
+    `/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}/notes`,
+    {
+      method: "POST",
+      authenticated: true,
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export function patchAdminGeneratedOccurrenceNote(
+  generatedScheduleId,
+  occurrenceId,
+  noteId,
+  payload,
+) {
+  return apiRequest(
+    `/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}/notes/${noteId}`,
+    {
+      method: "PATCH",
+      authenticated: true,
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export function deleteAdminGeneratedOccurrenceNote(generatedScheduleId, occurrenceId, noteId) {
+  return apiRequest(
+    `/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}/notes/${noteId}`,
+    {
+      method: "DELETE",
+      authenticated: true,
+    },
+  );
+}
+
 export function getAdminGeneratedOccurrenceEligibleVolunteers(
   generatedScheduleId,
   occurrenceId,

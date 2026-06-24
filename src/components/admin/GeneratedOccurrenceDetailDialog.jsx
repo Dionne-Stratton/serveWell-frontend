@@ -7,6 +7,9 @@ import {
   getAdminGeneratedScheduleOccurrence,
   patchAdminGeneratedScheduleOccurrenceStaffing,
 } from '../../api/client'
+import GeneratedOccurrenceNotesSection, {
+  servingAreaOptionsFromRequirements,
+} from './GeneratedOccurrenceNotesSection'
 import { formatDateOnly } from '../../constants/labels'
 import { formatScheduleTime } from '../../constants/schedule'
 
@@ -292,6 +295,7 @@ export default function GeneratedOccurrenceDetailDialog({
   const [loadError, setLoadError] = useState('')
   const [saveError, setSaveError] = useState('')
   const [assignmentError, setAssignmentError] = useState('')
+  const [notesError, setNotesError] = useState('')
   const [saving, setSaving] = useState(false)
 
   const applyOccurrence = useCallback(
@@ -364,6 +368,10 @@ export default function GeneratedOccurrenceDetailDialog({
   }, [open, onClose, occurrence, staffingMode])
 
   const templateServingAreas = occurrence?.templateServingAreas ?? []
+  const noteServingAreaOptions = useMemo(
+    () => servingAreaOptionsFromRequirements(occurrence?.requirements),
+    [occurrence?.requirements],
+  )
 
   const usedServingAreaIds = useMemo(
     () => new Set(rows.map((row) => row.scheduleServingAreaId).filter(Boolean)),
@@ -656,17 +664,20 @@ export default function GeneratedOccurrenceDetailDialog({
                 )}
               </section>
 
-              <section
-                className="admin-generated-occurrence-dialog__section admin-generated-occurrence-dialog__section--placeholder"
-                aria-labelledby="occ-notes-heading"
-              >
-                <h3 id="occ-notes-heading" className="admin-generated-occurrence-dialog__section-title">
-                  Notes
-                </h3>
-                <p className="admin-muted admin-generated-occurrence-dialog__placeholder">
-                  Event notes will be available in a future update.
-                </p>
-              </section>
+              <GeneratedOccurrenceNotesSection
+                notes={occurrence.notes ?? []}
+                servingAreaOptions={noteServingAreaOptions}
+                generatedScheduleId={generatedScheduleId}
+                occurrenceId={occurrenceId}
+                onOccurrenceUpdated={(next) => {
+                  if (next) {
+                    setNotesError('')
+                    applyOccurrence(next)
+                  }
+                }}
+                onError={setNotesError}
+              />
+              {notesError ? <p className="admin-error">{notesError}</p> : null}
 
               <section
                 className="admin-generated-occurrence-dialog__section admin-generated-occurrence-dialog__section--placeholder"
