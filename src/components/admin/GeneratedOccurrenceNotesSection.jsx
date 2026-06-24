@@ -5,6 +5,7 @@ import {
   deleteAdminGeneratedOccurrenceNote,
   patchAdminGeneratedOccurrenceNote,
 } from '../../api/client'
+import { resolveOccurrenceItemScope } from './occurrenceScope'
 
 function groupNotes(notes) {
   const general = []
@@ -31,7 +32,15 @@ function groupNotes(notes) {
   return { general, areaGroups }
 }
 
-function NoteEditor({ noteText, areaId, areaOptions, onNoteTextChange, onAreaIdChange, idPrefix }) {
+function NoteEditor({
+  noteText,
+  areaId,
+  areaOptions,
+  onNoteTextChange,
+  onAreaIdChange,
+  idPrefix,
+  showServingAreaPicker,
+}) {
   return (
     <div className="admin-generated-occurrence-notes__editor-fields">
       <div className="admin-field">
@@ -46,29 +55,31 @@ function NoteEditor({ noteText, areaId, areaOptions, onNoteTextChange, onAreaIdC
           onChange={(event) => onNoteTextChange(event.target.value)}
         />
       </div>
-      <div className="admin-field">
-        <label className="admin-label" htmlFor={`${idPrefix}-area`}>
-          Serving area (optional)
-        </label>
-        <select
-          id={`${idPrefix}-area`}
-          className="admin-input admin-input--select"
-          value={areaId}
-          onChange={(event) => onAreaIdChange(event.target.value)}
-          disabled={areaOptions.length === 0}
-        >
-          <option value="">General event note</option>
-          {areaOptions.map((area) => (
-            <option key={area.id} value={area.id}>
-              {area.displayName}
-            </option>
-          ))}
-        </select>
-        <p className="admin-help">
-          Leave as general for notes that apply to everyone at this event. Area-specific notes
-          require staffing needs on this event.
-        </p>
-      </div>
+      {showServingAreaPicker ? (
+        <div className="admin-field">
+          <label className="admin-label" htmlFor={`${idPrefix}-area`}>
+            Serving area (optional)
+          </label>
+          <select
+            id={`${idPrefix}-area`}
+            className="admin-input admin-input--select"
+            value={areaId}
+            onChange={(event) => onAreaIdChange(event.target.value)}
+            disabled={areaOptions.length === 0}
+          >
+            <option value="">General event note</option>
+            {areaOptions.map((area) => (
+              <option key={area.id} value={area.id}>
+                {area.displayName}
+              </option>
+            ))}
+          </select>
+          <p className="admin-help">
+            Leave as general for notes that apply to everyone at this event. Area-specific notes
+            require staffing needs on this event.
+          </p>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -80,6 +91,8 @@ function NoteRow({
   occurrenceId,
   onOccurrenceUpdated,
   onError,
+  showServingAreaPicker,
+  fixedScheduleServingAreaId,
 }) {
   const [editing, setEditing] = useState(false)
   const [noteText, setNoteText] = useState(note.note)
@@ -88,6 +101,14 @@ function NoteRow({
   )
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  function resolveScheduleServingAreaIdForSave() {
+    if (fixedScheduleServingAreaId !== undefined) {
+      return fixedScheduleServingAreaId
+    }
+
+    return areaId ? Number(areaId) : null
+  }
 
   async function saveEdit() {
     const trimmed = noteText.trim()
@@ -106,7 +127,7 @@ function NoteRow({
         note.id,
         {
           note: trimmed,
-          scheduleServingAreaId: areaId ? Number(areaId) : null,
+          scheduleServingAreaId: resolveScheduleServingAreaIdForSave(),
         },
       )
       onOccurrenceUpdated(data.occurrence ?? null)
@@ -153,6 +174,7 @@ function NoteRow({
           areaOptions={areaOptions}
           onNoteTextChange={setNoteText}
           onAreaIdChange={setAreaId}
+          showServingAreaPicker={showServingAreaPicker}
         />
         <div className="admin-generated-occurrence-notes__item-actions">
           <button
@@ -217,25 +239,56 @@ export function servingAreaOptionsFromRequirements(requirements) {
     })
   }
 
-  return options.sort((a, b) => a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' }))
+  return options.sort((a, b) =>
+    a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' }),
+  )
 }
 
+/**
+ * @param {object} props
+ * @param {'all' | 'general' | { areaId: number }} [props.scope]
+ * @param {boolean} [props.embedded]
+ * @param {string} [props.idPrefix]
+ */
 export default function GeneratedOccurrenceNotesSection({
-  notes,
+  notes: allNotes,
   servingAreaOptions,
   generatedScheduleId,
   occurrenceId,
   onOccurrenceUpdated,
   onError,
+  scope = 'all',
+  embedded = false,
+  idPrefix = 'occ-notes',
 }) {
   const [showAdd, setShowAdd] = useState(false)
   const [newNoteText, setNewNoteText] = useState('')
   const [newAreaId, setNewAreaId] = useState('')
   const [adding, setAdding] = useState(false)
 
+  const scopeConfig = useMemo(() => resolveOccurrenceItemScope(scope), [scope])
   const areaOptions = servingAreaOptions ?? []
-  const { general, areaGroups } = useMemo(() => groupNotes(notes), [notes])
+  const notes = useMemo(
+    () => (allNotes ?? []).filter(scopeConfig.filterNote),
+    [allNotes, scopeConfig],
+  )
+  const { general, areaGroups } = useMemo(
+    () => (scope === 'all' ? groupNotes(notes) : { general: notes, areaGroups: [] }),
+    [notes, scope],
+  )
   const hasNotes = general.length > 0 || areaGroups.length > 0
+  const showServingAreaPicker = scopeConfig.showServingAreaPicker
+  const fixedScheduleServingAreaId = scopeConfig.fixedScheduleServingAreaId
+
+  const rowProps = {
+    areaOptions,
+    generatedScheduleId,
+    occurrenceId,
+    onOccurrenceUpdated,
+    onError,
+    showServingAreaPicker,
+    fixedScheduleServingAreaId,
+  }
 
   async function addNote() {
     const trimmed = newNoteText.trim()
@@ -248,12 +301,19 @@ export default function GeneratedOccurrenceNotesSection({
     onError('')
 
     try {
+      const scheduleServingAreaId =
+        fixedScheduleServingAreaId !== undefined
+          ? fixedScheduleServingAreaId
+          : newAreaId
+            ? Number(newAreaId)
+            : null
+
       const data = await createAdminGeneratedOccurrenceNote(
         generatedScheduleId,
         occurrenceId,
         {
           note: trimmed,
-          scheduleServingAreaId: newAreaId ? Number(newAreaId) : null,
+          scheduleServingAreaId,
         },
       )
       onOccurrenceUpdated(data.occurrence ?? null)
@@ -267,12 +327,29 @@ export default function GeneratedOccurrenceNotesSection({
     }
   }
 
-  return (
-    <section className="admin-generated-occurrence-dialog__section" aria-labelledby="occ-notes-heading">
-      <div className="admin-generated-occurrence-dialog__section-head">
-        <h3 id="occ-notes-heading" className="admin-generated-occurrence-dialog__section-title">
-          Notes
-        </h3>
+  const headingId = `${idPrefix}-heading`
+  const TitleTag = embedded ? 'h4' : 'h3'
+  const title = embedded ? 'Notes' : 'Notes'
+
+  const content = (
+    <>
+      <div
+        className={
+          embedded
+            ? 'admin-generated-occurrence-dialog__subsection-head'
+            : 'admin-generated-occurrence-dialog__section-head'
+        }
+      >
+        <TitleTag
+          id={headingId}
+          className={
+            embedded
+              ? 'admin-generated-occurrence-dialog__subsection-title'
+              : 'admin-generated-occurrence-dialog__section-title'
+          }
+        >
+          {title}
+        </TitleTag>
         {!showAdd ? (
           <button
             type="button"
@@ -288,10 +365,10 @@ export default function GeneratedOccurrenceNotesSection({
       </div>
 
       {!hasNotes && !showAdd ? (
-        <p className="admin-muted">No notes for this event yet.</p>
+        <p className="admin-muted">No notes yet.</p>
       ) : null}
 
-      {areaOptions.length === 0 && showAdd ? (
+      {scope === 'all' && areaOptions.length === 0 && showAdd ? (
         <p className="admin-help">
           Add staffing needs for this event to attach area-specific notes. You can still add general
           notes.
@@ -300,55 +377,48 @@ export default function GeneratedOccurrenceNotesSection({
 
       {hasNotes ? (
         <div className="admin-generated-occurrence-notes__groups">
-          {general.length > 0 ? (
+          {scope === 'all' && general.length > 0 ? (
             <div className="admin-generated-occurrence-notes__group">
               <h4 className="admin-generated-occurrence-notes__group-title">General</h4>
               <ul className="admin-generated-occurrence-notes__list">
                 {general.map((note) => (
-                  <NoteRow
-                    key={note.id}
-                    note={note}
-                    areaOptions={areaOptions}
-                    generatedScheduleId={generatedScheduleId}
-                    occurrenceId={occurrenceId}
-                    onOccurrenceUpdated={onOccurrenceUpdated}
-                    onError={onError}
-                  />
+                  <NoteRow key={note.id} note={note} {...rowProps} />
                 ))}
               </ul>
             </div>
           ) : null}
 
-          {areaGroups.map((group) => (
-            <div key={group.areaId} className="admin-generated-occurrence-notes__group">
-              <h4 className="admin-generated-occurrence-notes__group-title">{group.label}</h4>
+          {scope === 'all'
+            ? areaGroups.map((group) => (
+                <div key={group.areaId} className="admin-generated-occurrence-notes__group">
+                  <h4 className="admin-generated-occurrence-notes__group-title">{group.label}</h4>
+                  <ul className="admin-generated-occurrence-notes__list">
+                    {group.notes.map((note) => (
+                      <NoteRow key={note.id} note={note} {...rowProps} />
+                    ))}
+                  </ul>
+                </div>
+              ))
+            : (
               <ul className="admin-generated-occurrence-notes__list">
-                {group.notes.map((note) => (
-                  <NoteRow
-                    key={note.id}
-                    note={note}
-                    areaOptions={areaOptions}
-                    generatedScheduleId={generatedScheduleId}
-                    occurrenceId={occurrenceId}
-                    onOccurrenceUpdated={onOccurrenceUpdated}
-                    onError={onError}
-                  />
+                {general.map((note) => (
+                  <NoteRow key={note.id} note={note} {...rowProps} />
                 ))}
               </ul>
-            </div>
-          ))}
+            )}
         </div>
       ) : null}
 
       {showAdd ? (
         <div className="admin-generated-occurrence-notes__add">
           <NoteEditor
-            idPrefix="note-new"
+            idPrefix={`${idPrefix}-new`}
             noteText={newNoteText}
             areaId={newAreaId}
             areaOptions={areaOptions}
             onNoteTextChange={setNewNoteText}
             onAreaIdChange={setNewAreaId}
+            showServingAreaPicker={showServingAreaPicker}
           />
           <div className="admin-generated-occurrence-notes__item-actions">
             <button
@@ -375,6 +445,20 @@ export default function GeneratedOccurrenceNotesSection({
           </div>
         </div>
       ) : null}
+    </>
+  )
+
+  if (embedded) {
+    return (
+      <div className="admin-generated-occurrence-dialog__subsection" aria-labelledby={headingId}>
+        {content}
+      </div>
+    )
+  }
+
+  return (
+    <section className="admin-generated-occurrence-dialog__section" aria-labelledby={headingId}>
+      {content}
     </section>
   )
 }

@@ -67,6 +67,100 @@ export async function apiRequest(path, options = {}) {
   return body.data;
 }
 
+export async function apiFormRequest(path, formData, options = {}) {
+  const headers = { ...(options.headers ?? {}) };
+
+  if (options.authenticated) {
+    const token = getActiveAdminToken();
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    method: options.method ?? "POST",
+    body: formData,
+    headers,
+  });
+
+  const body = await parseJsonResponse(response);
+
+  if (!body.success) {
+    const message = body.error?.message ?? "Something went wrong.";
+    const code = body.error?.code;
+
+    if (
+      options.authenticated &&
+      (response.status === 401 || code === "UNAUTHORIZED")
+    ) {
+      notifyAdminSessionExpired();
+      throw new ApiError("Session expired.", "SESSION_EXPIRED");
+    }
+
+    const { message: _m, code: _c, ...errorFields } = body.error ?? {};
+    throw new ApiError(message, code, errorFields);
+  }
+
+  return body.data;
+}
+
+function filenameFromContentDisposition(header) {
+  if (!header) {
+    return null;
+  }
+
+  const star = header.match(/filename\*=UTF-8''([^;]+)/i);
+  if (star?.[1]) {
+    try {
+      return decodeURIComponent(star[1].trim());
+    } catch {
+      return star[1].trim();
+    }
+  }
+
+  const plain = header.match(/filename="([^"]+)"/i);
+  return plain?.[1]?.trim() ?? null;
+}
+
+export async function downloadAdminGeneratedOccurrenceResource(
+  generatedScheduleId,
+  occurrenceId,
+  resourceId,
+  fallbackFilename,
+) {
+  const headers = {};
+  const token = getActiveAdminToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}/resources/${resourceId}/download`,
+    { headers },
+  );
+
+  if (!response.ok) {
+    try {
+      const body = await response.json();
+      const message = body.error?.message ?? "Unable to download file.";
+      throw new ApiError(message, body.error?.code);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        throw err;
+      }
+      throw new ApiError("Unable to download file.", "DOWNLOAD_FAILED");
+    }
+  }
+
+  const blob = await response.blob();
+  const filename =
+    filenameFromContentDisposition(response.headers.get("Content-Disposition")) ??
+    fallbackFilename ??
+    "download";
+
+  return { blob, filename };
+}
+
 export function getPublicVolunteerForm(organizationSlug) {
   return apiRequest(
     `/api/organizations/${encodeURIComponent(organizationSlug)}/volunteer-form`,
@@ -613,6 +707,48 @@ export function patchAdminGeneratedOccurrenceNote(
 export function deleteAdminGeneratedOccurrenceNote(generatedScheduleId, occurrenceId, noteId) {
   return apiRequest(
     `/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}/notes/${noteId}`,
+    {
+      method: "DELETE",
+      authenticated: true,
+    },
+  );
+}
+
+export function uploadAdminGeneratedOccurrenceResource(
+  generatedScheduleId,
+  occurrenceId,
+  formData,
+) {
+  return apiFormRequest(
+    `/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}/resources`,
+    formData,
+    { authenticated: true, method: "POST" },
+  );
+}
+
+export function patchAdminGeneratedOccurrenceResource(
+  generatedScheduleId,
+  occurrenceId,
+  resourceId,
+  payload,
+) {
+  return apiRequest(
+    `/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}/resources/${resourceId}`,
+    {
+      method: "PATCH",
+      authenticated: true,
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export function deleteAdminGeneratedOccurrenceResource(
+  generatedScheduleId,
+  occurrenceId,
+  resourceId,
+) {
+  return apiRequest(
+    `/api/admin/generated-schedules/${generatedScheduleId}/occurrences/${occurrenceId}/resources/${resourceId}`,
     {
       method: "DELETE",
       authenticated: true,
