@@ -1,0 +1,53 @@
+import softBtn from '../../styles/adminSoftButtons.module.css'
+
+export default function PublishGeneratedScheduleDialog({
+  open,
+  scheduleName,
+  publishing,
+  error,
+  onConfirm,
+  onCancel,
+}) {
+  if (!open) {
+    return null
+  }
+
+  const titleName = scheduleName?.trim() || 'this schedule'
+
+  return (
+    <div className="admin-dialog-backdrop" role="presentation">
+      <div
+        className="admin-dialog"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="publish-schedule-dialog-title"
+        aria-describedby="publish-schedule-dialog-desc"
+      >
+        <h2 id="publish-schedule-dialog-title" className="admin-dialog__title">
+          Publish {titleName}?
+        </h2>
+        <div id="publish-schedule-dialog-desc" className="admin-dialog__body">
+          <p>
+            Publishing marks this schedule as finalized for your team. You can still edit events,
+            staffing, and volunteer assignments afterward.
+          </p>
+          <p className="admin-muted">Volunteer emails are not sent when you publish.</p>
+          {error ? <p className="admin-error">{error}</p> : null}
+        </div>
+        <div className="admin-dialog__actions">
+          <button
+            type="button"
+            className={`${softBtn.saveBtn}${publishing ? ` ${softBtn.saveBtnBusy}` : ''}`}
+            disabled={publishing}
+            onClick={onConfirm}
+          >
+            {publishing ? 'Publishing…' : 'Publish schedule'}
+          </button>
+          <button type="button" className={softBtn.softBtn} disabled={publishing} onClick={onCancel}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

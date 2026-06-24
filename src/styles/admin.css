@@ -2094,6 +2094,17 @@
   font-size: 0.88rem;
 }
 
+.admin-generated-schedule-detail__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.admin-generated-schedule-detail__title-row .admin-page-title {
+  margin: 0;
+}
+
 .admin-page-header--stacked-actions .admin-page-header__actions {
   display: flex;
   flex-wrap: wrap;

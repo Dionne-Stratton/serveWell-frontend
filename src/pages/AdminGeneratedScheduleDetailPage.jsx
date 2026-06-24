@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ApiError, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule } from '../api/client'
+import { ApiError, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule, publishAdminGeneratedSchedule } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import DeleteScheduleDialog from '../components/admin/DeleteScheduleDialog'
 import GeneratedOccurrenceDetailDialog from '../components/admin/GeneratedOccurrenceDetailDialog'
 import GeneratedOccurrenceEventCard from '../components/admin/GeneratedOccurrenceEventCard'
 import GeneratedScheduleStatus from '../components/admin/GeneratedScheduleStatus'
-import { formatBlackoutDateRange } from '../constants/labels'
+import PublishGeneratedScheduleDialog from '../components/admin/PublishGeneratedScheduleDialog'
+import { formatBlackoutDateRange, formatDateTime } from '../constants/labels'
+import { normalizeGeneratedScheduleStatus } from '../constants/generatedScheduleStatus'
 import { labelScheduleType } from '../constants/schedule'
 import {
   adminScheduleDetailPath,
@@ -46,6 +48,13 @@ export default function AdminGeneratedScheduleDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [publishOpen, setPublishOpen] = useState(false)
+  const [publishError, setPublishError] = useState('')
+  const [publishing, setPublishing] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+
+  const scheduleStatus = schedule ? normalizeGeneratedScheduleStatus(schedule.status) : 'draft'
+  const isDraft = scheduleStatus === 'draft'
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -99,6 +108,22 @@ export default function AdminGeneratedScheduleDetailPage() {
     }
   }
 
+  async function confirmPublishSchedule() {
+    setPublishError('')
+    setPublishing(true)
+
+    try {
+      const data = await publishAdminGeneratedSchedule(id)
+      setSchedule(data.generatedSchedule ?? null)
+      setPublishOpen(false)
+      setToastMessage('Schedule published.')
+    } catch (err) {
+      setPublishError(err instanceof ApiError ? err.message : 'Unable to publish schedule.')
+    } finally {
+      setPublishing(false)
+    }
+  }
+
   return (
     <AdminLayout>
       <p className="admin-detail-top-nav">
@@ -112,12 +137,33 @@ export default function AdminGeneratedScheduleDetailPage() {
 
       {!loading && !loadError && schedule ? (
         <>
-          <header className="admin-page-header">
+          {toastMessage ? (
+            <p className="admin-toast" role="status">
+              {toastMessage}
+            </p>
+          ) : null}
+
+          <header className="admin-page-header admin-page-header--stacked-actions">
             <div>
               <p className="admin-schedule-template-eyebrow admin-muted">Generated schedule</p>
-              <h1 className="admin-page-title">{schedule.name}</h1>
+              <div className="admin-generated-schedule-detail__title-row">
+                <h1 className="admin-page-title">{schedule.name}</h1>
+                <GeneratedScheduleStatus status={schedule.status} />
+              </div>
             </div>
             <div className="admin-page-header__actions">
+              {isDraft ? (
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  onClick={() => {
+                    setPublishError('')
+                    setPublishOpen(true)
+                  }}
+                >
+                  Publish schedule
+                </button>
+              ) : null}
               <button
                 type="button"
                 className="admin-danger-button"
@@ -140,6 +186,12 @@ export default function AdminGeneratedScheduleDetailPage() {
                   <GeneratedScheduleStatus status={schedule.status} />
                 </dd>
               </div>
+              {schedule.publishedAt ? (
+                <div>
+                  <dt>Published</dt>
+                  <dd>{formatDateTime(schedule.publishedAt)}</dd>
+                </div>
+              ) : null}
               <div>
                 <dt>Date range</dt>
                 <dd>{formatBlackoutDateRange(schedule.startDate, schedule.endDate)}</dd>
@@ -199,6 +251,15 @@ export default function AdminGeneratedScheduleDetailPage() {
             variant="generated"
             onConfirm={() => void confirmDeleteSchedule()}
             onCancel={() => setDeleteOpen(false)}
+          />
+
+          <PublishGeneratedScheduleDialog
+            open={publishOpen}
+            scheduleName={schedule.name}
+            publishing={publishing}
+            error={publishError}
+            onConfirm={() => void confirmPublishSchedule()}
+            onCancel={() => setPublishOpen(false)}
           />
         </>
       ) : null}

@@ -546,6 +546,13 @@ export function deleteAdminGeneratedSchedule(generatedScheduleId) {
   });
 }
 
+export function publishAdminGeneratedSchedule(generatedScheduleId) {
+  return apiRequest(`/api/admin/generated-schedules/${generatedScheduleId}/publish`, {
+    method: "POST",
+    authenticated: true,
+  });
+}
+
 export function createAdminGeneratedSchedule(payload) {
   return apiRequest("/api/admin/generated-schedules", {
     method: "POST",
