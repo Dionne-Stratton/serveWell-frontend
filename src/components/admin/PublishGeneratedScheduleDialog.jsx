@@ -28,10 +28,13 @@ export default function PublishGeneratedScheduleDialog({
         </h2>
         <div id="publish-schedule-dialog-desc" className="admin-dialog__body">
           <p>
-            Publishing marks this schedule as finalized for your team. You can still edit events,
-            staffing, and volunteer assignments afterward.
+            Publishing marks this schedule as finalized for your team. Assigned volunteers will
+            receive one email with their assignments for this schedule.
           </p>
-          <p className="admin-muted">Volunteer emails are not sent when you publish.</p>
+          <p className="admin-muted">
+            You can still edit events, staffing, and volunteer assignments afterward. Volunteers
+            without an email on file are skipped.
+          </p>
           {error ? <p className="admin-error">{error}</p> : null}
         </div>
         <div className="admin-dialog__actions">

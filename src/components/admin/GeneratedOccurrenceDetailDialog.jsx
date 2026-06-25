@@ -73,6 +73,22 @@ function validateRows(rows, templateServingAreas) {
   return ''
 }
 
+function pinExpandedServingAreaCards(requirements, expandedByRequirementId) {
+  const pinned = { ...expandedByRequirementId }
+
+  for (const req of requirements ?? []) {
+    const override = expandedByRequirementId[req.id]
+    const isExpanded =
+      override !== undefined ? override : defaultServingAreaCardExpanded(req)
+
+    if (isExpanded) {
+      pinned[req.id] = true
+    }
+  }
+
+  return pinned
+}
+
 export default function GeneratedOccurrenceDetailDialog({
   open,
   generatedScheduleId,
@@ -94,13 +110,16 @@ export default function GeneratedOccurrenceDetailDialog({
 
   const applyOccurrence = useCallback(
     (next) => {
+      setExpandedByRequirementId((current) =>
+        pinExpandedServingAreaCards(occurrence?.requirements, current),
+      )
       setOccurrence(next)
       if (staffingMode === 'view') {
         setRows(rowsFromOccurrence(next))
       }
       onSaved?.(next)
     },
-    [onSaved, staffingMode],
+    [onSaved, staffingMode, occurrence?.requirements],
   )
 
   const load = useCallback(async () => {

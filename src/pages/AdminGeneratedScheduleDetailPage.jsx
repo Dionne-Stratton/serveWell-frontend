@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ApiError, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule, publishAdminGeneratedSchedule } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
+import AdminToast from '../components/admin/AdminToast'
 import DeleteScheduleDialog from '../components/admin/DeleteScheduleDialog'
 import GeneratedOccurrenceDetailDialog from '../components/admin/GeneratedOccurrenceDetailDialog'
 import GeneratedOccurrenceEventCard from '../components/admin/GeneratedOccurrenceEventCard'
@@ -35,6 +36,33 @@ function mergeOccurrenceIntoSchedule(schedule, updatedOccurrence) {
         : occ,
     ),
   }
+}
+
+function formatPublicationToast(publicationEmails) {
+  if (!publicationEmails) {
+    return 'Schedule published.'
+  }
+
+  const sent = publicationEmails.emailsSent ?? 0
+  const skipped = publicationEmails.skippedMissingEmail ?? 0
+
+  if (sent === 0 && skipped === 0) {
+    return 'Schedule published.'
+  }
+
+  const parts = ['Schedule published.']
+
+  if (sent > 0) {
+    parts.push(`${sent} volunteer ${sent === 1 ? 'email' : 'emails'} sent.`)
+  }
+
+  if (skipped > 0) {
+    parts.push(
+      `${skipped} ${skipped === 1 ? 'volunteer was' : 'volunteers were'} skipped (no email on file).`,
+    )
+  }
+
+  return parts.join(' ')
 }
 
 export default function AdminGeneratedScheduleDetailPage() {
@@ -116,7 +144,7 @@ export default function AdminGeneratedScheduleDetailPage() {
       const data = await publishAdminGeneratedSchedule(id)
       setSchedule(data.generatedSchedule ?? null)
       setPublishOpen(false)
-      setToastMessage('Schedule published.')
+      setToastMessage(formatPublicationToast(data.publicationEmails))
     } catch (err) {
       setPublishError(err instanceof ApiError ? err.message : 'Unable to publish schedule.')
     } finally {
@@ -137,12 +165,6 @@ export default function AdminGeneratedScheduleDetailPage() {
 
       {!loading && !loadError && schedule ? (
         <>
-          {toastMessage ? (
-            <p className="admin-toast" role="status">
-              {toastMessage}
-            </p>
-          ) : null}
-
           <header className="admin-page-header admin-page-header--stacked-actions">
             <div>
               <p className="admin-schedule-template-eyebrow admin-muted">Generated schedule</p>
@@ -263,6 +285,7 @@ export default function AdminGeneratedScheduleDetailPage() {
           />
         </>
       ) : null}
+      <AdminToast message={toastMessage} onDismiss={() => setToastMessage('')} />
     </AdminLayout>
   )
 }
