@@ -245,7 +245,10 @@ export default function AdminSchedulesPage() {
                   >
                     <h3 className="admin-schedule-card__title">{row.name}</h3>
                     <p className="admin-schedule-card__meta">
-                      <GeneratedScheduleStatus status={row.status} />
+                      <GeneratedScheduleStatus
+                        status={row.status}
+                        hasUnsentVolunteerUpdates={row.hasUnsentVolunteerUpdates}
+                      />
                       <span className="admin-muted">
                         {' '}
                         · {formatBlackoutDateRange(row.startDate, row.endDate)} ·{' '}

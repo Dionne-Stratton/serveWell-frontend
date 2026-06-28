@@ -93,6 +93,7 @@ export default function GeneratedOccurrenceDetailDialog({
   open,
   generatedScheduleId,
   occurrenceId,
+  scheduleStatus,
   onClose,
   onSaved,
 }) {
@@ -345,6 +346,13 @@ export default function GeneratedOccurrenceDetailDialog({
                   <dd>{formatScheduleTime(occurrence.startTime)}</dd>
                 </div>
               </dl>
+
+              {scheduleStatus === 'published' ? (
+                <p className="admin-help admin-generated-occurrence-dialog__notify-hint">
+                  Published schedule — edits are saved but not emailed until you use Send updates on
+                  the schedule page.
+                </p>
+              ) : null}
 
               <section className="admin-generated-occurrence-dialog__section">
                 <div className="admin-generated-occurrence-dialog__section-head">

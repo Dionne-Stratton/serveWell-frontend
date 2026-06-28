@@ -2340,6 +2340,10 @@
   color: #f87171;
 }
 
+.admin-generated-schedule-status--unsent {
+  white-space: nowrap;
+}
+
 .admin-schedule-card__meta .admin-generated-schedule-status {
   font-size: 0.88rem;
 }

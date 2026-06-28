@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ApiError, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule, publishAdminGeneratedSchedule } from '../api/client'
+import { ApiError, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule, publishAdminGeneratedSchedule, sendAdminGeneratedScheduleVolunteerUpdates } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import AdminToast from '../components/admin/AdminToast'
 import DeleteScheduleDialog from '../components/admin/DeleteScheduleDialog'
@@ -8,6 +8,7 @@ import GeneratedOccurrenceDetailDialog from '../components/admin/GeneratedOccurr
 import GeneratedOccurrenceEventCard from '../components/admin/GeneratedOccurrenceEventCard'
 import GeneratedScheduleStatus from '../components/admin/GeneratedScheduleStatus'
 import PublishGeneratedScheduleDialog from '../components/admin/PublishGeneratedScheduleDialog'
+import SendVolunteerUpdatesDialog from '../components/admin/SendVolunteerUpdatesDialog'
 import { formatBlackoutDateRange, formatDateTime } from '../constants/labels'
 import { normalizeGeneratedScheduleStatus } from '../constants/generatedScheduleStatus'
 import { labelScheduleType } from '../constants/schedule'
@@ -35,6 +36,9 @@ function mergeOccurrenceIntoSchedule(schedule, updatedOccurrence) {
           }
         : occ,
     ),
+    ...(normalizeGeneratedScheduleStatus(schedule.status) === 'published'
+      ? { hasUnsentVolunteerUpdates: true }
+      : {}),
   }
 }
 
@@ -65,6 +69,33 @@ function formatPublicationToast(publicationEmails) {
   return parts.join(' ')
 }
 
+function formatVolunteerUpdateToast(volunteerUpdateEmails) {
+  if (!volunteerUpdateEmails) {
+    return 'Volunteer updates sent.'
+  }
+
+  const sent = volunteerUpdateEmails.emailsSent ?? 0
+  const skipped = volunteerUpdateEmails.skippedMissingEmail ?? 0
+
+  if (sent === 0 && skipped === 0) {
+    return 'Volunteer updates sent.'
+  }
+
+  const parts = ['Volunteer updates sent.']
+
+  if (sent > 0) {
+    parts.push(`${sent} ${sent === 1 ? 'email' : 'emails'} delivered.`)
+  }
+
+  if (skipped > 0) {
+    parts.push(
+      `${skipped} ${skipped === 1 ? 'volunteer was' : 'volunteers were'} skipped (no email on file).`,
+    )
+  }
+
+  return parts.join(' ')
+}
+
 export default function AdminGeneratedScheduleDetailPage() {
   const { organizationSlug, id } = useParams()
   const navigate = useNavigate()
@@ -79,10 +110,15 @@ export default function AdminGeneratedScheduleDetailPage() {
   const [publishOpen, setPublishOpen] = useState(false)
   const [publishError, setPublishError] = useState('')
   const [publishing, setPublishing] = useState(false)
+  const [sendUpdatesOpen, setSendUpdatesOpen] = useState(false)
+  const [sendUpdatesError, setSendUpdatesError] = useState('')
+  const [sendingUpdates, setSendingUpdates] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
 
   const scheduleStatus = schedule ? normalizeGeneratedScheduleStatus(schedule.status) : 'draft'
   const isDraft = scheduleStatus === 'draft'
+  const hasUnsentVolunteerUpdates = Boolean(schedule?.hasUnsentVolunteerUpdates)
+  const showSendUpdates = scheduleStatus === 'published' && hasUnsentVolunteerUpdates
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -152,6 +188,24 @@ export default function AdminGeneratedScheduleDetailPage() {
     }
   }
 
+  async function confirmSendVolunteerUpdates() {
+    setSendUpdatesError('')
+    setSendingUpdates(true)
+
+    try {
+      const data = await sendAdminGeneratedScheduleVolunteerUpdates(id)
+      setSchedule(data.generatedSchedule ?? null)
+      setSendUpdatesOpen(false)
+      setToastMessage(formatVolunteerUpdateToast(data.volunteerUpdateEmails))
+    } catch (err) {
+      setSendUpdatesError(
+        err instanceof ApiError ? err.message : 'Unable to send volunteer updates.',
+      )
+    } finally {
+      setSendingUpdates(false)
+    }
+  }
+
   return (
     <AdminLayout>
       <p className="admin-detail-top-nav">
@@ -170,7 +224,10 @@ export default function AdminGeneratedScheduleDetailPage() {
               <p className="admin-schedule-template-eyebrow admin-muted">Generated schedule</p>
               <div className="admin-generated-schedule-detail__title-row">
                 <h1 className="admin-page-title">{schedule.name}</h1>
-                <GeneratedScheduleStatus status={schedule.status} />
+                <GeneratedScheduleStatus
+                  status={schedule.status}
+                  hasUnsentVolunteerUpdates={hasUnsentVolunteerUpdates}
+                />
               </div>
             </div>
             <div className="admin-page-header__actions">
@@ -184,6 +241,18 @@ export default function AdminGeneratedScheduleDetailPage() {
                   }}
                 >
                   Publish schedule
+                </button>
+              ) : null}
+              {showSendUpdates ? (
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  onClick={() => {
+                    setSendUpdatesError('')
+                    setSendUpdatesOpen(true)
+                  }}
+                >
+                  Send updates
                 </button>
               ) : null}
               <button
@@ -205,7 +274,10 @@ export default function AdminGeneratedScheduleDetailPage() {
               <div>
                 <dt>Status</dt>
                 <dd>
-                  <GeneratedScheduleStatus status={schedule.status} />
+                  <GeneratedScheduleStatus
+                    status={schedule.status}
+                    hasUnsentVolunteerUpdates={hasUnsentVolunteerUpdates}
+                  />
                 </dd>
               </div>
               {schedule.publishedAt ? (
@@ -235,6 +307,12 @@ export default function AdminGeneratedScheduleDetailPage() {
               Click an event to open details. Use Show staffing on a card to expand the breakdown
               without leaving the list.
             </p>
+            {scheduleStatus === 'published' ? (
+              <p className="admin-help admin-generated-schedule-overview-help">
+                Edits save immediately. When you are ready to notify volunteers, use Send updates
+                (one consolidated email per affected volunteer).
+              </p>
+            ) : null}
           </section>
 
           <section className="admin-schedule-detail-section">
@@ -261,6 +339,7 @@ export default function AdminGeneratedScheduleDetailPage() {
             open={activeOccurrenceId != null}
             generatedScheduleId={schedule.id}
             occurrenceId={activeOccurrenceId}
+            scheduleStatus={scheduleStatus}
             onClose={() => setActiveOccurrenceId(null)}
             onSaved={handleOccurrenceSaved}
           />
@@ -282,6 +361,15 @@ export default function AdminGeneratedScheduleDetailPage() {
             error={publishError}
             onConfirm={() => void confirmPublishSchedule()}
             onCancel={() => setPublishOpen(false)}
+          />
+
+          <SendVolunteerUpdatesDialog
+            open={sendUpdatesOpen}
+            scheduleName={schedule.name}
+            sending={sendingUpdates}
+            error={sendUpdatesError}
+            onConfirm={() => void confirmSendVolunteerUpdates()}
+            onCancel={() => setSendUpdatesOpen(false)}
           />
         </>
       ) : null}

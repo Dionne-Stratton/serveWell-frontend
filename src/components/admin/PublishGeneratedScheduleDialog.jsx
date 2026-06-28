@@ -32,8 +32,9 @@ export default function PublishGeneratedScheduleDialog({
             receive one email with their assignments for this schedule.
           </p>
           <p className="admin-muted">
-            You can still edit events, staffing, and volunteer assignments afterward. Volunteers
-            without an email on file are skipped.
+            You can still edit assignments, notes, and resources afterward. Changes are saved
+            immediately; use Send updates on the schedule when you are ready to email volunteers.
+            Volunteers without an email on file are skipped.
           </p>
           {error ? <p className="admin-error">{error}</p> : null}
         </div>
