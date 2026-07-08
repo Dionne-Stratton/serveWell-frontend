@@ -126,7 +126,12 @@ export default function GeneratedOccurrenceRequirementAssignments({
                 {' '}
                 · Fully covered
               </span>
-            ) : null}
+            ) : (
+              <span className="admin-generated-occurrence-assignment-block__needs-badge">
+                {' '}
+                · Needs volunteers
+              </span>
+            )}
           </p>
         </header>
       ) : (
@@ -178,7 +183,7 @@ export default function GeneratedOccurrenceRequirementAssignments({
                 id={`assign-volunteer-${requirement.id}`}
                 className="admin-generated-occurrence-dialog__area-readonly admin-generated-occurrence-assignment-block__no-eligible"
               >
-                No eligible active volunteers for this serving area
+                No eligible volunteers (approved / ready to schedule with this serving area as an interest)
               </p>
             ) : (
               <select

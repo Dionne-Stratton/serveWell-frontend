@@ -328,7 +328,7 @@ export default function CreateGeneratedScheduleDialog({
 
       const data = await createAdminGeneratedSchedule(payload)
 
-      onCreated?.(data.generatedSchedule)
+      onCreated?.(data)
 
     } catch (err) {
 

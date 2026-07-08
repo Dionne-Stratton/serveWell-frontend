@@ -149,11 +149,14 @@ export default function AdminSchedulesPage() {
     setToastMessage('Template created.')
   }
 
-  function handleGeneratedCreated(created) {
+  function handleGeneratedCreated(createdPayload) {
     setCreateScheduleOpen(false)
     setCreateScheduleTemplateId(null)
     void loadGeneratedSchedules()
-    navigate(adminGeneratedScheduleDetailPath(organizationSlug, created.id))
+    const schedule = createdPayload?.generatedSchedule ?? createdPayload
+    navigate(adminGeneratedScheduleDetailPath(organizationSlug, schedule.id), {
+      state: { autoAssignSummary: createdPayload?.autoAssignSummary ?? null },
+    })
   }
 
   async function confirmDeleteFromList() {

@@ -2348,6 +2348,65 @@
   font-size: 0.88rem;
 }
 
+.admin-schedule-assign-summary {
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #374151;
+  background: #1f2937;
+}
+
+.admin-schedule-assign-summary--complete {
+  border-color: #047857;
+}
+
+.admin-schedule-assign-summary--attention {
+  border-color: #b45309;
+}
+
+.admin-schedule-assign-summary__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.admin-schedule-assign-summary__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.admin-schedule-assign-summary__stats {
+  margin: 0 0 0.5rem;
+}
+
+.admin-schedule-assign-summary__attention-list {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.admin-schedule-assign-summary__attention-list li {
+  margin-bottom: 0.35rem;
+}
+
+.admin-schedule-assign-summary__attention-badge {
+  display: inline-block;
+  margin-right: 0.35rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: #78350f;
+  color: #fde68a;
+}
+
+.admin-generated-occurrence-assignment-block__needs-badge {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
 .admin-generated-schedule-detail__title-row {
   display: flex;
   flex-wrap: wrap;

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ApiError, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule, publishAdminGeneratedSchedule, sendAdminGeneratedScheduleVolunteerUpdates } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import AdminToast from '../components/admin/AdminToast'
 import DeleteScheduleDialog from '../components/admin/DeleteScheduleDialog'
 import GeneratedOccurrenceDetailDialog from '../components/admin/GeneratedOccurrenceDetailDialog'
 import GeneratedOccurrenceEventCard from '../components/admin/GeneratedOccurrenceEventCard'
+import GeneratedScheduleAssignSummary from '../components/admin/GeneratedScheduleAssignSummary'
 import GeneratedScheduleStatus from '../components/admin/GeneratedScheduleStatus'
 import PublishGeneratedScheduleDialog from '../components/admin/PublishGeneratedScheduleDialog'
 import SendVolunteerUpdatesDialog from '../components/admin/SendVolunteerUpdatesDialog'
@@ -99,6 +100,7 @@ function formatVolunteerUpdateToast(volunteerUpdateEmails) {
 export default function AdminGeneratedScheduleDetailPage() {
   const { organizationSlug, id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const [schedule, setSchedule] = useState(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
@@ -114,6 +116,7 @@ export default function AdminGeneratedScheduleDetailPage() {
   const [sendUpdatesError, setSendUpdatesError] = useState('')
   const [sendingUpdates, setSendingUpdates] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
+  const [assignSummary, setAssignSummary] = useState(null)
 
   const scheduleStatus = schedule ? normalizeGeneratedScheduleStatus(schedule.status) : 'draft'
   const isDraft = scheduleStatus === 'draft'
@@ -138,6 +141,13 @@ export default function AdminGeneratedScheduleDetailPage() {
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    if (location.state?.autoAssignSummary) {
+      setAssignSummary(location.state.autoAssignSummary)
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+  }, [location.pathname, location.state, navigate])
 
   function handleOccurrenceSaved(updatedOccurrence) {
     setSchedule((current) => mergeOccurrenceIntoSchedule(current, updatedOccurrence))
@@ -267,6 +277,11 @@ export default function AdminGeneratedScheduleDetailPage() {
               </button>
             </div>
           </header>
+
+          <GeneratedScheduleAssignSummary
+            summary={assignSummary}
+            onDismiss={() => setAssignSummary(null)}
+          />
 
           <section className="admin-schedule-detail-section">
             <h2 className="admin-schedule-detail-section__title">Overview</h2>
