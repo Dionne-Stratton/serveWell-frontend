@@ -36,9 +36,11 @@ Optional:
 
 Product and API details live in the parent folder:
 
+- [Documentation index](../docs/README.md)
 - [Implementation plan](../docs/Implementation-Plan.md)
 - [API contract](../docs/API-Contract.md)
 - [Progress checklist](../docs/Implementation-Progress-Checklist.md)
+- [Initial data model](../docs/Initial-Data-Model.md)
 
 ## Routes
 
@@ -67,7 +69,7 @@ Product and API details live in the parent folder:
 | `/:organizationSlug/admin` | Admin home (counts, forms, Planning Center connect when API credentials are set) |
 | `/:organizationSlug/admin/import` | Planning Center import v1 (hidden on demo; requires PC connected) |
 | `/:organizationSlug/admin/schedules` | Schedules hub: **Active & upcoming schedules** (draft generated schedules) and **Schedule templates** (create template wizard). Demo: `/demo/admin/schedules`. |
-| `/:organizationSlug/admin/schedules/generated/:id` | Generated schedule detail — draft status, date range, template link, service dates with staffing counts. |
+| `/:organizationSlug/admin/schedules/generated/:id` | Generated schedule detail — draft or published, **Publish** / **Send updates**, scheduling summary after create, events with staffing/notes/resources. |
 | `/:organizationSlug/admin/schedules/:id` | Schedule **template** detail — edit name, serving areas, events & staffing; delete template; **Create schedule from template**. |
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
 | `/:organizationSlug/admin/volunteers/:id` | Volunteer detail — status toolbar, PC sync/import badge, blackout dates, in-sync / stale banner, **Edit submission**, staff notes, **Delete** |
@@ -89,11 +91,12 @@ Unknown paths redirect to `/`.
 4. Dashboard: set search/status/form/archived filters, click **Apply filters**. Change status on a row or detail page (saves immediately). On a real org (`/:slug/admin`), use **Connect Planning Center** when the server has OAuth secrets configured.
 5. Volunteer detail (non-demo): **Edit submission** → change intake → **Save changes** → detail shows save notice; if linked to PC, use **Sync to Planning Center** after intake edits.
 6. Forms (non-demo orgs): **Active forms** / **Inactive forms** on `/:slug/admin/forms` → **Add new form** → edit → **Save changes**. Activate/deactivate moves cards between sections. Share `/:slug/forms/:formSlug` from the list (or set `VITE_PUBLIC_SITE_URL` for copy-link URLs).
-7. Schedules (non-demo orgs): `/:slug/admin/schedules` — create **schedule templates** (wizard); open a template to edit events & staffing. Generated dated schedules are not implemented yet (top section is placeholder).
+7. Schedules (non-demo orgs): `/:slug/admin/schedules` — create **schedule templates** and **generated schedules** from templates; open generated detail to review auto-assign summary, edit staffing, publish, and send volunteer updates when published.
 8. **Team (non-demo):** owner opens `/:slug/admin/team`, invites by email; invitee uses `/accept-invite`. **Forgot password:** `/forgot-password` with org slug + email.
 
 Demo org forms are read-only on the API; the UI still shows forms for browsing.
 
 ## Not implemented (UI placeholders)
 
+- Generated schedule **archive** workflow
 - Broader polish pass (Phase 15 in checklist)
