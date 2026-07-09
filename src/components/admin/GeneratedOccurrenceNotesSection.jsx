@@ -93,6 +93,7 @@ function NoteRow({
   onError,
   showServingAreaPicker,
   fixedScheduleServingAreaId,
+  readOnly = false,
 }) {
   const [editing, setEditing] = useState(false)
   const [noteText, setNoteText] = useState(note.note)
@@ -201,24 +202,26 @@ function NoteRow({
   return (
     <li className="admin-generated-occurrence-notes__item">
       <p className="admin-generated-occurrence-notes__text">{note.note}</p>
-      <div className="admin-generated-occurrence-notes__item-actions">
-        <button
-          type="button"
-          className="admin-secondary-button"
-          disabled={deleting}
-          onClick={() => setEditing(true)}
-        >
-          Edit
-        </button>
-        <button
-          type="button"
-          className="admin-danger-button admin-danger-button--compact"
-          disabled={deleting}
-          onClick={() => void remove()}
-        >
-          {deleting ? 'Removing…' : 'Delete'}
-        </button>
-      </div>
+      {!readOnly ? (
+        <div className="admin-generated-occurrence-notes__item-actions">
+          <button
+            type="button"
+            className="admin-secondary-button"
+            disabled={deleting}
+            onClick={() => setEditing(true)}
+          >
+            Edit
+          </button>
+          <button
+            type="button"
+            className="admin-danger-button admin-danger-button--compact"
+            disabled={deleting}
+            onClick={() => void remove()}
+          >
+            {deleting ? 'Removing…' : 'Delete'}
+          </button>
+        </div>
+      ) : null}
     </li>
   )
 }
@@ -239,6 +242,7 @@ export default function GeneratedOccurrenceNotesSection({
   scope = 'all',
   embedded = false,
   idPrefix = 'occ-notes',
+  readOnly = false,
 }) {
   const [showAdd, setShowAdd] = useState(false)
   const [newNoteText, setNewNoteText] = useState('')
@@ -267,6 +271,7 @@ export default function GeneratedOccurrenceNotesSection({
     onError,
     showServingAreaPicker,
     fixedScheduleServingAreaId,
+    readOnly,
   }
 
   async function addNote() {
@@ -329,7 +334,7 @@ export default function GeneratedOccurrenceNotesSection({
         >
           {title}
         </TitleTag>
-        {!showAdd ? (
+        {!showAdd && !readOnly ? (
           <button
             type="button"
             className="admin-secondary-button"

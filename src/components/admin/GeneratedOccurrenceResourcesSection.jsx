@@ -128,6 +128,7 @@ function ResourceRow({
   highlight,
   showServingAreaPicker,
   fixedScheduleServingAreaId,
+  readOnly = false,
 }) {
   const [editing, setEditing] = useState(false)
   const [displayName, setDisplayName] = useState(resource.displayName ?? '')
@@ -281,22 +282,26 @@ function ResourceRow({
         >
           {downloading ? 'Downloading…' : 'Download'}
         </button>
-        <button
-          type="button"
-          className="admin-secondary-button"
-          disabled={deleting}
-          onClick={() => setEditing(true)}
-        >
-          Edit
-        </button>
-        <button
-          type="button"
-          className="admin-danger-button admin-danger-button--compact"
-          disabled={deleting}
-          onClick={() => void remove()}
-        >
-          {deleting ? 'Deleting…' : 'Delete'}
-        </button>
+        {!readOnly ? (
+          <>
+            <button
+              type="button"
+              className="admin-secondary-button"
+              disabled={deleting}
+              onClick={() => setEditing(true)}
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              className="admin-danger-button admin-danger-button--compact"
+              disabled={deleting}
+              onClick={() => void remove()}
+            >
+              {deleting ? 'Deleting…' : 'Delete'}
+            </button>
+          </>
+        ) : null}
       </div>
     </li>
   )
@@ -315,6 +320,7 @@ export default function GeneratedOccurrenceResourcesSection({
   scope = 'all',
   embedded = false,
   idPrefix = 'occ-resources',
+  readOnly = false,
 }) {
   const fileInputRef = useRef(null)
   const uploadSectionRef = useRef(null)
@@ -350,6 +356,7 @@ export default function GeneratedOccurrenceResourcesSection({
     onError,
     showServingAreaPicker,
     fixedScheduleServingAreaId,
+    readOnly,
   }
 
   useEffect(() => {
@@ -468,7 +475,7 @@ export default function GeneratedOccurrenceResourcesSection({
         >
           Resources
         </TitleTag>
-        {!showUpload ? (
+        {!showUpload && !readOnly ? (
           <button
             type="button"
             className="admin-secondary-button"

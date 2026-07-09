@@ -14,6 +14,7 @@ export default function GeneratedOccurrenceServingAreaCard({
   expanded,
   onToggleExpanded,
   onOccurrenceUpdated,
+  readOnly = false,
 }) {
   const [error, setError] = useState('')
 
@@ -39,6 +40,7 @@ export default function GeneratedOccurrenceServingAreaCard({
     occurrenceId,
     onOccurrenceUpdated: handleOccurrenceUpdated,
     embedded: true,
+    readOnly,
   }
 
   return (
@@ -80,6 +82,7 @@ export default function GeneratedOccurrenceServingAreaCard({
             onOccurrenceUpdated={handleOccurrenceUpdated}
             onError={setError}
             compact
+            readOnly={readOnly}
           />
 
           {areaScope ? (

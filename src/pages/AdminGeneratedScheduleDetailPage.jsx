@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { ApiError, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule, publishAdminGeneratedSchedule, sendAdminGeneratedScheduleVolunteerUpdates } from '../api/client'
+import { ApiError, archiveAdminGeneratedSchedule, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule, publishAdminGeneratedSchedule, sendAdminGeneratedScheduleVolunteerUpdates } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import AdminToast from '../components/admin/AdminToast'
+import ArchiveGeneratedScheduleDialog from '../components/admin/ArchiveGeneratedScheduleDialog'
 import DeleteScheduleDialog from '../components/admin/DeleteScheduleDialog'
 import GeneratedOccurrenceDetailDialog from '../components/admin/GeneratedOccurrenceDetailDialog'
 import GeneratedOccurrenceEventCard from '../components/admin/GeneratedOccurrenceEventCard'
@@ -115,13 +116,18 @@ export default function AdminGeneratedScheduleDetailPage() {
   const [sendUpdatesOpen, setSendUpdatesOpen] = useState(false)
   const [sendUpdatesError, setSendUpdatesError] = useState('')
   const [sendingUpdates, setSendingUpdates] = useState(false)
+  const [archiveOpen, setArchiveOpen] = useState(false)
+  const [archiveError, setArchiveError] = useState('')
+  const [archiving, setArchiving] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [assignSummary, setAssignSummary] = useState(null)
 
   const scheduleStatus = schedule ? normalizeGeneratedScheduleStatus(schedule.status) : 'draft'
   const isDraft = scheduleStatus === 'draft'
+  const isPublished = scheduleStatus === 'published'
+  const isArchived = scheduleStatus === 'archived'
   const hasUnsentVolunteerUpdates = Boolean(schedule?.hasUnsentVolunteerUpdates)
-  const showSendUpdates = scheduleStatus === 'published' && hasUnsentVolunteerUpdates
+  const showSendUpdates = isPublished && hasUnsentVolunteerUpdates
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -216,6 +222,22 @@ export default function AdminGeneratedScheduleDetailPage() {
     }
   }
 
+  async function confirmArchiveSchedule() {
+    setArchiveError('')
+    setArchiving(true)
+
+    try {
+      const data = await archiveAdminGeneratedSchedule(id)
+      setSchedule(data.generatedSchedule ?? null)
+      setArchiveOpen(false)
+      setToastMessage('Schedule archived.')
+    } catch (err) {
+      setArchiveError(err instanceof ApiError ? err.message : 'Unable to archive schedule.')
+    } finally {
+      setArchiving(false)
+    }
+  }
+
   return (
     <AdminLayout>
       <p className="admin-detail-top-nav">
@@ -263,6 +285,18 @@ export default function AdminGeneratedScheduleDetailPage() {
                   }}
                 >
                   Send updates
+                </button>
+              ) : null}
+              {isPublished ? (
+                <button
+                  type="button"
+                  className="admin-secondary-button"
+                  onClick={() => {
+                    setArchiveError('')
+                    setArchiveOpen(true)
+                  }}
+                >
+                  Archive schedule
                 </button>
               ) : null}
               <button
@@ -322,10 +356,16 @@ export default function AdminGeneratedScheduleDetailPage() {
               Click an event to open details. Use Show staffing on a card to expand the breakdown
               without leaving the list.
             </p>
-            {scheduleStatus === 'published' ? (
+            {isPublished ? (
               <p className="admin-help admin-generated-schedule-overview-help">
                 Edits save immediately. When you are ready to notify volunteers, use Send updates
                 (one consolidated email per affected volunteer).
+              </p>
+            ) : null}
+            {isArchived ? (
+              <p className="admin-help admin-generated-schedule-overview-help">
+                This schedule is archived and read-only. Delete it if you need to remove it from
+                your list.
               </p>
             ) : null}
           </section>
@@ -385,6 +425,16 @@ export default function AdminGeneratedScheduleDetailPage() {
             error={sendUpdatesError}
             onConfirm={() => void confirmSendVolunteerUpdates()}
             onCancel={() => setSendUpdatesOpen(false)}
+          />
+
+          <ArchiveGeneratedScheduleDialog
+            open={archiveOpen}
+            scheduleName={schedule.name}
+            hasUnsentVolunteerUpdates={hasUnsentVolunteerUpdates}
+            archiving={archiving}
+            error={archiveError}
+            onConfirm={() => void confirmArchiveSchedule()}
+            onCancel={() => setArchiveOpen(false)}
           />
         </>
       ) : null}

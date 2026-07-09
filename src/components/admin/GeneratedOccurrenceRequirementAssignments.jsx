@@ -13,6 +13,7 @@ export default function GeneratedOccurrenceRequirementAssignments({
   onOccurrenceUpdated,
   onError,
   compact = false,
+  readOnly = false,
 }) {
   const [eligible, setEligible] = useState([])
   const [eligibleStatus, setEligibleStatus] = useState('loading')
@@ -24,7 +25,7 @@ export default function GeneratedOccurrenceRequirementAssignments({
   onErrorRef.current = onError
 
   const isFull = requirement.assignedCount >= requirement.neededCount
-  const canAssign = Boolean(requirement.scheduleServingAreaId) && !isFull
+  const canAssign = Boolean(requirement.scheduleServingAreaId) && !isFull && !readOnly
   const eligibleReady = eligibleStatus === 'ready'
   const eligiblePending = !eligibleReady
   const noEligibleVolunteers = eligibleReady && eligible.length === 0
@@ -145,14 +146,16 @@ export default function GeneratedOccurrenceRequirementAssignments({
           {assignments.map((assignment) => (
             <li key={assignment.id}>
               <span>{assignment.displayName}</span>
-              <button
-                type="button"
-                className="admin-danger-button admin-danger-button--compact"
-                disabled={removingId === assignment.id}
-                onClick={() => void handleRemove(assignment.id)}
-              >
-                {removingId === assignment.id ? 'Removing…' : 'Remove'}
-              </button>
+              {!readOnly ? (
+                <button
+                  type="button"
+                  className="admin-danger-button admin-danger-button--compact"
+                  disabled={removingId === assignment.id}
+                  onClick={() => void handleRemove(assignment.id)}
+                >
+                  {removingId === assignment.id ? 'Removing…' : 'Remove'}
+                </button>
+              ) : null}
             </li>
           ))}
         </ul>

@@ -292,6 +292,7 @@ export default function GeneratedOccurrenceDetailDialog({
     return null
   }
 
+  const readOnly = scheduleStatus === 'archived'
   const showForm = !loading && !loadError && occurrence
 
   const generalPanelProps = {
@@ -299,6 +300,7 @@ export default function GeneratedOccurrenceDetailDialog({
     generatedScheduleId,
     occurrenceId,
     embedded: true,
+    readOnly,
     onOccurrenceUpdated: (next) => {
       if (next) {
         setGeneralError('')
@@ -353,11 +355,16 @@ export default function GeneratedOccurrenceDetailDialog({
                   the schedule page.
                 </p>
               ) : null}
+              {readOnly ? (
+                <p className="admin-help admin-generated-occurrence-dialog__notify-hint">
+                  Archived schedule — this event is read-only.
+                </p>
+              ) : null}
 
               <section className="admin-generated-occurrence-dialog__section">
                 <div className="admin-generated-occurrence-dialog__section-head">
                   <h3 className="admin-generated-occurrence-dialog__section-title">Staffing needs</h3>
-                  {staffingMode === 'view' ? (
+                  {staffingMode === 'view' && !readOnly ? (
                     <button
                       type="button"
                       className="admin-secondary-button"
@@ -376,13 +383,15 @@ export default function GeneratedOccurrenceDetailDialog({
                           No serving areas on this event yet. Add staffing needs to manage volunteers,
                           notes, and resources by team.
                         </p>
-                        <button
-                          type="button"
-                          className="admin-secondary-button"
-                          onClick={startStaffingEdit}
-                        >
-                          Edit staffing needs
-                        </button>
+                        {!readOnly ? (
+                          <button
+                            type="button"
+                            className="admin-secondary-button"
+                            onClick={startStaffingEdit}
+                          >
+                            Edit staffing needs
+                          </button>
+                        ) : null}
                       </>
                     ) : (
                       <p className="admin-muted admin-generated-occurrence-dialog__staffing-hint">
@@ -549,6 +558,7 @@ export default function GeneratedOccurrenceDetailDialog({
                             expanded={isRequirementExpanded(req)}
                             onToggleExpanded={() => toggleRequirementExpanded(req.id)}
                             onOccurrenceUpdated={applyOccurrence}
+                            readOnly={readOnly}
                           />
                         ))}
                       </div>
