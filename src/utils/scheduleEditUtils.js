@@ -7,19 +7,6 @@ export function newTempId(prefix = 'tmp') {
   return `${prefix}-${nextTempId}`
 }
 
-export function servingAreaKey(servingAreaId, customName) {
-  if (servingAreaId) {
-    return `id:${servingAreaId}`
-  }
-
-  const trimmed = customName?.trim()
-  if (trimmed) {
-    return `custom:${trimmed.toLowerCase()}`
-  }
-
-  return null
-}
-
 export function rhythmFromDetail(rhythm) {
   return {
     clientId: newTempId('rhythm'),
@@ -152,16 +139,6 @@ export function isServingAreaUsedInRhythms(scheduleServingAreaId, localRhythms) 
   }
 
   return false
-}
-
-export function catalogAreaById(catalogForms) {
-  const map = new Map()
-  for (const form of catalogForms ?? []) {
-    for (const area of form.servingAreas ?? []) {
-      map.set(area.id, { ...area, formName: form.name })
-    }
-  }
-  return map
 }
 
 export function linkedAreasNotYetConnected(catalogForms, localAreas) {

@@ -55,7 +55,6 @@ export default function VolunteerForm({
   introText,
   adminEdit = false,
   volunteerSelfEdit = false,
-  editToken = null,
   onVolunteerSelfSave = null,
   initialFormState = null,
   onAdminSave = null,

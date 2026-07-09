@@ -17,9 +17,7 @@ export default function AdminLoginPage({ organizationSlug: organizationSlugProp 
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [sessionExpiredNotice, setSessionExpiredNotice] = useState(
-    Boolean(location.state?.sessionExpired),
-  );
+  const sessionExpiredNotice = Boolean(location.state?.sessionExpired);
 
   const redirectTo =
     location.state?.from ??

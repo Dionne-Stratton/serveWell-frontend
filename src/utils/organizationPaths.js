@@ -1,14 +1,7 @@
 import { DEMO_ORGANIZATION_SLUG } from '../constants/demo'
 
-/** @deprecated Former demo hub; `/demo` redirects to demo admin. */
-export const DEMO_HUB_PATH = '/demo/admin'
-
 export function demoVolunteerPath() {
   return '/demo/volunteer'
-}
-
-export function demoAdminLoginPath() {
-  return '/demo/admin/login'
 }
 
 export function demoAdminPath() {
@@ -29,15 +22,6 @@ export function demoAdminFormViewPath(formSlug) {
 
 export function demoAdminVolunteerDetailPath(volunteerId) {
   return `/demo/admin/volunteers/${volunteerId}`
-}
-
-/** @deprecated Use demoAdminVolunteerDetailPath */
-export function demoAdminSubmissionPath(submissionId) {
-  return demoAdminVolunteerDetailPath(submissionId)
-}
-
-export function organizationLandingPath(organizationSlug) {
-  return `/${organizationSlug}`
 }
 
 export function organizationVolunteerPath(organizationSlug) {
@@ -87,25 +71,12 @@ export function adminFormSetupPath(organizationSlug, formSlug) {
   return organizationAdminFormEditPath(organizationSlug, formSlug)
 }
 
-export function organizationPublicFormPath(organizationSlug, formSlug) {
-  return `/${organizationSlug}/forms/${formSlug}`
-}
-
-export function organizationAdminFormSettingsPath(organizationSlug) {
-  return organizationAdminFormsPath(organizationSlug)
-}
-
 export function organizationAdminVolunteerDetailPath(organizationSlug, volunteerId) {
   return `/${organizationSlug}/admin/volunteers/${volunteerId}`
 }
 
 export function organizationAdminVolunteerEditPath(organizationSlug, volunteerId) {
   return `/${organizationSlug}/admin/volunteers/${volunteerId}/edit`
-}
-
-/** @deprecated Use organizationAdminVolunteerDetailPath */
-export function organizationAdminSubmissionPath(organizationSlug, submissionId) {
-  return organizationAdminVolunteerDetailPath(organizationSlug, submissionId)
 }
 
 /** Admin volunteer detail (demo hub or org-scoped routes). */
@@ -123,11 +94,6 @@ export function adminVolunteerEditPath(organizationSlug, volunteerId) {
   return organizationAdminVolunteerEditPath(organizationSlug, volunteerId)
 }
 
-/** @deprecated Use adminVolunteerDetailPath */
-export function adminSubmissionDetailPath(organizationSlug, submissionId) {
-  return adminVolunteerDetailPath(organizationSlug, submissionId)
-}
-
 export function adminDashboardPath(organizationSlug) {
   if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
     return demoAdminPath()
@@ -140,13 +106,6 @@ export function adminProfilePath(organizationSlug) {
     return '/demo/admin/profile'
   }
   return `/${organizationSlug}/admin/profile`
-}
-
-export function adminTeamPath(organizationSlug) {
-  if (!organizationSlug || organizationSlug === DEMO_ORGANIZATION_SLUG) {
-    return '/demo/admin/team'
-  }
-  return `/${organizationSlug}/admin/team`
 }
 
 export function adminVolunteersPath(organizationSlug) {

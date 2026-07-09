@@ -223,27 +223,6 @@ function NoteRow({
   )
 }
 
-export function servingAreaOptionsFromRequirements(requirements) {
-  const seen = new Set()
-  const options = []
-
-  for (const req of requirements ?? []) {
-    const id = req.scheduleServingAreaId
-    if (!id || seen.has(id)) {
-      continue
-    }
-    seen.add(id)
-    options.push({
-      id,
-      displayName: req.displayName?.trim() || `Area ${id}`,
-    })
-  }
-
-  return options.sort((a, b) =>
-    a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' }),
-  )
-}
-
 /**
  * @param {object} props
  * @param {'all' | 'general' | { areaId: number }} [props.scope]

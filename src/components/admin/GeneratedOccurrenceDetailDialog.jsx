@@ -4,13 +4,13 @@ import {
   getAdminGeneratedScheduleOccurrence,
   patchAdminGeneratedScheduleOccurrenceStaffing,
 } from '../../api/client'
-import GeneratedOccurrenceNotesSection, {
-  servingAreaOptionsFromRequirements,
-} from './GeneratedOccurrenceNotesSection'
+import GeneratedOccurrenceNotesSection from './GeneratedOccurrenceNotesSection'
 import GeneratedOccurrenceResourcesSection from './GeneratedOccurrenceResourcesSection'
-import GeneratedOccurrenceServingAreaCard, {
+import GeneratedOccurrenceServingAreaCard from './GeneratedOccurrenceServingAreaCard'
+import {
   defaultServingAreaCardExpanded,
-} from './GeneratedOccurrenceServingAreaCard'
+  servingAreaOptionsFromRequirements,
+} from './occurrenceScope'
 import { formatDateOnly } from '../../constants/labels'
 import { formatScheduleTime } from '../../constants/schedule'
 

@@ -15,9 +15,3 @@ export function getActiveAdminToken(pathname = typeof window !== 'undefined' ? w
     ? getDemoAdminToken()
     : getAdminToken()
 }
-
-export function getApiAuthScope() {
-  return apiAuthScopeForPathname(
-    typeof window !== 'undefined' ? window.location.pathname : '',
-  )
-}

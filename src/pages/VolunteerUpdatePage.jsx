@@ -13,7 +13,6 @@ import {
   restrictFormStateToOpenAreas,
   submissionDetailToFormState,
 } from '../components/serve/volunteerFormUtils'
-import OrganizationNotFoundPage from './OrganizationNotFoundPage'
 import '../styles/serve.css'
 
 export default function VolunteerUpdatePage() {
@@ -22,7 +21,6 @@ export default function VolunteerUpdatePage() {
   const token = searchParams.get('token')?.trim() ?? ''
 
   const [sections, setSections] = useState(null)
-  const [servingAreas, setServingAreas] = useState(null)
   const [initialFormState, setInitialFormState] = useState(null)
   const [formMeta, setFormMeta] = useState(null)
   const [loadError, setLoadError] = useState('')
@@ -72,7 +70,6 @@ export default function VolunteerUpdatePage() {
         )
 
         setSections(filtered)
-        setServingAreas(data.servingAreas ?? [])
         setFormMeta(data.form ?? null)
         setInitialFormState(formState)
       } catch (err) {
@@ -152,7 +149,6 @@ export default function VolunteerUpdatePage() {
           introText={formMeta?.introText}
           initialFormState={initialFormState}
           volunteerSelfEdit
-          editToken={token}
           onVolunteerSelfSave={(payload) => saveVolunteerSubmissionEdit(token, payload)}
           submitButtonLabel="Save changes"
           saveSuccessContent={

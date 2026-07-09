@@ -12,7 +12,6 @@ export default function VolunteerAlreadySubmittedSection({
   const [error, setError] = useState('')
   const [ack, setAck] = useState('')
   const [linkSent, setLinkSent] = useState(false)
-  const [sendCount, setSendCount] = useState(0)
   const [statusKey, setStatusKey] = useState(0)
 
   const defaultAck =
@@ -47,12 +46,10 @@ export default function VolunteerAlreadySubmittedSection({
       )
       setAck(isResend ? resendAck : (data.message ?? defaultAck))
       setStatusKey((current) => current + 1)
-      setSendCount((previous) => previous + 1)
       setLinkSent(true)
     } catch (err) {
       setAck('')
       setLinkSent(false)
-      setSendCount(0)
       setError(
         err instanceof ApiError
           ? err.message
@@ -68,7 +65,6 @@ export default function VolunteerAlreadySubmittedSection({
     if (linkSent || ack) {
       setLinkSent(false)
       setAck('')
-      setSendCount(0)
     }
     setError('')
   }

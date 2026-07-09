@@ -60,8 +60,10 @@ export async function apiRequest(path, options = {}) {
       throw new ApiError("Session expired.", "SESSION_EXPIRED");
     }
 
-    const { message: _m, code: _c, ...errorFields } = body.error ?? {};
-    throw new ApiError(message, code, errorFields);
+    const errorFields = { ...(body.error ?? {}) }
+    delete errorFields.message
+    delete errorFields.code
+    throw new ApiError(message, code, errorFields)
   }
 
   return body.data;
@@ -97,8 +99,10 @@ export async function apiFormRequest(path, formData, options = {}) {
       throw new ApiError("Session expired.", "SESSION_EXPIRED");
     }
 
-    const { message: _m, code: _c, ...errorFields } = body.error ?? {};
-    throw new ApiError(message, code, errorFields);
+    const errorFields = { ...(body.error ?? {}) }
+    delete errorFields.message
+    delete errorFields.code
+    throw new ApiError(message, code, errorFields)
   }
 
   return body.data;

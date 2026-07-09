@@ -1,5 +1,3 @@
-export const generatedScheduleStatuses = ['draft', 'published', 'archived']
-
 const labels = {
   draft: 'Draft',
   published: 'Published',

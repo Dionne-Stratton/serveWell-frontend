@@ -2,10 +2,7 @@ import { useMemo, useState } from 'react'
 import GeneratedOccurrenceNotesSection from './GeneratedOccurrenceNotesSection'
 import GeneratedOccurrenceRequirementAssignments from './GeneratedOccurrenceRequirementAssignments'
 import GeneratedOccurrenceResourcesSection from './GeneratedOccurrenceResourcesSection'
-import {
-  requirementNeedsVolunteers,
-  requirementStaffingStatus,
-} from './occurrenceScope'
+import { requirementStaffingStatus } from './occurrenceScope'
 
 export default function GeneratedOccurrenceServingAreaCard({
   requirement,
@@ -111,8 +108,4 @@ export default function GeneratedOccurrenceServingAreaCard({
       ) : null}
     </article>
   )
-}
-
-export function defaultServingAreaCardExpanded(requirement) {
-  return requirementNeedsVolunteers(requirement)
 }

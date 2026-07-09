@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   ApiError,
   deleteAdminOrganization,
@@ -17,7 +17,6 @@ import EditableProfileField from '../components/admin/EditableProfileField'
 import DeleteOrganizationDialog from '../components/admin/DeleteOrganizationDialog'
 import AdminToast from '../components/admin/AdminToast'
 import softBtn from '../styles/adminSoftButtons.module.css'
-import { resolveAdminOrganizationSlug } from '../utils/organizationPaths'
 
 function ProfileRow({ label, value }) {
   return (
@@ -29,15 +28,9 @@ function ProfileRow({ label, value }) {
 }
 
 export default function AdminProfilePage() {
-  const { organizationSlug: organizationSlugParam } = useParams()
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { admin, organization, logout, refreshSession } = useAdminAuth()
-  const organizationSlug = resolveAdminOrganizationSlug(
-    pathname,
-    organizationSlugParam,
-    organization?.slug,
-  )
   const demoMode = pathname.startsWith('/demo/admin')
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(!demoMode)

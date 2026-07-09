@@ -3,9 +3,7 @@ import {
   experienceLevelOptions,
   frequencyOptions,
   preferredContactMethodOptions,
-  submissionStatusOptions,
 } from './enums'
-import { normalizeSubmissionStatus } from './submissionStatus'
 
 function labelFromOptions(options, value) {
   if (!value) return '—'
@@ -26,10 +24,6 @@ export function labelAvailability(value) {
 
 export function labelExperience(value) {
   return labelFromOptions(experienceLevelOptions, value)
-}
-
-export function labelSubmissionStatus(value) {
-  return labelFromOptions(submissionStatusOptions, normalizeSubmissionStatus(value))
 }
 
 export function formatAvailabilityList(keys) {
@@ -65,59 +59,7 @@ export function formatBlackoutDateRange(startDate, endDate) {
   return `${startLabel} – ${formatDateOnly(endDate)}`
 }
 
-/** Compact US range for suggested names, e.g. Jun 15–19, 2026 */
-export function formatCompactUsDateRange(startDate, endDate) {
-  if (!startDate) {
-    return ''
-  }
-
-  if (!endDate || endDate === startDate) {
-    return formatDateOnly(startDate)
-  }
-
-  const [sy, sm, sd] = startDate.split('-').map(Number)
-  const [ey, em, ed] = endDate.split('-').map(Number)
-  const start = new Date(sy, sm - 1, sd)
-  const end = new Date(ey, em - 1, ed)
-
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return formatBlackoutDateRange(startDate, endDate)
-  }
-
-  if (sy === ey && sm === em) {
-    const monthLabel = start.toLocaleDateString(US_DATE_LOCALE, { month: 'short' })
-    return `${monthLabel} ${sd}–${ed}, ${sy}`
-  }
-
-  return formatBlackoutDateRange(startDate, endDate)
-}
-
 /** Default name when creating a generated schedule from a template (template name only; dates live in overview). */
 export function suggestGeneratedScheduleName(templateName) {
   return templateName?.trim() ?? ''
-}
-
-/** @deprecated Use stored generated schedule name for display. */
-export function formatGeneratedScheduleTitle(
-  templateName,
-  scheduleType,
-  startDate,
-  endDate,
-) {
-  const name = templateName?.trim() || 'Schedule'
-
-  if (scheduleType === 'monthly' && startDate) {
-    const [year, month] = startDate.split('-').map(Number)
-    const label = new Date(year, month - 1, 1).toLocaleDateString(US_DATE_LOCALE, {
-      month: 'long',
-      year: 'numeric',
-    })
-    return `${name} — ${label}`
-  }
-
-  if (startDate && endDate) {
-    return `${name} — ${formatBlackoutDateRange(startDate, endDate)}`
-  }
-
-  return name
 }

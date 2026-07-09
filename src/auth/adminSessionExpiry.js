@@ -19,7 +19,3 @@ export function notifyAdminSessionExpired(pathname = typeof window !== 'undefine
     )
   }
 }
-
-export function isAdminSessionExpiredError(error) {
-  return error?.name === 'ApiError' && error?.code === 'SESSION_EXPIRED'
-}
