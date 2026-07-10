@@ -65,7 +65,6 @@ export default function AdminVolunteerSubmissionEditForm({
   const [form, setForm] = useState(initialFormState)
   const [fieldErrors, setFieldErrors] = useState({})
   const [validationSummary, setValidationSummary] = useState([])
-  const [submitError, setSubmitError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
@@ -170,7 +169,6 @@ export default function AdminVolunteerSubmissionEditForm({
 
   async function handleSubmit(event) {
     event.preventDefault()
-    setSubmitError('')
     setValidationSummary([])
 
     const errors = validateVolunteerForm(form, servingAreas, { allowPastBlackoutDates: true })
@@ -189,7 +187,6 @@ export default function AdminVolunteerSubmissionEditForm({
         error instanceof ApiError
           ? error.message
           : 'Unable to save changes right now. Please try again in a moment.'
-      setSubmitError(message)
       setValidationSummary([message])
       requestAnimationFrame(() => scrollToElement('admin-edit-validation-summary'))
     } finally {
@@ -219,8 +216,6 @@ export default function AdminVolunteerSubmissionEditForm({
           </ul>
         </div>
       ) : null}
-
-      {submitError ? <p className="admin-error">{submitError}</p> : null}
 
       <p className="admin-volunteer-edit__eyebrow">Editing Volunteer</p>
 
