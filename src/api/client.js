@@ -651,6 +651,13 @@ export function publishAdminGeneratedSchedule(generatedScheduleId) {
   });
 }
 
+export function autoFillAdminGeneratedSchedule(generatedScheduleId) {
+  return apiRequest(`/api/admin/generated-schedules/${generatedScheduleId}/auto-assign`, {
+    method: "POST",
+    authenticated: true,
+  });
+}
+
 export function archiveAdminGeneratedSchedule(generatedScheduleId) {
   return apiRequest(`/api/admin/generated-schedules/${generatedScheduleId}/archive`, {
     method: "POST",

@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { ApiError, archiveAdminGeneratedSchedule, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule, publishAdminGeneratedSchedule, sendAdminGeneratedScheduleVolunteerUpdates } from '../api/client'
+import { ApiError, archiveAdminGeneratedSchedule, autoFillAdminGeneratedSchedule, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule, publishAdminGeneratedSchedule, sendAdminGeneratedScheduleVolunteerUpdates } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
 import AdminToast from '../components/admin/AdminToast'
 import ArchiveGeneratedScheduleDialog from '../components/admin/ArchiveGeneratedScheduleDialog'
+import AutoFillGeneratedScheduleDialog from '../components/admin/AutoFillGeneratedScheduleDialog'
 import DeleteScheduleDialog from '../components/admin/DeleteScheduleDialog'
 import GeneratedOccurrenceDetailDialog from '../components/admin/GeneratedOccurrenceDetailDialog'
 import GeneratedOccurrenceEventCard from '../components/admin/GeneratedOccurrenceEventCard'
@@ -119,6 +120,9 @@ export default function AdminGeneratedScheduleDetailPage() {
   const [archiveOpen, setArchiveOpen] = useState(false)
   const [archiveError, setArchiveError] = useState('')
   const [archiving, setArchiving] = useState(false)
+  const [autoFillOpen, setAutoFillOpen] = useState(false)
+  const [autoFillError, setAutoFillError] = useState('')
+  const [autoFilling, setAutoFilling] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
   const [assignSummary, setAssignSummary] = useState(null)
 
@@ -238,6 +242,24 @@ export default function AdminGeneratedScheduleDetailPage() {
     }
   }
 
+  async function confirmAutoFillSchedule() {
+    setAutoFillError('')
+    setAutoFilling(true)
+
+    try {
+      const data = await autoFillAdminGeneratedSchedule(id)
+      setSchedule(data.generatedSchedule ?? null)
+      setAssignSummary(data.autoAssignSummary ?? null)
+      setActiveOccurrenceId(null)
+      setAutoFillOpen(false)
+      setToastMessage('Volunteer assignments were auto-filled again.')
+    } catch (err) {
+      setAutoFillError(err instanceof ApiError ? err.message : 'Unable to auto-fill volunteers.')
+    } finally {
+      setAutoFilling(false)
+    }
+  }
+
   return (
     <AdminLayout>
       <p className="admin-detail-top-nav">
@@ -264,16 +286,28 @@ export default function AdminGeneratedScheduleDetailPage() {
             </div>
             <div className="admin-page-header__actions">
               {isDraft ? (
-                <button
-                  type="button"
-                  className="admin-secondary-button"
-                  onClick={() => {
-                    setPublishError('')
-                    setPublishOpen(true)
-                  }}
-                >
-                  Publish schedule
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className="admin-secondary-button"
+                    onClick={() => {
+                      setAutoFillError('')
+                      setAutoFillOpen(true)
+                    }}
+                  >
+                    Auto-fill volunteers
+                  </button>
+                  <button
+                    type="button"
+                    className="admin-secondary-button"
+                    onClick={() => {
+                      setPublishError('')
+                      setPublishOpen(true)
+                    }}
+                  >
+                    Publish schedule
+                  </button>
+                </>
               ) : null}
               {showSendUpdates ? (
                 <button
@@ -356,6 +390,13 @@ export default function AdminGeneratedScheduleDetailPage() {
               Click an event to open details. Use Show staffing on a card to expand the breakdown
               without leaving the list.
             </p>
+            {isDraft ? (
+              <p className="admin-help admin-generated-schedule-overview-help">
+                While this schedule is still a draft, you can run Auto-fill volunteers to rerun the
+                auto-scheduler (for example after new volunteers are approved). That replaces all
+                current assignments, including manual ones.
+              </p>
+            ) : null}
             {isPublished ? (
               <p className="admin-help admin-generated-schedule-overview-help">
                 Edits save immediately. When you are ready to notify volunteers, use Send updates
@@ -435,6 +476,15 @@ export default function AdminGeneratedScheduleDetailPage() {
             error={archiveError}
             onConfirm={() => void confirmArchiveSchedule()}
             onCancel={() => setArchiveOpen(false)}
+          />
+
+          <AutoFillGeneratedScheduleDialog
+            open={autoFillOpen}
+            scheduleName={schedule.name}
+            autoFilling={autoFilling}
+            error={autoFillError}
+            onConfirm={() => void confirmAutoFillSchedule()}
+            onCancel={() => setAutoFillOpen(false)}
           />
         </>
       ) : null}
