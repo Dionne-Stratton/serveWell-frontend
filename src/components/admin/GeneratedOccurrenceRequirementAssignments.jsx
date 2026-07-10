@@ -68,6 +68,32 @@ export default function GeneratedOccurrenceRequirementAssignments({
       return
     }
 
+    const submissionId = Number(selectedSubmissionId)
+    const selectedVolunteer = eligible.find((volunteer) => volunteer.submissionId === submissionId)
+    const needsMultipleRolesConfirm = Boolean(selectedVolunteer?.multipleRolesOnOccurrenceWarning)
+    const needsFrequencyConfirm = Boolean(selectedVolunteer?.frequencyLimitWarning)
+
+    if (needsMultipleRolesConfirm || needsFrequencyConfirm) {
+      const lines = []
+      if (needsMultipleRolesConfirm) {
+        const roles = selectedVolunteer.otherRolesOnOccurrence?.filter(Boolean) ?? []
+        const roleList = roles.length ? roles.join(', ') : 'another role'
+        lines.push(
+          `This volunteer is already assigned to ${roleList} on this event.`,
+        )
+      }
+      if (needsFrequencyConfirm) {
+        lines.push(
+          'This assignment would exceed their stated serving frequency for this schedule or month.',
+        )
+      }
+      lines.push('Assign them to this role anyway?')
+      const confirmed = window.confirm(lines.join('\n\n'))
+      if (!confirmed) {
+        return
+      }
+    }
+
     setAssigning(true)
     onError('')
 
@@ -77,7 +103,9 @@ export default function GeneratedOccurrenceRequirementAssignments({
         occurrenceId,
         {
           requirementId: requirement.id,
-          submissionId: Number(selectedSubmissionId),
+          submissionId,
+          ...(needsMultipleRolesConfirm ? { confirmMultipleRolesOnOccurrence: true } : {}),
+          ...(needsFrequencyConfirm ? { confirmFrequencyOverride: true } : {}),
         },
       )
       onOccurrenceUpdated(data.occurrence)
@@ -197,11 +225,28 @@ export default function GeneratedOccurrenceRequirementAssignments({
                 onChange={(event) => setSelectedSubmissionId(event.target.value)}
               >
                 <option value="">Select volunteer…</option>
-                {eligible.map((volunteer) => (
-                  <option key={volunteer.submissionId} value={volunteer.submissionId}>
-                    {volunteer.displayName}
-                  </option>
-                ))}
+                {eligible.map((volunteer) => {
+                  const suffixParts = []
+                  if (volunteer.multipleRolesOnOccurrenceWarning) {
+                    const roles = volunteer.otherRolesOnOccurrence?.filter(Boolean) ?? []
+                    suffixParts.push(
+                      roles.length
+                        ? `already on this event: ${roles.join(', ')}`
+                        : 'already on this event',
+                    )
+                  }
+                  if (volunteer.frequencyLimitWarning) {
+                    suffixParts.push('over frequency preference')
+                  }
+                  const suffix = suffixParts.length ? ` (${suffixParts.join('; ')})` : ''
+
+                  return (
+                    <option key={volunteer.submissionId} value={volunteer.submissionId}>
+                      {volunteer.displayName}
+                      {suffix}
+                    </option>
+                  )
+                })}
               </select>
             )}
           </div>
