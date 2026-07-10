@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   ApiError,
@@ -69,42 +69,61 @@ export default function AdminVolunteersPage() {
     ...emptyFilters,
     status: initialStatus,
   }))
+  const [prevStatusFromUrl, setPrevStatusFromUrl] = useState(statusFromUrl)
+  const [prevAppliedFilters, setPrevAppliedFilters] = useState(appliedFilters)
 
-  const fetchSubmissions = useCallback(async (filters) => {
+  if (statusFromUrl !== prevStatusFromUrl) {
+    setPrevStatusFromUrl(statusFromUrl)
+    if (statusFromUrl && isAllowedStatus(statusFromUrl)) {
+      setDraftFilters((current) =>
+        current.status === statusFromUrl ? current : { ...current, status: statusFromUrl },
+      )
+      setAppliedFilters((current) =>
+        current.status === statusFromUrl ? current : { ...emptyFilters, status: statusFromUrl },
+      )
+    }
+  }
+
+  if (appliedFilters !== prevAppliedFilters) {
+    setPrevAppliedFilters(appliedFilters)
     setLoading(true)
     setError('')
+  }
 
-    try {
-      const data = await getAdminSubmissions(filtersToQuery(filters))
-      setSubmissions(data.submissions ?? [])
-    } catch (err) {
-      setSubmissions([])
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : 'Unable to load submissions. Is the API running?',
-      )
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const source = draftFilters.source
+  if (!sourceUsesServeWellForm(source) && formSections.length > 0) {
+    setFormSections([])
+  }
 
   useEffect(() => {
-    fetchSubmissions(appliedFilters)
-  }, [appliedFilters, fetchSubmissions])
+    let cancelled = false
 
-  useEffect(() => {
-    if (!statusFromUrl || !isAllowedStatus(statusFromUrl)) {
-      return
+    ;(async () => {
+      try {
+        const data = await getAdminSubmissions(filtersToQuery(appliedFilters))
+        if (!cancelled) {
+          setSubmissions(data.submissions ?? [])
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setSubmissions([])
+          setError(
+            err instanceof ApiError
+              ? err.message
+              : 'Unable to load submissions. Is the API running?',
+          )
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
     }
-
-    setDraftFilters((current) =>
-      current.status === statusFromUrl ? current : { ...current, status: statusFromUrl },
-    )
-    setAppliedFilters((current) =>
-      current.status === statusFromUrl ? current : { ...emptyFilters, status: statusFromUrl },
-    )
-  }, [statusFromUrl])
+  }, [appliedFilters])
 
   useEffect(() => {
     let cancelled = false
@@ -137,10 +156,7 @@ export default function AdminVolunteersPage() {
   }, [])
 
   useEffect(() => {
-    const source = draftFilters.source
-
     if (!sourceUsesServeWellForm(source)) {
-      setFormSections([])
       return undefined
     }
 
@@ -148,7 +164,7 @@ export default function AdminVolunteersPage() {
 
     let cancelled = false
 
-    async function loadSections() {
+    ;(async () => {
       try {
         const data = await getAdminFormDetail(formId)
         if (!cancelled) {
@@ -164,14 +180,12 @@ export default function AdminVolunteersPage() {
           setFormSections([])
         }
       }
-    }
-
-    loadSections()
+    })()
 
     return () => {
       cancelled = true
     }
-  }, [draftFilters.source])
+  }, [source])
 
   function handleFilterSubmit(event) {
     event.preventDefault()

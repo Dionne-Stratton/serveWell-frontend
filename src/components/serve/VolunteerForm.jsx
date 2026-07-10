@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { ApiError, submitVolunteerForm } from '../../api/client'
 import {
   availabilityOptions,
@@ -62,6 +62,7 @@ export default function VolunteerForm({
   saveSuccessContent = null,
 }) {
   const [form, setForm] = useState(() => initialFormState ?? createEmptyFormState())
+  const [prevInitialFormState, setPrevInitialFormState] = useState(initialFormState)
   const [fieldErrors, setFieldErrors] = useState({})
   const [validationSummary, setValidationSummary] = useState([])
   const [submitError, setSubmitError] = useState('')
@@ -69,11 +70,12 @@ export default function VolunteerForm({
   const [successMessage, setSuccessMessage] = useState('')
   const statusRef = useRef(null)
 
-  useEffect(() => {
+  if (initialFormState !== prevInitialFormState) {
+    setPrevInitialFormState(initialFormState)
     if (initialFormState) {
       setForm(initialFormState)
     }
-  }, [initialFormState])
+  }
 
   const groupedAreas = useMemo(() => {
     if (sections?.length) {

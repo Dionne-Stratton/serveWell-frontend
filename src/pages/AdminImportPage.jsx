@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   ApiError,
@@ -37,6 +37,7 @@ export default function AdminImportPage() {
   const [error, setError] = useState('')
   const [alreadyImportedSubmissionId, setAlreadyImportedSubmissionId] = useState(null)
   const [importSuccessSubmissionId, setImportSuccessSubmissionId] = useState(null)
+  const [activePreviewKey, setActivePreviewKey] = useState('')
 
   const dashboardPath = adminDashboardPath(organizationSlug)
 
@@ -48,10 +49,7 @@ export default function AdminImportPage() {
   useEffect(() => {
     let cancelled = false
 
-    async function load() {
-      setIntegrationLoading(true)
-      setError('')
-
+    ;(async () => {
       try {
         const integrationData = await getPlanningCenterIntegration()
         const connectedIntegration = integrationData?.integration ?? null
@@ -88,28 +86,57 @@ export default function AdminImportPage() {
           setIntegrationLoading(false)
         }
       }
-    }
-
-    load()
+    })()
 
     return () => {
       cancelled = true
     }
   }, [])
 
+  const canPreview = Boolean(selectedPerson && tabId)
+
+  const importPayload = useMemo(() => {
+    if (!selectedPerson || !tabId) {
+      return null
+    }
+
+    return {
+      personId: selectedPerson.id,
+      tabId,
+    }
+  }, [selectedPerson, tabId])
+
+  const trimmedQuery = personQuery.trim()
+  const shouldSearchPeople = isConnected && trimmedQuery.length >= 2
+
+  if (!shouldSearchPeople && personResults.length > 0) {
+    setPersonResults([])
+  }
+
+  if (!canPreview && preview !== null) {
+    setPreview(null)
+  }
+
+  const previewPayloadKey = importPayload
+    ? `${importPayload.personId}:${importPayload.tabId}`
+    : ''
+
+  if (canPreview && previewPayloadKey && previewPayloadKey !== activePreviewKey) {
+    setActivePreviewKey(previewPayloadKey)
+    setPreviewPending(true)
+    setError('')
+    setAlreadyImportedSubmissionId(null)
+    setImportSuccessSubmissionId(null)
+  } else if (!canPreview && activePreviewKey) {
+    setActivePreviewKey('')
+  }
+
   useEffect(() => {
-    if (!isConnected) {
-      setPersonResults([])
+    if (!shouldSearchPeople) {
       return undefined
     }
 
-    const query = personQuery.trim()
-
-    if (query.length < 2) {
-      setPersonResults([])
-      return undefined
-    }
-
+    const query = trimmedQuery
     const handle = window.setTimeout(async () => {
       setPersonSearchPending(true)
 
@@ -129,54 +156,41 @@ export default function AdminImportPage() {
     }, SEARCH_DEBOUNCE_MS)
 
     return () => window.clearTimeout(handle)
-  }, [personQuery, isConnected])
-
-  const canPreview = Boolean(selectedPerson && tabId)
-
-  const importPayload = useMemo(() => {
-    if (!selectedPerson || !tabId) {
-      return null
-    }
-
-    return {
-      personId: selectedPerson.id,
-      tabId,
-    }
-  }, [selectedPerson, tabId])
-
-  const runPreview = useCallback(async () => {
-    if (!importPayload) {
-      return
-    }
-
-    setPreviewPending(true)
-    setError('')
-    setAlreadyImportedSubmissionId(null)
-    setImportSuccessSubmissionId(null)
-
-    try {
-      const data = await previewPlanningCenterImport(importPayload)
-      setPreview(data.preview ?? null)
-    } catch (err) {
-      setPreview(null)
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : 'Unable to build import preview.',
-      )
-    } finally {
-      setPreviewPending(false)
-    }
-  }, [importPayload])
+  }, [trimmedQuery, shouldSearchPeople])
 
   useEffect(() => {
-    if (!canPreview) {
-      setPreview(null)
-      return
+    if (!canPreview || !importPayload) {
+      return undefined
     }
 
-    runPreview()
-  }, [canPreview, runPreview])
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const data = await previewPlanningCenterImport(importPayload)
+        if (!cancelled) {
+          setPreview(data.preview ?? null)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setPreview(null)
+          setError(
+            err instanceof ApiError
+              ? err.message
+              : 'Unable to build import preview.',
+          )
+        }
+      } finally {
+        if (!cancelled) {
+          setPreviewPending(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [canPreview, importPayload])
 
   async function handleImport() {
     if (!importPayload || !preview) {

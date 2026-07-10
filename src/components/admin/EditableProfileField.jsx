@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import softBtn from '../../styles/adminSoftButtons.module.css'
 
 function IconPencil() {
@@ -33,12 +33,6 @@ export default function EditableProfileField({
   const [draft, setDraft] = useState(value ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    if (!editing) {
-      setDraft(value ?? '')
-    }
-  }, [value, editing])
 
   function startEditing() {
     if (disabled) {

@@ -36,26 +36,127 @@ export default function AdminSchedulesPage() {
   const [catalogError, setCatalogError] = useState('')
   const [catalogLoading, setCatalogLoading] = useState(false)
   const [wizardOpen, setWizardOpen] = useState(false)
-  const [createScheduleOpen, setCreateScheduleOpen] = useState(false)
-  const [createScheduleTemplateId, setCreateScheduleTemplateId] = useState(null)
-  const [toastMessage, setToastMessage] = useState('')
+  const [createScheduleOpen, setCreateScheduleOpen] = useState(
+    () => Boolean(location.state?.createGeneratedFromTemplateId),
+  )
+  const [createScheduleTemplateId, setCreateScheduleTemplateId] = useState(
+    () => location.state?.createGeneratedFromTemplateId ?? null,
+  )
+  const [toastMessage, setToastMessage] = useState(() => {
+    if (location.state?.templateDeleted) {
+      return 'Template deleted.'
+    }
+    if (location.state?.generatedScheduleDeleted) {
+      return 'Schedule deleted.'
+    }
+    return ''
+  })
 
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleteError, setDeleteError] = useState('')
   const [deleting, setDeleting] = useState(false)
 
-  const loadTemplates = useCallback(async () => {
-    setListLoading(true)
-    setListError('')
+  const incomingState = location.state
+  const [prevNavState, setPrevNavState] = useState(incomingState)
+
+  if (incomingState !== prevNavState) {
+    setPrevNavState(incomingState)
+    if (incomingState?.templateDeleted) {
+      setToastMessage('Template deleted.')
+    }
+    if (incomingState?.generatedScheduleDeleted) {
+      setToastMessage('Schedule deleted.')
+    }
+    if (incomingState?.createGeneratedFromTemplateId) {
+      setCreateScheduleTemplateId(incomingState.createGeneratedFromTemplateId)
+      setCreateScheduleOpen(true)
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const data = await getAdminSchedules()
+        if (!cancelled) {
+          setTemplates(Array.isArray(data?.schedules) ? data.schedules : [])
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setTemplates([])
+          setListError(
+            err instanceof ApiError ? err.message : 'Unable to load schedule templates.',
+          )
+        }
+      } finally {
+        if (!cancelled) {
+          setListLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const data = await getAdminGeneratedSchedules()
+        if (!cancelled) {
+          setGeneratedSchedules(
+            Array.isArray(data?.generatedSchedules) ? data.generatedSchedules : [],
+          )
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setGeneratedSchedules([])
+          setGeneratedError(
+            err instanceof ApiError ? err.message : 'Unable to load generated schedules.',
+          )
+        }
+      } finally {
+        if (!cancelled) {
+          setGeneratedLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (
+      !location.state?.templateDeleted &&
+      !location.state?.generatedScheduleDeleted &&
+      !location.state?.createGeneratedFromTemplateId
+    ) {
+      return
+    }
+    window.history.replaceState({}, document.title)
+  }, [location.state])
+
+  const loadCatalog = useCallback(async () => {
+    setCatalogLoading(true)
+    setCatalogError('')
 
     try {
-      const data = await getAdminSchedules()
-      setTemplates(Array.isArray(data?.schedules) ? data.schedules : [])
+      const data = await getAdminScheduleServingAreaOptions()
+      setCatalogForms(Array.isArray(data?.forms) ? data.forms : [])
     } catch (err) {
-      setTemplates([])
-      setListError(err instanceof ApiError ? err.message : 'Unable to load schedule templates.')
+      setCatalogError(
+        err instanceof ApiError
+          ? err.message
+          : 'Unable to load serving areas for the wizard.',
+      )
     } finally {
-      setListLoading(false)
+      setCatalogLoading(false)
     }
   }, [])
 
@@ -77,47 +178,6 @@ export default function AdminSchedulesPage() {
       setGeneratedLoading(false)
     }
   }, [])
-
-  const loadCatalog = useCallback(async () => {
-    setCatalogLoading(true)
-    setCatalogError('')
-
-    try {
-      const data = await getAdminScheduleServingAreaOptions()
-      setCatalogForms(Array.isArray(data?.forms) ? data.forms : [])
-    } catch (err) {
-      setCatalogError(
-        err instanceof ApiError
-          ? err.message
-          : 'Unable to load serving areas for the wizard.',
-      )
-    } finally {
-      setCatalogLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void loadTemplates()
-    void loadGeneratedSchedules()
-  }, [loadTemplates, loadGeneratedSchedules])
-
-  useEffect(() => {
-    if (location.state?.templateDeleted) {
-      setToastMessage('Template deleted.')
-      window.history.replaceState({}, document.title)
-    }
-
-    if (location.state?.generatedScheduleDeleted) {
-      setToastMessage('Schedule deleted.')
-      window.history.replaceState({}, document.title)
-    }
-
-    if (location.state?.createGeneratedFromTemplateId) {
-      setCreateScheduleTemplateId(location.state.createGeneratedFromTemplateId)
-      setCreateScheduleOpen(true)
-      window.history.replaceState({}, document.title)
-    }
-  }, [location.state])
 
   const canCreateSchedule = templates.length > 0 && !listLoading
 

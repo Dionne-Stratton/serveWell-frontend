@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ApiError, createAdminSchedule } from '../../api/client'
 import { dayOfWeekOptions, formatScheduleTime, labelDayOfWeek, labelScheduleType, scheduleTypeOptions } from '../../constants/schedule'
 import softBtn from '../../styles/adminSoftButtons.module.css'
@@ -68,22 +68,35 @@ export default function CreateScheduleWizard({
   onSaved,
   onRetryCatalog,
 }) {
+  if (!open) {
+    return null
+  }
+
+  return (
+    <CreateScheduleWizardForm
+      catalogForms={catalogForms}
+      catalogLoading={catalogLoading}
+      catalogError={catalogError}
+      onClose={onClose}
+      onSaved={onSaved}
+      onRetryCatalog={onRetryCatalog}
+    />
+  )
+}
+
+function CreateScheduleWizardForm({
+  catalogForms,
+  catalogLoading = false,
+  catalogError = '',
+  onClose,
+  onSaved,
+  onRetryCatalog,
+}) {
   const [step, setStep] = useState(1)
   const [state, setState] = useState(initialState)
   const [fieldErrors, setFieldErrors] = useState({})
   const [submitError, setSubmitError] = useState('')
   const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    setStep(1)
-    setState(initialState())
-    setFieldErrors({})
-    setSubmitError('')
-  }, [open])
 
   const nameByServingAreaId = useMemo(() => {
     const map = new Map()
@@ -104,10 +117,6 @@ export default function CreateScheduleWizard({
       ),
     [catalogForms, state.selectedServingAreaIds, state.customAreaNames],
   )
-
-  if (!open) {
-    return null
-  }
 
   function updateState(patch) {
     setState((current) => ({ ...current, ...patch }))

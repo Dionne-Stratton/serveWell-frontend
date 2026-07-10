@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../auth/useAdminAuth'
 import {
@@ -176,12 +176,44 @@ export default function AdminSubmissionDetailPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletePending, setDeletePending] = useState(false)
   const [deleteError, setDeleteError] = useState('')
-  const [planningCenterDirtyHint, setPlanningCenterDirtyHint] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
   const [markReviewPending, setMarkReviewPending] = useState(false)
   const [markReviewError, setMarkReviewError] = useState('')
+  const [prevId, setPrevId] = useState(id)
 
-  const loadDetail = useCallback(async () => {
+  const navSaved = Boolean(location.state?.submissionSaved)
+  const navStale = Boolean(location.state?.planningCenterStale)
+  const [toastMessage, setToastMessage] = useState(() =>
+    location.state?.submissionSaved ? 'Submission saved.' : '',
+  )
+  const [planningCenterDirtyHint, setPlanningCenterDirtyHint] = useState(
+    () => Boolean(location.state?.submissionSaved && location.state?.planningCenterStale),
+  )
+  const [prevNavSaved, setPrevNavSaved] = useState(navSaved)
+
+  if (id !== prevId) {
+    setPrevId(id)
+    setLoading(true)
+    setError('')
+    setDetail(null)
+    setPlanningCenterDirtyHint(false)
+    setToastMessage('')
+    setNoteDraft('')
+    setNoteError('')
+    setPlanningCenterPushError('')
+    setMarkReviewError('')
+  }
+
+  if (navSaved !== prevNavSaved) {
+    setPrevNavSaved(navSaved)
+    if (navSaved) {
+      setToastMessage('Submission saved.')
+      if (navStale) {
+        setPlanningCenterDirtyHint(true)
+      }
+    }
+  }
+
+  async function loadDetail() {
     setLoading(true)
     setError('')
 
@@ -198,37 +230,53 @@ export default function AdminSubmissionDetailPage() {
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }
 
   useEffect(() => {
-    loadDetail()
-  }, [loadDetail])
+    let cancelled = false
 
-  useEffect(() => {
-    setPlanningCenterDirtyHint(false)
+    ;(async () => {
+      try {
+        const data = await getAdminSubmissionDetail(id)
+        if (!cancelled) {
+          setDetail(data)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setDetail(null)
+          setError(
+            err instanceof ApiError
+              ? err.message
+              : 'Unable to load this volunteer.',
+          )
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
   }, [id])
 
   useEffect(() => {
     if (!location.state?.submissionSaved) {
       return
     }
-
-    if (location.state.planningCenterStale) {
-      setPlanningCenterDirtyHint(true)
-    }
-    setToastMessage('Submission saved.')
     navigate(pathname, { replace: true, state: null })
   }, [location.state, navigate, pathname])
 
   useEffect(() => {
     if (demoMode) {
-      setPlanningCenterIntegration(null)
-      return
+      return undefined
     }
 
     let cancelled = false
 
-    async function loadIntegration() {
+    ;(async () => {
       try {
         const data = await getPlanningCenterIntegration()
         if (!cancelled) {
@@ -239,9 +287,7 @@ export default function AdminSubmissionDetailPage() {
           setPlanningCenterIntegration(null)
         }
       }
-    }
-
-    loadIntegration()
+    })()
 
     return () => {
       cancelled = true

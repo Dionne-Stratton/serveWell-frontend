@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ApiError } from '../../api/client'
 import softBtn from '../../styles/adminSoftButtons.module.css'
 
@@ -92,19 +92,6 @@ export default function EditableOrganizationSection({
     contactEmail: '',
     websiteUrl: '',
   })
-
-  useEffect(() => {
-    if (!organization || editing) {
-      return
-    }
-
-    setDraft({
-      name: organization.name ?? '',
-      organizationType: organization.organizationType ?? 'church',
-      contactEmail: organization.contactEmail ?? '',
-      websiteUrl: organization.websiteUrl ?? '',
-    })
-  }, [organization, editing])
 
   function startEditing() {
     if (!canEdit || !organization) {

@@ -15,10 +15,20 @@ export default function StaffLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [flashSuccess, setFlashSuccess] = useState('')
-  const [sessionExpiredNotice, setSessionExpiredNotice] = useState(
-    Boolean(location.state?.sessionExpired),
+  const [flashSuccess, setFlashSuccess] = useState(
+    () => location.state?.flashSuccess ?? '',
   )
+  const [sessionExpiredNotice, setSessionExpiredNotice] = useState(
+    () => Boolean(location.state?.sessionExpired),
+  )
+
+  const navFlashSuccess = location.state?.flashSuccess
+  if (navFlashSuccess && flashSuccess !== navFlashSuccess) {
+    setFlashSuccess(navFlashSuccess)
+  }
+  if (location.state?.sessionExpired && !sessionExpiredNotice) {
+    setSessionExpiredNotice(true)
+  }
 
   useEffect(() => {
     if (!loading && admin && organization?.slug) {
@@ -27,19 +37,9 @@ export default function StaffLoginPage() {
   }, [admin, loading, navigate, organization?.slug])
 
   useEffect(() => {
-    const message = location.state?.flashSuccess
-    if (!message) {
+    if (!location.state?.flashSuccess && !location.state?.sessionExpired) {
       return
     }
-    setFlashSuccess(message)
-    navigate('/login', { replace: true, state: null })
-  }, [location.state, navigate])
-
-  useEffect(() => {
-    if (!location.state?.sessionExpired) {
-      return
-    }
-    setSessionExpiredNotice(true)
     navigate('/login', { replace: true, state: null })
   }, [location.state, navigate])
 

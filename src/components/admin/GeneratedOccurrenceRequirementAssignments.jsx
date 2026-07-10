@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ApiError,
   createAdminGeneratedOccurrenceAssignment,
@@ -15,23 +15,77 @@ export default function GeneratedOccurrenceRequirementAssignments({
   compact = false,
   readOnly = false,
 }) {
+  const isFull = requirement.assignedCount >= requirement.neededCount
+  const canAssign = Boolean(requirement.scheduleServingAreaId) && !isFull && !readOnly
+  const eligibleKey = canAssign
+    ? `${generatedScheduleId}:${occurrenceId}:${requirement.id}:${requirement.assignedCount}:${requirement.assignments?.length ?? 0}`
+    : `closed:${requirement.id}`
+
   const [eligible, setEligible] = useState([])
-  const [eligibleStatus, setEligibleStatus] = useState('loading')
+  const [eligibleStatus, setEligibleStatus] = useState(canAssign ? 'loading' : 'ready')
   const [selectedSubmissionId, setSelectedSubmissionId] = useState('')
   const [assigning, setAssigning] = useState(false)
   const [removingId, setRemovingId] = useState(null)
+  const [prevEligibleKey, setPrevEligibleKey] = useState(eligibleKey)
   const onErrorRef = useRef(onError)
 
-  onErrorRef.current = onError
+  useEffect(() => {
+    onErrorRef.current = onError
+  }, [onError])
 
-  const isFull = requirement.assignedCount >= requirement.neededCount
-  const canAssign = Boolean(requirement.scheduleServingAreaId) && !isFull && !readOnly
+  if (eligibleKey !== prevEligibleKey) {
+    setPrevEligibleKey(eligibleKey)
+    setSelectedSubmissionId('')
+    if (canAssign) {
+      setEligibleStatus('loading')
+    } else {
+      setEligible([])
+      setEligibleStatus('ready')
+    }
+  }
+
   const eligibleReady = eligibleStatus === 'ready'
   const eligiblePending = !eligibleReady
   const noEligibleVolunteers = eligibleReady && eligible.length === 0
   const showVolunteerPicker = eligibleReady && eligible.length > 0
 
-  const loadEligible = useCallback(async () => {
+  useEffect(() => {
+    if (!canAssign) {
+      return undefined
+    }
+
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const data = await getAdminGeneratedOccurrenceEligibleVolunteers(
+          generatedScheduleId,
+          occurrenceId,
+          requirement.id,
+        )
+        if (cancelled) {
+          return
+        }
+        setEligible(Array.isArray(data?.volunteers) ? data.volunteers : [])
+        setEligibleStatus('ready')
+      } catch (err) {
+        if (cancelled) {
+          return
+        }
+        setEligible([])
+        setEligibleStatus('ready')
+        onErrorRef.current(
+          err instanceof ApiError ? err.message : 'Unable to load volunteers.',
+        )
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [canAssign, eligibleKey, generatedScheduleId, occurrenceId, requirement.id])
+
+  async function reloadEligible() {
     if (!canAssign) {
       setEligible([])
       setEligibleStatus('ready')
@@ -51,16 +105,11 @@ export default function GeneratedOccurrenceRequirementAssignments({
     } catch (err) {
       setEligible([])
       setEligibleStatus('ready')
-      onErrorRef.current(
+      onError(
         err instanceof ApiError ? err.message : 'Unable to load volunteers.',
       )
     }
-  }, [canAssign, generatedScheduleId, occurrenceId, requirement.id])
-
-  useEffect(() => {
-    setSelectedSubmissionId('')
-    void loadEligible()
-  }, [loadEligible, requirement.assignedCount, requirement.assignments?.length])
+  }
 
   async function handleAssign() {
     if (!selectedSubmissionId) {
@@ -110,7 +159,7 @@ export default function GeneratedOccurrenceRequirementAssignments({
       )
       onOccurrenceUpdated(data.occurrence)
       setSelectedSubmissionId('')
-      void loadEligible()
+      void reloadEligible()
     } catch (err) {
       onError(err instanceof ApiError ? err.message : 'Unable to assign volunteer.')
     } finally {
@@ -129,7 +178,7 @@ export default function GeneratedOccurrenceRequirementAssignments({
         assignmentId,
       )
       onOccurrenceUpdated(data.occurrence)
-      void loadEligible()
+      void reloadEligible()
     } catch (err) {
       onError(err instanceof ApiError ? err.message : 'Unable to remove assignment.')
     } finally {

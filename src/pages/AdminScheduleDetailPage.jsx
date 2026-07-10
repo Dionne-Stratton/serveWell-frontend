@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ApiError,
@@ -48,8 +48,12 @@ export default function AdminScheduleDetailPage() {
   const scheduleId = Number(idParam)
   const listPath = adminSchedulesPath(organizationSlug)
 
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState('')
+  const [loading, setLoading] = useState(
+    () => Number.isInteger(scheduleId) && scheduleId >= 1,
+  )
+  const [loadError, setLoadError] = useState(() =>
+    Number.isInteger(scheduleId) && scheduleId >= 1 ? '' : 'Invalid template.',
+  )
   const [name, setName] = useState('')
   const [scheduleType, setScheduleType] = useState('monthly')
   const [servingAreas, setServingAreas] = useState([])
@@ -72,6 +76,28 @@ export default function AdminScheduleDetailPage() {
   const [deleting, setDeleting] = useState(false)
 
   const [rhythmDeleteTarget, setRhythmDeleteTarget] = useState(null)
+  const [prevScheduleId, setPrevScheduleId] = useState(scheduleId)
+
+  if (scheduleId !== prevScheduleId) {
+    setPrevScheduleId(scheduleId)
+    if (!Number.isInteger(scheduleId) || scheduleId < 1) {
+      setLoading(false)
+      setLoadError('Invalid template.')
+      setName('')
+      setScheduleType('monthly')
+      setServingAreas([])
+      setRhythms([])
+      setCatalogForms([])
+    } else {
+      setLoading(true)
+      setLoadError('')
+      setName('')
+      setScheduleType('monthly')
+      setServingAreas([])
+      setRhythms([])
+      setCatalogForms([])
+    }
+  }
 
   const connectedAreaIds = useMemo(
     () => new Set(servingAreas.map((row) => row.id).filter((areaId) => areaId != null)),
@@ -83,39 +109,46 @@ export default function AdminScheduleDetailPage() {
     [catalogForms, servingAreas],
   )
 
-  const loadAll = useCallback(async () => {
+  useEffect(() => {
     if (!Number.isInteger(scheduleId) || scheduleId < 1) {
-      setLoadError('Invalid template.')
-      setLoading(false)
-      return
+      return undefined
     }
 
-    setLoading(true)
-    setLoadError('')
+    let cancelled = false
 
-    try {
-      const [detail, catalog] = await Promise.all([
-        getAdminSchedule(scheduleId),
-        getAdminScheduleServingAreaOptions(),
-      ])
+    ;(async () => {
+      try {
+        const [detail, catalog] = await Promise.all([
+          getAdminSchedule(scheduleId),
+          getAdminScheduleServingAreaOptions(),
+        ])
 
-      setCatalogForms(Array.isArray(catalog?.forms) ? catalog.forms : [])
-      applyDetailToState(detail, {
-        setName,
-        setScheduleType,
-        setServingAreas,
-        setRhythms,
-      })
-    } catch (err) {
-      setLoadError(err instanceof ApiError ? err.message : 'Unable to load template.')
-    } finally {
-      setLoading(false)
+        if (cancelled) {
+          return
+        }
+
+        setCatalogForms(Array.isArray(catalog?.forms) ? catalog.forms : [])
+        applyDetailToState(detail, {
+          setName,
+          setScheduleType,
+          setServingAreas,
+          setRhythms,
+        })
+      } catch (err) {
+        if (!cancelled) {
+          setLoadError(err instanceof ApiError ? err.message : 'Unable to load template.')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
     }
   }, [scheduleId])
-
-  useEffect(() => {
-    void loadAll()
-  }, [loadAll])
 
   function syncFromDetail(detail) {
     applyDetailToState(detail, {

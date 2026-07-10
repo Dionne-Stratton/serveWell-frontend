@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   ApiError,
@@ -45,40 +45,46 @@ export default function AdminProfilePage() {
   const [notifyPrefsSaving, setNotifyPrefsSaving] = useState(false)
   const [notifyPrefsError, setNotifyPrefsError] = useState('')
 
-  const loadProfile = useCallback(async () => {
-    if (demoMode) {
-      setProfile({ admin, organization })
-      setLoading(false)
-      return
-    }
-
-    setLoading(true)
-    setError('')
-
-    try {
-      const data = await getCurrentAdmin()
-      setProfile(data)
-      setNotificationPrefs(
-        data.notificationPreferences ?? {
-          newSubmissions: true,
-          readyToSchedule: false,
-          volunteerUpdated: true,
-          adminJoined: data.admin?.role === 'owner',
-        },
-      )
-    } catch (err) {
-      setProfile(null)
-      setError(
-        err instanceof ApiError ? err.message : 'Unable to load your profile.',
-      )
-    } finally {
-      setLoading(false)
-    }
-  }, [admin, demoMode, organization])
-
   useEffect(() => {
-    loadProfile()
-  }, [loadProfile])
+    if (demoMode) {
+      return undefined
+    }
+
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const data = await getCurrentAdmin()
+        if (cancelled) {
+          return
+        }
+        setProfile(data)
+        setNotificationPrefs(
+          data.notificationPreferences ?? {
+            newSubmissions: true,
+            readyToSchedule: false,
+            volunteerUpdated: true,
+            adminJoined: data.admin?.role === 'owner',
+          },
+        )
+      } catch (err) {
+        if (!cancelled) {
+          setProfile(null)
+          setError(
+            err instanceof ApiError ? err.message : 'Unable to load your profile.',
+          )
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [demoMode])
 
   async function handleNotificationPrefChange(key, checked) {
     if (demoMode || !notificationPrefs) {

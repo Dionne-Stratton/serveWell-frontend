@@ -19,13 +19,34 @@ export default function VolunteerUpdatePage() {
   const { organizationSlug } = useParams()
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')?.trim() ?? ''
+  const hasValidParams = Boolean(organizationSlug && token)
 
   const [sections, setSections] = useState(null)
   const [initialFormState, setInitialFormState] = useState(null)
   const [formMeta, setFormMeta] = useState(null)
   const [loadError, setLoadError] = useState('')
-  const [invalidToken, setInvalidToken] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [invalidToken, setInvalidToken] = useState(!hasValidParams)
+  const [loading, setLoading] = useState(hasValidParams)
+  const [prevParamsKey, setPrevParamsKey] = useState(
+    () => `${organizationSlug ?? ''}:${token}`,
+  )
+
+  const paramsKey = `${organizationSlug ?? ''}:${token}`
+  if (paramsKey !== prevParamsKey) {
+    setPrevParamsKey(paramsKey)
+    if (!hasValidParams) {
+      setLoading(false)
+      setInvalidToken(true)
+      setLoadError('')
+      setSections(null)
+      setInitialFormState(null)
+      setFormMeta(null)
+    } else {
+      setLoading(true)
+      setInvalidToken(false)
+      setLoadError('')
+    }
+  }
 
   const intakeSections = useMemo(
     () => (sections ? filterSectionsForVolunteerIntake(sections) : []),
@@ -38,19 +59,13 @@ export default function VolunteerUpdatePage() {
   )
 
   useEffect(() => {
-    if (!organizationSlug || !token) {
-      setLoading(false)
-      setInvalidToken(true)
+    if (!hasValidParams) {
       return undefined
     }
 
     let cancelled = false
 
-    async function load() {
-      setLoading(true)
-      setLoadError('')
-      setInvalidToken(false)
-
+    ;(async () => {
       try {
         const data = await getVolunteerSubmissionEditPreview(token)
         if (cancelled) {
@@ -89,14 +104,12 @@ export default function VolunteerUpdatePage() {
           setLoading(false)
         }
       }
-    }
-
-    load()
+    })()
 
     return () => {
       cancelled = true
     }
-  }, [organizationSlug, token])
+  }, [hasValidParams, organizationSlug, token])
 
   if (!organizationSlug) {
     return (

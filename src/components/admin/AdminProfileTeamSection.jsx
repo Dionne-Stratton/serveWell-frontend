@@ -103,12 +103,34 @@ export default function AdminProfileTeamSection({ demoMode }) {
   }, [])
 
   useEffect(() => {
-    if (!demoMode) {
-      loadTeam()
-    } else {
-      setLoading(false)
+    if (demoMode) {
+      return undefined
     }
-  }, [demoMode, loadTeam])
+
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const data = await getAdminTeam()
+        if (!cancelled) {
+          setTeam(data)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setTeam(null)
+          setError(err instanceof ApiError ? err.message : 'Unable to load admins.')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [demoMode])
 
   const canManage = team?.canManage === true
 

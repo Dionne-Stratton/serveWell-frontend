@@ -99,15 +99,36 @@ export default function GeneratedOccurrenceDetailDialog({
 }) {
   const titleId = useId()
   const formId = useId()
+  const loadKey =
+    open && generatedScheduleId && occurrenceId
+      ? `${generatedScheduleId}:${occurrenceId}`
+      : null
   const [occurrence, setOccurrence] = useState(null)
   const [rows, setRows] = useState([])
   const [staffingMode, setStaffingMode] = useState('view')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(Boolean(loadKey))
   const [loadError, setLoadError] = useState('')
   const [saveError, setSaveError] = useState('')
   const [generalError, setGeneralError] = useState('')
   const [saving, setSaving] = useState(false)
   const [expandedByRequirementId, setExpandedByRequirementId] = useState({})
+  const [prevLoadKey, setPrevLoadKey] = useState(loadKey)
+
+  if (loadKey !== prevLoadKey) {
+    setPrevLoadKey(loadKey)
+    if (loadKey) {
+      setLoading(true)
+      setLoadError('')
+      setOccurrence(null)
+      setRows([])
+      setStaffingMode('view')
+      setExpandedByRequirementId({})
+      setSaveError('')
+      setGeneralError('')
+    } else {
+      setLoading(false)
+    }
+  }
 
   const applyOccurrence = useCallback(
     (next) => {
@@ -123,37 +144,45 @@ export default function GeneratedOccurrenceDetailDialog({
     [onSaved, staffingMode, occurrence?.requirements],
   )
 
-  const load = useCallback(async () => {
-    if (!generatedScheduleId || !occurrenceId) {
-      return
-    }
-
-    setLoading(true)
-    setLoadError('')
-
-    try {
-      const data = await getAdminGeneratedScheduleOccurrence(generatedScheduleId, occurrenceId)
-      const next = data.occurrence ?? null
-      setOccurrence(next)
-      setRows(rowsFromOccurrence(next))
-      setStaffingMode('view')
-      setExpandedByRequirementId({})
-    } catch (err) {
-      setOccurrence(null)
-      setRows([])
-      setLoadError(err instanceof ApiError ? err.message : 'Unable to load this event.')
-    } finally {
-      setLoading(false)
-    }
-  }, [generatedScheduleId, occurrenceId])
-
   useEffect(() => {
-    if (!open) {
-      return
+    if (!loadKey) {
+      return undefined
     }
 
-    void load()
-  }, [open, load])
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const data = await getAdminGeneratedScheduleOccurrence(
+          generatedScheduleId,
+          occurrenceId,
+        )
+        if (cancelled) {
+          return
+        }
+        const next = data.occurrence ?? null
+        setOccurrence(next)
+        setRows(rowsFromOccurrence(next))
+        setStaffingMode('view')
+        setExpandedByRequirementId({})
+      } catch (err) {
+        if (cancelled) {
+          return
+        }
+        setOccurrence(null)
+        setRows([])
+        setLoadError(err instanceof ApiError ? err.message : 'Unable to load this event.')
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [loadKey, generatedScheduleId, occurrenceId])
 
   useEffect(() => {
     if (!open) {

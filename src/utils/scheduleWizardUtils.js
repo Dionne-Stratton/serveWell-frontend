@@ -1,9 +1,6 @@
-let nextTempId = 1
+import { newTempId } from './scheduleEditUtils'
 
-export function newTempId(prefix = 'tmp') {
-  nextTempId += 1
-  return `${prefix}-${nextTempId}`
-}
+export { newTempId }
 
 export function emptyRhythm() {
   return {

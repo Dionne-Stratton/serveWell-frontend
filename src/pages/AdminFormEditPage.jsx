@@ -188,13 +188,17 @@ export default function AdminFormEditPage() {
   )
 
   const blockerRef = useRef(blocker)
-  blockerRef.current = blocker
-
   useEffect(() => {
+    blockerRef.current = blocker
+  })
+
+  const [prevBlockerState, setPrevBlockerState] = useState(blocker.state)
+  if (blocker.state !== prevBlockerState) {
+    setPrevBlockerState(blocker.state)
     if (blocker.state === 'blocked') {
       setLeaveDialogOpen(true)
     }
-  }, [blocker.state])
+  }
 
   useEffect(() => {
     if (!isDirty) {
@@ -208,6 +212,18 @@ export default function AdminFormEditPage() {
     window.addEventListener('beforeunload', handleBeforeUnload)
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [isDirty])
+
+  const [prevFormSlug, setPrevFormSlug] = useState(formSlug)
+  if (formSlug !== prevFormSlug) {
+    setPrevFormSlug(formSlug)
+    setLoading(true)
+    setError('')
+    setFormMeta(null)
+    setFormId(null)
+    setBaseline(null)
+    setSaveError('')
+    setSaveSuccess('')
+  }
 
   const loadForm = useCallback(async (options = {}) => {
     const { silent = false } = options
@@ -269,8 +285,74 @@ export default function AdminFormEditPage() {
   }, [formSlug])
 
   useEffect(() => {
-    loadForm()
-  }, [loadForm])
+    if (!formSlug) {
+      return undefined
+    }
+
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const listData = await getAdminForms()
+        if (cancelled) {
+          return
+        }
+
+        const summary = (listData.forms ?? []).find((form) => form.slug === formSlug)
+
+        if (!summary) {
+          setError('Form not found.')
+          setFormMeta(null)
+          setFormId(null)
+          return
+        }
+
+        setFormId(summary.id)
+        const data = await getAdminFormDetail(summary.id)
+        if (cancelled) {
+          return
+        }
+
+        const nextName = data.form.name ?? ''
+        const nextIntro = data.form.introText ?? ''
+        const nextSuccess = data.form.successMessage ?? ''
+        const nextActive = data.form.isActive !== false
+        const nextSections = cloneSections(data.sections)
+
+        setFormMeta(data.form)
+        setSections(nextSections)
+        setName(nextName)
+        setIntroText(nextIntro)
+        setSuccessMessage(nextSuccess)
+        setIsActive(nextActive)
+        setDeletedSectionIds([])
+        setDeletedAreaIds([])
+        setDeletedRequirementIds([])
+        setBaseline(
+          buildSnapshot(
+            nextName,
+            nextIntro,
+            nextSuccess,
+            nextActive,
+            nextSections,
+            EMPTY_DELETES,
+          ),
+        )
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof ApiError ? err.message : 'Unable to load form.')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [formSlug])
 
   function updateSectionTitle(sectionId, title) {
     setSections((current) =>

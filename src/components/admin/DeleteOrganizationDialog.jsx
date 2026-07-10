@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import softBtn from '../../styles/adminSoftButtons.module.css'
 
 export default function DeleteOrganizationDialog({
@@ -10,20 +10,34 @@ export default function DeleteOrganizationDialog({
   onConfirm,
   onCancel,
 }) {
+  if (!open) {
+    return null
+  }
+
+  return (
+    <DeleteOrganizationDialogForm
+      organizationName={organizationName}
+      organizationSlug={organizationSlug}
+      deleting={deleting}
+      error={error}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    />
+  )
+}
+
+function DeleteOrganizationDialogForm({
+  organizationName,
+  organizationSlug,
+  deleting,
+  error,
+  onConfirm,
+  onCancel,
+}) {
   const [confirmSlug, setConfirmSlug] = useState('')
   const slugMatches =
     organizationSlug &&
     confirmSlug.trim().toLowerCase() === organizationSlug.trim().toLowerCase()
-
-  useEffect(() => {
-    if (!open) {
-      setConfirmSlug('')
-    }
-  }, [open])
-
-  if (!open) {
-    return null
-  }
 
   const displayName = organizationName?.trim() || 'this organization'
 

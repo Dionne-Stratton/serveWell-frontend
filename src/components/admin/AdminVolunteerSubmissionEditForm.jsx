@@ -63,13 +63,15 @@ export default function AdminVolunteerSubmissionEditForm({
   onBusyChange,
 }) {
   const [form, setForm] = useState(initialFormState)
+  const [prevInitialFormState, setPrevInitialFormState] = useState(initialFormState)
   const [fieldErrors, setFieldErrors] = useState({})
   const [validationSummary, setValidationSummary] = useState([])
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => {
+  if (initialFormState !== prevInitialFormState) {
+    setPrevInitialFormState(initialFormState)
     setForm(initialFormState)
-  }, [initialFormState])
+  }
 
   useEffect(() => {
     onBusyChange?.(submitting)

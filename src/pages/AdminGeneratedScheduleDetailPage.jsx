@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ApiError, archiveAdminGeneratedSchedule, autoFillAdminGeneratedSchedule, deleteAdminGeneratedSchedule, getAdminGeneratedSchedule, publishAdminGeneratedSchedule, sendAdminGeneratedScheduleVolunteerUpdates } from '../api/client'
 import AdminLayout from '../components/admin/AdminLayout'
@@ -124,7 +124,20 @@ export default function AdminGeneratedScheduleDetailPage() {
   const [autoFillError, setAutoFillError] = useState('')
   const [autoFilling, setAutoFilling] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
-  const [assignSummary, setAssignSummary] = useState(null)
+  const [assignSummary, setAssignSummary] = useState(
+    () => location.state?.autoAssignSummary ?? null,
+  )
+  const [prevAutoAssignSummary, setPrevAutoAssignSummary] = useState(
+    () => location.state?.autoAssignSummary ?? null,
+  )
+
+  const incomingAutoAssignSummary = location.state?.autoAssignSummary ?? null
+  if (incomingAutoAssignSummary !== prevAutoAssignSummary) {
+    setPrevAutoAssignSummary(incomingAutoAssignSummary)
+    if (incomingAutoAssignSummary) {
+      setAssignSummary(incomingAutoAssignSummary)
+    }
+  }
 
   const scheduleStatus = schedule ? normalizeGeneratedScheduleStatus(schedule.status) : 'draft'
   const isDraft = scheduleStatus === 'draft'
@@ -133,28 +146,45 @@ export default function AdminGeneratedScheduleDetailPage() {
   const hasUnsentVolunteerUpdates = Boolean(schedule?.hasUnsentVolunteerUpdates)
   const showSendUpdates = isPublished && hasUnsentVolunteerUpdates
 
-  const load = useCallback(async () => {
+  const [prevId, setPrevId] = useState(id)
+  if (id !== prevId) {
+    setPrevId(id)
     setLoading(true)
     setLoadError('')
+    setSchedule(null)
+    setActiveOccurrenceId(null)
+    setExpandedOccurrenceIds(new Set())
+    setAssignSummary(null)
+  }
 
-    try {
-      const data = await getAdminGeneratedSchedule(id)
-      setSchedule(data.generatedSchedule ?? null)
-    } catch (err) {
-      setSchedule(null)
-      setLoadError(err instanceof ApiError ? err.message : 'Unable to load schedule.')
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        const data = await getAdminGeneratedSchedule(id)
+        if (!cancelled) {
+          setSchedule(data.generatedSchedule ?? null)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setSchedule(null)
+          setLoadError(err instanceof ApiError ? err.message : 'Unable to load schedule.')
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
     }
   }, [id])
 
   useEffect(() => {
-    void load()
-  }, [load])
-
-  useEffect(() => {
     if (location.state?.autoAssignSummary) {
-      setAssignSummary(location.state.autoAssignSummary)
       navigate(location.pathname, { replace: true, state: {} })
     }
   }, [location.pathname, location.state, navigate])

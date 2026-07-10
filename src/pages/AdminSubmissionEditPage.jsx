@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAdminAuth } from '../auth/useAdminAuth'
 import {
@@ -41,6 +41,16 @@ export default function AdminSubmissionEditPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [hadLinkedPlanningCenter, setHadLinkedPlanningCenter] = useState(false)
+  const [prevId, setPrevId] = useState(id)
+
+  if (id !== prevId) {
+    setPrevId(id)
+    setLoading(true)
+    setLoadError('')
+    setSections(null)
+    setInitialFormState(null)
+    setHadLinkedPlanningCenter(false)
+  }
 
   const intakeSections = useMemo(
     () => (sections ? filterSectionsForVolunteerIntake(sections) : []),
@@ -52,37 +62,46 @@ export default function AdminSubmissionEditPage() {
     [intakeSections],
   )
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    setLoadError('')
+  useEffect(() => {
+    let cancelled = false
 
-    try {
-      const detail = await getAdminSubmissionDetail(id)
-      const formData = await getAdminFormDetail(detail.submission.formId)
-      const filtered = filterSectionsForVolunteerIntake(formData.sections ?? [])
-      const openIds = collectOpenServingAreaIds(filtered)
-      const formState = restrictFormStateToOpenAreas(
-        submissionDetailToFormState(detail),
-        openIds,
-      )
+    ;(async () => {
+      try {
+        const detail = await getAdminSubmissionDetail(id)
+        const formData = await getAdminFormDetail(detail.submission.formId)
+        if (cancelled) {
+          return
+        }
 
-      setSections(filtered)
-      setInitialFormState(formState)
-      setHadLinkedPlanningCenter(Boolean(detail.submission.planningCenterPersonId?.trim()))
-    } catch (err) {
-      setSections(null)
-      setInitialFormState(null)
-      setLoadError(
-        err instanceof ApiError ? err.message : 'Unable to load this submission for editing.',
-      )
-    } finally {
-      setLoading(false)
+        const filtered = filterSectionsForVolunteerIntake(formData.sections ?? [])
+        const openIds = collectOpenServingAreaIds(filtered)
+        const formState = restrictFormStateToOpenAreas(
+          submissionDetailToFormState(detail),
+          openIds,
+        )
+
+        setSections(filtered)
+        setInitialFormState(formState)
+        setHadLinkedPlanningCenter(Boolean(detail.submission.planningCenterPersonId?.trim()))
+      } catch (err) {
+        if (!cancelled) {
+          setSections(null)
+          setInitialFormState(null)
+          setLoadError(
+            err instanceof ApiError ? err.message : 'Unable to load this submission for editing.',
+          )
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
     }
   }, [id])
-
-  useEffect(() => {
-    load()
-  }, [load])
 
   async function handleSave(payload) {
     await putAdminSubmission(id, payload)
