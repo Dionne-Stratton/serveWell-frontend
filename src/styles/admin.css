@@ -1246,6 +1246,14 @@
   color: var(--accent, var(--link));
 }
 
+.admin-schedule-card__actions {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .admin-schedule-card__delete {
   flex-shrink: 0;
 }
@@ -1637,14 +1645,53 @@
 }
 
 .admin-schedules-hub-section__action-wrap {
-  display: flex;
-  flex-wrap: wrap;
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem 0.65rem;
 }
 
-.admin-schedules-hub-section__soon {
-  font-size: 0.85rem;
+.admin-schedules-hub-section__action-wrap--hint {
+  cursor: not-allowed;
+}
+
+.admin-schedules-hub-section__action-wrap--hint:focus {
+  outline: none;
+}
+
+.admin-schedules-hub-section__action-wrap--hint:focus-visible {
+  border-radius: 8px;
+  outline: 2px solid color-mix(in srgb, var(--accent, #3b82f6) 70%, transparent);
+  outline-offset: 2px;
+}
+
+.admin-schedules-hub-section__create-hint {
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  bottom: calc(100% + 0.4rem);
+  width: max-content;
+  max-width: 14rem;
+  padding: 0.4rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.35;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.12s ease,
+    visibility 0.12s ease;
+}
+
+.admin-schedules-hub-section__action-wrap--hint:hover .admin-schedules-hub-section__create-hint,
+.admin-schedules-hub-section__action-wrap--hint:focus-within .admin-schedules-hub-section__create-hint {
+  opacity: 1;
+  visibility: visible;
 }
 
 .admin-schedules-hub-section__header .admin-button.admin-button--inline {

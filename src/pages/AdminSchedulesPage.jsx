@@ -4,6 +4,7 @@ import {
   ApiError,
   deleteAdminGeneratedSchedule,
   deleteAdminSchedule,
+  duplicateAdminSchedule,
   getAdminGeneratedSchedules,
   getAdminScheduleServingAreaOptions,
   getAdminSchedules,
@@ -13,6 +14,7 @@ import AdminToast from '../components/admin/AdminToast'
 import CreateGeneratedScheduleDialog from '../components/admin/CreateGeneratedScheduleDialog'
 import CreateScheduleWizard from '../components/admin/CreateScheduleWizard'
 import DeleteScheduleDialog from '../components/admin/DeleteScheduleDialog'
+import DuplicateScheduleTemplateDialog from '../components/admin/DuplicateScheduleTemplateDialog'
 import GeneratedScheduleStatus from '../components/admin/GeneratedScheduleStatus'
 import { formatBlackoutDateRange, formatDateTime } from '../constants/labels'
 import { labelScheduleType } from '../constants/schedule'
@@ -55,6 +57,9 @@ export default function AdminSchedulesPage() {
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleteError, setDeleteError] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [duplicateTarget, setDuplicateTarget] = useState(null)
+  const [duplicateError, setDuplicateError] = useState('')
+  const [duplicating, setDuplicating] = useState(false)
 
   const incomingState = location.state
   const [prevNavState, setPrevNavState] = useState(incomingState)
@@ -252,6 +257,29 @@ export default function AdminSchedulesPage() {
     }
   }
 
+  async function confirmDuplicateFromList(newName) {
+    if (!duplicateTarget) {
+      return
+    }
+
+    setDuplicateError('')
+    setDuplicating(true)
+
+    try {
+      const created = await duplicateAdminSchedule(duplicateTarget.id, { name: newName })
+      setDuplicateTarget(null)
+      navigate(adminScheduleDetailPath(organizationSlug, created.id), {
+        state: { templateDuplicated: true },
+      })
+    } catch (err) {
+      setDuplicateError(
+        err instanceof ApiError ? err.message : 'Unable to duplicate template.',
+      )
+    } finally {
+      setDuplicating(false)
+    }
+  }
+
   return (
     <AdminLayout>
       <header className="admin-page-header">
@@ -268,7 +296,15 @@ export default function AdminSchedulesPage() {
           <h2 id="active-schedules-heading" className="admin-schedules-hub-section__title">
             Active &amp; Upcoming Schedules
           </h2>
-          <span className="admin-schedules-hub-section__action-wrap">
+          <span
+            className={`admin-schedules-hub-section__action-wrap${!canCreateSchedule && !listLoading ? ' admin-schedules-hub-section__action-wrap--hint' : ''}`}
+            {...(!canCreateSchedule && !listLoading
+              ? {
+                  tabIndex: 0,
+                  'aria-describedby': 'create-schedule-no-template-hint',
+                }
+              : {})}
+          >
             <button
               type="button"
               className="admin-button admin-button--inline"
@@ -278,7 +314,11 @@ export default function AdminSchedulesPage() {
               Create schedule
             </button>
             {!canCreateSchedule && !listLoading ? (
-              <span className="admin-schedules-hub-section__soon admin-muted">
+              <span
+                id="create-schedule-no-template-hint"
+                className="admin-schedules-hub-section__create-hint"
+                role="tooltip"
+              >
                 Add a schedule template first
               </span>
             ) : null}
@@ -379,16 +419,28 @@ export default function AdminSchedulesPage() {
                     </p>
                   </Link>
                 </div>
-                <button
-                  type="button"
-                  className={`${softBtn.softBtnDanger} admin-schedule-card__delete`}
-                  onClick={() => {
-                    setDeleteError('')
-                    setDeleteTarget({ kind: 'template', id: template.id, name: template.name })
-                  }}
-                >
-                  Delete
-                </button>
+                <div className="admin-schedule-card__actions">
+                  <button
+                    type="button"
+                    className={softBtn.softBtn}
+                    onClick={() => {
+                      setDuplicateError('')
+                      setDuplicateTarget({ id: template.id, name: template.name })
+                    }}
+                  >
+                    Duplicate
+                  </button>
+                  <button
+                    type="button"
+                    className={`${softBtn.softBtnDanger} admin-schedule-card__delete`}
+                    onClick={() => {
+                      setDeleteError('')
+                      setDeleteTarget({ kind: 'template', id: template.id, name: template.name })
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
@@ -424,6 +476,15 @@ export default function AdminSchedulesPage() {
         variant={deleteTarget?.kind === 'generated' ? 'generated' : 'template'}
         onConfirm={() => void confirmDeleteFromList()}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      <DuplicateScheduleTemplateDialog
+        open={Boolean(duplicateTarget)}
+        sourceName={duplicateTarget?.name}
+        duplicating={duplicating}
+        error={duplicateError}
+        onConfirm={(newName) => void confirmDuplicateFromList(newName)}
+        onCancel={() => setDuplicateTarget(null)}
       />
 
       <AdminToast message={toastMessage} onDismiss={() => setToastMessage('')} />

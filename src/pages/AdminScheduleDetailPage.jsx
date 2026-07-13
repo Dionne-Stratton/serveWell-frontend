@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   ApiError,
   deleteAdminSchedule,
+  duplicateAdminSchedule,
   getAdminSchedule,
   getAdminScheduleServingAreaOptions,
   patchAdminSchedule,
@@ -12,6 +13,7 @@ import {
 import AdminLayout from '../components/admin/AdminLayout'
 import AdminToast from '../components/admin/AdminToast'
 import DeleteScheduleDialog from '../components/admin/DeleteScheduleDialog'
+import DuplicateScheduleTemplateDialog from '../components/admin/DuplicateScheduleTemplateDialog'
 import {
   dayOfWeekOptions,
   formatScheduleTime,
@@ -19,7 +21,7 @@ import {
   labelScheduleType,
   scheduleTypeOptions,
 } from '../constants/schedule'
-import { adminSchedulesPath } from '../utils/organizationPaths'
+import { adminScheduleDetailPath, adminSchedulesPath } from '../utils/organizationPaths'
 import {
   buildRhythmsPutPayload,
   buildServingAreasPutPayload,
@@ -44,6 +46,7 @@ function applyDetailToState(detail, setters) {
 
 export default function AdminScheduleDetailPage() {
   const { organizationSlug, id: idParam } = useParams()
+  const location = useLocation()
   const navigate = useNavigate()
   const scheduleId = Number(idParam)
   const listPath = adminSchedulesPath(organizationSlug)
@@ -70,13 +73,27 @@ export default function AdminScheduleDetailPage() {
   const [addAreaId, setAddAreaId] = useState('')
   const [customAreaName, setCustomAreaName] = useState('')
 
-  const [toastMessage, setToastMessage] = useState('')
+  const [toastMessage, setToastMessage] = useState(() =>
+    location.state?.templateDuplicated ? 'Template duplicated.' : '',
+  )
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [duplicateOpen, setDuplicateOpen] = useState(false)
+  const [duplicateError, setDuplicateError] = useState('')
+  const [duplicating, setDuplicating] = useState(false)
 
   const [rhythmDeleteTarget, setRhythmDeleteTarget] = useState(null)
   const [prevScheduleId, setPrevScheduleId] = useState(scheduleId)
+  const incomingState = location.state
+  const [prevNavState, setPrevNavState] = useState(incomingState)
+
+  if (incomingState !== prevNavState) {
+    setPrevNavState(incomingState)
+    if (incomingState?.templateDuplicated) {
+      setToastMessage('Template duplicated.')
+    }
+  }
 
   if (scheduleId !== prevScheduleId) {
     setPrevScheduleId(scheduleId)
@@ -394,6 +411,23 @@ export default function AdminScheduleDetailPage() {
     }
   }
 
+  async function confirmDuplicateSchedule(newName) {
+    setDuplicateError('')
+    setDuplicating(true)
+
+    try {
+      const created = await duplicateAdminSchedule(scheduleId, { name: newName })
+      setDuplicateOpen(false)
+      navigate(adminScheduleDetailPath(organizationSlug, created.id), {
+        state: { templateDuplicated: true },
+      })
+    } catch (err) {
+      setDuplicateError(err instanceof ApiError ? err.message : 'Unable to duplicate template.')
+    } finally {
+      setDuplicating(false)
+    }
+  }
+
   const staffingAreaOptions = servingAreas.filter((row) => row.id != null)
 
   return (
@@ -427,6 +461,16 @@ export default function AdminScheduleDetailPage() {
                 }
               >
                 Create schedule from template
+              </button>
+              <button
+                type="button"
+                className="admin-button admin-button--inline"
+                onClick={() => {
+                  setDuplicateError('')
+                  setDuplicateOpen(true)
+                }}
+              >
+                Duplicate
               </button>
               <button
                 type="button"
@@ -784,6 +828,15 @@ export default function AdminScheduleDetailPage() {
         variant="template"
         onConfirm={() => void confirmDeleteSchedule()}
         onCancel={() => setDeleteOpen(false)}
+      />
+
+      <DuplicateScheduleTemplateDialog
+        open={duplicateOpen}
+        sourceName={name}
+        duplicating={duplicating}
+        error={duplicateError}
+        onConfirm={(newName) => void confirmDuplicateSchedule(newName)}
+        onCancel={() => setDuplicateOpen(false)}
       />
 
       <AdminToast message={toastMessage} onDismiss={() => setToastMessage('')} />

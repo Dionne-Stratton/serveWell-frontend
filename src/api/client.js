@@ -634,6 +634,14 @@ export function deleteAdminSchedule(scheduleId) {
   });
 }
 
+export function duplicateAdminSchedule(scheduleId, payload) {
+  return apiRequest(`/api/admin/schedules/${scheduleId}/duplicate`, {
+    method: "POST",
+    authenticated: true,
+    body: JSON.stringify(payload),
+  });
+}
+
 export function getAdminGeneratedSchedules() {
   return apiRequest("/api/admin/generated-schedules", { authenticated: true });
 }
