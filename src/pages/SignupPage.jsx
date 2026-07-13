@@ -144,7 +144,7 @@ export default function SignupPage() {
               required
             />
             <p className="admin-help">
-              Your pages will use servewellsystems.com/
+              Your pages will use simplyservewell.com/
               {organizationSlug || 'your-slug'}
               … (lowercase letters, numbers, hyphens).
             </p>

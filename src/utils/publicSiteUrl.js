@@ -1,4 +1,4 @@
-const defaultPublicSiteOrigin = "https://servewellsystems.com";
+const defaultPublicSiteOrigin = "https://simplyservewell.com";
 
 export function getPublicSiteOrigin() {
   const configured = import.meta.env.VITE_PUBLIC_SITE_URL?.trim();
