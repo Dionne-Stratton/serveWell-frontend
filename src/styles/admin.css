@@ -1284,6 +1284,27 @@
 
 .admin-schedule-detail-section__actions {
   margin-top: 0.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.75rem;
+}
+
+.admin-schedule-detail-section__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.admin-schedule-detail-section__title-row .admin-schedule-detail-section__title {
+  margin: 0;
+}
+
+.admin-schedule-detail-autosave {
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .admin-schedule-detail-area-list {

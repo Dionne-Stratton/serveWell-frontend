@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   ApiError,
@@ -27,8 +27,10 @@ import {
   buildServingAreasPutPayload,
   emptyRhythm,
   emptyStaffingRow,
+  hasUnassignedOptions,
   isServingAreaUsedInRhythms,
   linkedAreasNotYetConnected,
+  optionsExcludingValuesUsedElsewhere,
   rhythmFromDetail,
   servingAreasFromDetail,
   validateRhythmsLocal,
@@ -42,6 +44,29 @@ function applyDetailToState(detail, setters) {
   setters.setScheduleType(detail.scheduleType ?? 'monthly')
   setters.setServingAreas(servingAreasFromDetail(detail.servingAreas))
   setters.setRhythms((detail.rhythms ?? []).map(rhythmFromDetail))
+}
+
+function isRhythmPersistable(rhythm) {
+  return Boolean(
+    rhythm.name?.trim() && rhythm.dayOfWeek && normalizeStartTime(rhythm.startTime),
+  )
+}
+
+function sanitizeRhythmsForPersist(rhythms) {
+  return rhythms.filter(isRhythmPersistable).map((rhythm) => ({
+    ...rhythm,
+    startTime: normalizeStartTime(rhythm.startTime) ?? rhythm.startTime,
+    requirements: rhythm.requirements.filter((row) => {
+      const areaId = Number(row.scheduleServingAreaId)
+      const count = Number(row.neededCount)
+      return (
+        Number.isInteger(areaId) &&
+        areaId > 0 &&
+        Number.isInteger(count) &&
+        count >= 1
+      )
+    }),
+  }))
 }
 
 export default function AdminScheduleDetailPage() {
@@ -87,6 +112,17 @@ export default function AdminScheduleDetailPage() {
   const [prevScheduleId, setPrevScheduleId] = useState(scheduleId)
   const incomingState = location.state
   const [prevNavState, setPrevNavState] = useState(incomingState)
+
+  const servingAreasRef = useRef(servingAreas)
+  const rhythmsRef = useRef(rhythms)
+  const scheduleTypeRef = useRef(scheduleType)
+  const areasSaveChain = useRef(Promise.resolve())
+  const rhythmsSaveChain = useRef(Promise.resolve())
+  const basicsSaveChain = useRef(Promise.resolve())
+
+  servingAreasRef.current = servingAreas
+  rhythmsRef.current = rhythms
+  scheduleTypeRef.current = scheduleType
 
   if (incomingState !== prevNavState) {
     setPrevNavState(incomingState)
@@ -167,38 +203,130 @@ export default function AdminScheduleDetailPage() {
     }
   }, [scheduleId])
 
-  function syncFromDetail(detail) {
-    applyDetailToState(detail, {
-      setName,
-      setScheduleType,
-      setServingAreas,
-      setRhythms,
-    })
-  }
-
-  async function saveTemplateBasics() {
-    setNameError('')
-    const trimmed = name.trim()
+  async function persistBasics(nextName, nextScheduleType) {
+    const trimmed = nextName.trim()
 
     if (!trimmed) {
       setNameError('Template name is required.')
       return
     }
 
+    setNameError('')
     setNameSaving(true)
 
     try {
       const updated = await patchAdminSchedule(scheduleId, {
         name: trimmed,
-        scheduleType,
+        scheduleType: nextScheduleType,
       })
-      syncFromDetail(updated)
-      setToastMessage('Template details saved.')
+      setName(updated.name ?? trimmed)
+      setScheduleType(updated.scheduleType ?? nextScheduleType)
+      setToastMessage('Saved.')
     } catch (err) {
       setNameError(err instanceof ApiError ? err.message : 'Unable to save template details.')
     } finally {
       setNameSaving(false)
     }
+  }
+
+  function queuePersistBasics(nextName, nextScheduleType) {
+    basicsSaveChain.current = basicsSaveChain.current
+      .catch(() => {})
+      .then(() => persistBasics(nextName, nextScheduleType))
+  }
+
+  async function persistServingAreas(nextAreas) {
+    setAreasError('')
+    const message = validateServingAreasLocal(nextAreas)
+
+    if (message) {
+      setAreasError(message)
+      return
+    }
+
+    setAreasSaving(true)
+
+    try {
+      const updated = await putAdminScheduleServingAreas(
+        scheduleId,
+        buildServingAreasPutPayload(nextAreas),
+      )
+      setServingAreas(servingAreasFromDetail(updated.servingAreas))
+      if (updated.name != null) {
+        setName(updated.name)
+      }
+      if (updated.scheduleType != null) {
+        setScheduleType(updated.scheduleType)
+      }
+      setToastMessage('Saved.')
+    } catch (err) {
+      setAreasError(err instanceof ApiError ? err.message : 'Unable to save serving areas.')
+    } finally {
+      setAreasSaving(false)
+    }
+  }
+
+  function commitServingAreas(nextAreas) {
+    servingAreasRef.current = nextAreas
+    setServingAreas(nextAreas)
+    areasSaveChain.current = areasSaveChain.current
+      .catch(() => {})
+      .then(() => persistServingAreas(nextAreas))
+  }
+
+  async function persistRhythms(nextRhythms) {
+    setRhythmsError('')
+
+    const drafts = nextRhythms.filter((rhythm) => !isRhythmPersistable(rhythm))
+    const ready = sanitizeRhythmsForPersist(nextRhythms)
+
+    if (ready.length === 0) {
+      if (nextRhythms.length === 0) {
+        setRhythmsError('Add at least one event.')
+      }
+      return
+    }
+
+    const areaIds = new Set(
+      servingAreasRef.current.map((row) => row.id).filter((areaId) => areaId != null),
+    )
+    const message = validateRhythmsLocal(ready, areaIds)
+
+    if (message) {
+      setRhythmsError(message)
+      return
+    }
+
+    if (servingAreasRef.current.some((row) => row.id == null)) {
+      setRhythmsError('Finish connecting serving areas before editing events and staffing.')
+      return
+    }
+
+    setRhythmsSaving(true)
+
+    try {
+      const updated = await putAdminScheduleRhythms(scheduleId, buildRhythmsPutPayload(ready))
+      const fromServer = (updated.rhythms ?? []).map(rhythmFromDetail)
+      const merged = [...fromServer, ...drafts]
+      rhythmsRef.current = merged
+      setRhythms(merged)
+      if (updated.servingAreas) {
+        setServingAreas(servingAreasFromDetail(updated.servingAreas))
+      }
+      setToastMessage('Saved.')
+    } catch (err) {
+      setRhythmsError(err instanceof ApiError ? err.message : 'Unable to save events.')
+    } finally {
+      setRhythmsSaving(false)
+    }
+  }
+
+  function commitRhythms(nextRhythms) {
+    rhythmsRef.current = nextRhythms
+    setRhythms(nextRhythms)
+    rhythmsSaveChain.current = rhythmsSaveChain.current
+      .catch(() => {})
+      .then(() => persistRhythms(nextRhythms))
   }
 
   function addLinkedArea() {
@@ -216,8 +344,8 @@ export default function AdminScheduleDetailPage() {
       return
     }
 
-    setServingAreas((current) => [
-      ...current,
+    commitServingAreas([
+      ...servingAreasRef.current,
       {
         id: null,
         servingAreaId: areaId,
@@ -237,7 +365,7 @@ export default function AdminScheduleDetailPage() {
       return
     }
 
-    const duplicate = servingAreas.some(
+    const duplicate = servingAreasRef.current.some(
       (row) => row.customName?.trim().toLowerCase() === trimmed.toLowerCase(),
     )
 
@@ -246,8 +374,8 @@ export default function AdminScheduleDetailPage() {
       return
     }
 
-    setServingAreas((current) => [
-      ...current,
+    commitServingAreas([
+      ...servingAreasRef.current,
       {
         id: null,
         servingAreaId: null,
@@ -261,44 +389,29 @@ export default function AdminScheduleDetailPage() {
   function removeServingArea(row) {
     setAreasError('')
 
-    if (row.id != null && isServingAreaUsedInRhythms(row.id, rhythms)) {
+    if (row.id != null && isServingAreaUsedInRhythms(row.id, rhythmsRef.current)) {
       setAreasError(
-        `Cannot remove “${row.displayName}” while it is used in staffing requirements. Remove those rows first or save events without them.`,
+        `Cannot remove “${row.displayName}” while it is used in staffing. Remove those staffing rows first.`,
       )
       return
     }
 
-    setServingAreas((current) => current.filter((item) => item !== row))
+    commitServingAreas(servingAreasRef.current.filter((item) => item !== row))
   }
 
-  async function saveServingAreas() {
-    setAreasError('')
-    const message = validateServingAreasLocal(servingAreas)
-
-    if (message) {
-      setAreasError(message)
-      return
-    }
-
-    setAreasSaving(true)
-
-    try {
-      const updated = await putAdminScheduleServingAreas(
-        scheduleId,
-        buildServingAreasPutPayload(servingAreas),
-      )
-      syncFromDetail(updated)
-      setToastMessage('Connected serving areas saved.')
-    } catch (err) {
-      setAreasError(err instanceof ApiError ? err.message : 'Unable to save serving areas.')
-    } finally {
-      setAreasSaving(false)
-    }
+  function updateRhythmLocal(clientId, patch) {
+    const next = rhythmsRef.current.map((rhythm) =>
+      rhythm.clientId === clientId ? { ...rhythm, ...patch } : rhythm,
+    )
+    rhythmsRef.current = next
+    setRhythms(next)
   }
 
-  function updateRhythm(clientId, patch) {
-    setRhythms((current) =>
-      current.map((rhythm) => (rhythm.clientId === clientId ? { ...rhythm, ...patch } : rhythm)),
+  function commitRhythmPatch(clientId, patch) {
+    commitRhythms(
+      rhythmsRef.current.map((rhythm) =>
+        rhythm.clientId === clientId ? { ...rhythm, ...patch } : rhythm,
+      ),
     )
   }
 
@@ -308,28 +421,28 @@ export default function AdminScheduleDetailPage() {
       return
     }
 
-    setRhythms((current) => current.filter((row) => row.clientId !== rhythm.clientId))
+    commitRhythms(rhythmsRef.current.filter((row) => row.clientId !== rhythm.clientId))
   }
 
   function addStaffingRow(rhythmClientId) {
     setRhythmsError('')
-    setRhythms((current) =>
-      current.map((rhythm) => {
-        if (rhythm.clientId !== rhythmClientId) {
-          return rhythm
-        }
+    const next = rhythmsRef.current.map((rhythm) => {
+      if (rhythm.clientId !== rhythmClientId) {
+        return rhythm
+      }
 
-        return {
-          ...rhythm,
-          requirements: [...rhythm.requirements, emptyStaffingRow()],
-        }
-      }),
-    )
+      return {
+        ...rhythm,
+        requirements: [...rhythm.requirements, emptyStaffingRow()],
+      }
+    })
+    rhythmsRef.current = next
+    setRhythms(next)
   }
 
-  function updateStaffingRow(rhythmClientId, reqClientId, patch) {
-    setRhythms((current) =>
-      current.map((rhythm) => {
+  function commitStaffingRow(rhythmClientId, reqClientId, patch) {
+    commitRhythms(
+      rhythmsRef.current.map((rhythm) => {
         if (rhythm.clientId !== rhythmClientId) {
           return rhythm
         }
@@ -344,9 +457,26 @@ export default function AdminScheduleDetailPage() {
     )
   }
 
+  function updateStaffingRowLocal(rhythmClientId, reqClientId, patch) {
+    const next = rhythmsRef.current.map((rhythm) => {
+      if (rhythm.clientId !== rhythmClientId) {
+        return rhythm
+      }
+
+      return {
+        ...rhythm,
+        requirements: rhythm.requirements.map((row) =>
+          row.clientId === reqClientId ? { ...row, ...patch } : row,
+        ),
+      }
+    })
+    rhythmsRef.current = next
+    setRhythms(next)
+  }
+
   function removeStaffingRow(rhythmClientId, reqClientId) {
-    setRhythms((current) =>
-      current.map((rhythm) => {
+    commitRhythms(
+      rhythmsRef.current.map((rhythm) => {
         if (rhythm.clientId !== rhythmClientId) {
           return rhythm
         }
@@ -357,44 +487,6 @@ export default function AdminScheduleDetailPage() {
         }
       }),
     )
-  }
-
-  async function saveRhythms() {
-    setRhythmsError('')
-
-    const normalizedRhythms = rhythms.map((rhythm) => {
-      const startTime = normalizeStartTime(rhythm.startTime) ?? rhythm.startTime
-      return { ...rhythm, startTime }
-    })
-
-    setRhythms(normalizedRhythms)
-
-    const message = validateRhythmsLocal(normalizedRhythms, connectedAreaIds)
-
-    if (message) {
-      setRhythmsError(message)
-      return
-    }
-
-    if (servingAreas.some((row) => row.id == null)) {
-      setRhythmsError('Save connected serving areas before saving events and staffing.')
-      return
-    }
-
-    setRhythmsSaving(true)
-
-    try {
-      const updated = await putAdminScheduleRhythms(
-        scheduleId,
-        buildRhythmsPutPayload(normalizedRhythms),
-      )
-      syncFromDetail(updated)
-      setToastMessage('Events and staffing saved.')
-    } catch (err) {
-      setRhythmsError(err instanceof ApiError ? err.message : 'Unable to save events.')
-    } finally {
-      setRhythmsSaving(false)
-    }
   }
 
   async function confirmDeleteSchedule() {
@@ -486,7 +578,12 @@ export default function AdminScheduleDetailPage() {
           </header>
 
           <section className="admin-schedule-detail-section">
-            <h2 className="admin-schedule-detail-section__title">Template details</h2>
+            <div className="admin-schedule-detail-section__title-row">
+              <h2 className="admin-schedule-detail-section__title">Template details</h2>
+              {nameSaving ? (
+                <span className="admin-schedule-detail-autosave admin-muted">Saving…</span>
+              ) : null}
+            </div>
             <div className="admin-schedule-detail-section__body">
               <label className="admin-label" htmlFor="schedule-detail-name">
                 Template name
@@ -496,6 +593,7 @@ export default function AdminScheduleDetailPage() {
                 className="admin-input"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
+                onBlur={() => queuePersistBasics(name, scheduleTypeRef.current)}
               />
               <label className="admin-label" htmlFor="schedule-detail-type">
                 Template type
@@ -504,7 +602,12 @@ export default function AdminScheduleDetailPage() {
                 id="schedule-detail-type"
                 className="admin-input admin-input--select"
                 value={scheduleType}
-                onChange={(event) => setScheduleType(event.target.value)}
+                onChange={(event) => {
+                  const nextType = event.target.value
+                  setScheduleType(nextType)
+                  scheduleTypeRef.current = nextType
+                  queuePersistBasics(name, nextType)
+                }}
               >
                 {scheduleTypeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -514,24 +617,19 @@ export default function AdminScheduleDetailPage() {
               </select>
               <p className="admin-help">
                 Monthly templates generate schedules by calendar month. Special event templates use
-                a custom start and end date when you create a schedule.
+                a custom start and end date when you create a schedule. Changes save automatically.
               </p>
               {nameError ? <p className="admin-error">{nameError}</p> : null}
-              <div className="admin-schedule-detail-section__actions">
-                <button
-                  type="button"
-                  className="admin-secondary-button"
-                  disabled={nameSaving}
-                  onClick={() => void saveTemplateBasics()}
-                >
-                  {nameSaving ? 'Saving…' : 'Save details'}
-                </button>
-              </div>
             </div>
           </section>
 
           <section className="admin-schedule-detail-section">
-            <h2 className="admin-schedule-detail-section__title">Connected serving areas</h2>
+            <div className="admin-schedule-detail-section__title-row">
+              <h2 className="admin-schedule-detail-section__title">Connected serving areas</h2>
+              {areasSaving ? (
+                <span className="admin-schedule-detail-autosave admin-muted">Saving…</span>
+              ) : null}
+            </div>
             <div className="admin-schedule-detail-section__body">
               {servingAreas.length === 0 ? (
                 <p className="admin-muted">No serving areas connected yet.</p>
@@ -550,6 +648,7 @@ export default function AdminScheduleDetailPage() {
                           type="button"
                           className="admin-dismiss-x"
                           aria-label={`Remove ${row.displayName}`}
+                          disabled={areasSaving}
                           onClick={() => removeServingArea(row)}
                         >
                           <svg
@@ -591,7 +690,12 @@ export default function AdminScheduleDetailPage() {
                       </option>
                     ))}
                   </select>
-                  <button type="button" className="admin-secondary-button" onClick={addLinkedArea}>
+                  <button
+                    type="button"
+                    className="admin-secondary-button"
+                    disabled={areasSaving}
+                    onClick={addLinkedArea}
+                  >
                     Add
                   </button>
                 </div>
@@ -609,28 +713,28 @@ export default function AdminScheduleDetailPage() {
                     onChange={(event) => setCustomAreaName(event.target.value)}
                     placeholder="Custom name"
                   />
-                  <button type="button" className="admin-secondary-button" onClick={addCustomArea}>
+                  <button
+                    type="button"
+                    className="admin-secondary-button"
+                    disabled={areasSaving}
+                    onClick={addCustomArea}
+                  >
                     Add
                   </button>
                 </div>
               </div>
 
               {areasError ? <p className="admin-error">{areasError}</p> : null}
-              <div className="admin-schedule-detail-section__actions">
-                <button
-                  type="button"
-                  className="admin-secondary-button"
-                  disabled={areasSaving}
-                  onClick={() => void saveServingAreas()}
-                >
-                  {areasSaving ? 'Saving…' : 'Save serving areas'}
-                </button>
-              </div>
             </div>
           </section>
 
           <section className="admin-schedule-detail-section">
-            <h2 className="admin-schedule-detail-section__title">Events & staffing</h2>
+            <div className="admin-schedule-detail-section__title-row">
+              <h2 className="admin-schedule-detail-section__title">Events & staffing</h2>
+              {rhythmsSaving ? (
+                <span className="admin-schedule-detail-autosave admin-muted">Saving…</span>
+              ) : null}
+            </div>
             <div className="admin-schedule-detail-section__body">
               <ul className="admin-schedule-detail-rhythm-list">
                 {rhythms.map((rhythm) => (
@@ -642,8 +746,9 @@ export default function AdminScheduleDetailPage() {
                           className="admin-input"
                           value={rhythm.name}
                           onChange={(event) =>
-                            updateRhythm(rhythm.clientId, { name: event.target.value })
+                            updateRhythmLocal(rhythm.clientId, { name: event.target.value })
                           }
+                          onBlur={() => commitRhythms(rhythmsRef.current)}
                         />
                       </div>
                       <div className="admin-field">
@@ -652,7 +757,7 @@ export default function AdminScheduleDetailPage() {
                           className="admin-input"
                           value={rhythm.dayOfWeek}
                           onChange={(event) =>
-                            updateRhythm(rhythm.clientId, { dayOfWeek: event.target.value })
+                            commitRhythmPatch(rhythm.clientId, { dayOfWeek: event.target.value })
                           }
                         >
                           {dayOfWeekOptions.map((option) => (
@@ -669,8 +774,9 @@ export default function AdminScheduleDetailPage() {
                           className="admin-input"
                           value={rhythm.startTime}
                           onChange={(event) =>
-                            updateRhythm(rhythm.clientId, { startTime: event.target.value })
+                            updateRhythmLocal(rhythm.clientId, { startTime: event.target.value })
                           }
+                          onBlur={() => commitRhythms(rhythmsRef.current)}
                         />
                       </div>
                       <div className="admin-field admin-schedule-detail-row-action">
@@ -681,6 +787,7 @@ export default function AdminScheduleDetailPage() {
                           <button
                             type="button"
                             className="admin-danger-button admin-danger-button--compact"
+                            disabled={rhythmsSaving}
                             onClick={() => confirmRemoveRhythm(rhythm)}
                           >
                             Remove event
@@ -690,73 +797,116 @@ export default function AdminScheduleDetailPage() {
                     </div>
 
                     <h3 className="admin-schedule-wizard__staff-title">
-                      Staffing — {labelDayOfWeek(rhythm.dayOfWeek)} {formatScheduleTime(rhythm.startTime)}
+                      Staffing — {labelDayOfWeek(rhythm.dayOfWeek)}{' '}
+                      {formatScheduleTime(rhythm.startTime)}
                     </h3>
                     <ul className="admin-schedule-wizard__req-list">
-                      {rhythm.requirements.map((row) => (
-                        <li key={row.clientId} className="admin-schedule-wizard__req-row">
-                          <div className="admin-field">
-                            <label className="admin-label">Serving area</label>
-                            <select
-                              className="admin-input"
-                              value={row.scheduleServingAreaId}
-                              onChange={(event) =>
-                                updateStaffingRow(rhythm.clientId, row.clientId, {
-                                  scheduleServingAreaId: event.target.value,
-                                })
-                              }
-                            >
-                              <option value="">Select…</option>
-                              {staffingAreaOptions.map((area) => (
-                                <option key={area.id} value={area.id}>
-                                  {area.displayName}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="admin-field admin-schedule-wizard__count-field">
-                            <label className="admin-label">Needed</label>
-                            <input
-                              className="admin-input"
-                              inputMode="numeric"
-                              value={row.neededCount}
-                              onChange={(event) =>
-                                updateStaffingRow(rhythm.clientId, row.clientId, {
-                                  neededCount: event.target.value,
-                                })
-                              }
-                            />
-                          </div>
-                          <div className="admin-field admin-schedule-detail-row-action">
-                            <span className="admin-label admin-label--invisible" aria-hidden="true">
-                              Remove
-                            </span>
-                            <div className="admin-schedule-detail-row-action__button-wrap">
-                              <button
-                                type="button"
-                                className="admin-danger-button admin-danger-button--compact"
-                                onClick={() => removeStaffingRow(rhythm.clientId, row.clientId)}
+                      {rhythm.requirements.map((row) => {
+                        const assignedAreaIds = rhythm.requirements.map(
+                          (requirement) => requirement.scheduleServingAreaId,
+                        )
+                        const rowAreaOptions = optionsExcludingValuesUsedElsewhere(
+                          staffingAreaOptions,
+                          assignedAreaIds,
+                          row.scheduleServingAreaId,
+                          (area) => area.id,
+                        )
+
+                        return (
+                          <li key={row.clientId} className="admin-schedule-wizard__req-row">
+                            <div className="admin-field">
+                              <label className="admin-label">Serving area</label>
+                              <select
+                                className="admin-input"
+                                value={row.scheduleServingAreaId}
+                                onChange={(event) =>
+                                  commitStaffingRow(rhythm.clientId, row.clientId, {
+                                    scheduleServingAreaId: event.target.value,
+                                  })
+                                }
+                              >
+                                <option value="">Select…</option>
+                                {rowAreaOptions.map((area) => (
+                                  <option key={area.id} value={area.id}>
+                                    {area.displayName}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="admin-field admin-schedule-wizard__count-field">
+                              <label className="admin-label">Needed</label>
+                              <input
+                                className="admin-input"
+                                inputMode="numeric"
+                                value={row.neededCount}
+                                onChange={(event) =>
+                                  updateStaffingRowLocal(rhythm.clientId, row.clientId, {
+                                    neededCount: event.target.value,
+                                  })
+                                }
+                                onBlur={(event) =>
+                                  commitStaffingRow(rhythm.clientId, row.clientId, {
+                                    neededCount: event.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                            <div className="admin-field admin-schedule-detail-row-action">
+                              <span
+                                className="admin-label admin-label--invisible"
+                                aria-hidden="true"
                               >
                                 Remove
-                              </button>
+                              </span>
+                              <div className="admin-schedule-detail-row-action__button-wrap">
+                                <button
+                                  type="button"
+                                  className="admin-danger-button admin-danger-button--compact"
+                                  disabled={rhythmsSaving}
+                                  onClick={() => removeStaffingRow(rhythm.clientId, row.clientId)}
+                                >
+                                  Remove
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        </li>
-                      ))}
+                          </li>
+                        )
+                      })}
                     </ul>
-                    <button
-                      type="button"
-                      className="admin-secondary-button"
-                      onClick={() => addStaffingRow(rhythm.clientId)}
-                      disabled={staffingAreaOptions.length === 0}
-                    >
-                      Add staffing row
-                    </button>
-                    {staffingAreaOptions.length === 0 ? (
-                      <p className="admin-help">
-                        Save connected serving areas to assign staffing needs.
-                      </p>
-                    ) : null}
+                    {(() => {
+                      const canAddStaffingRow =
+                        staffingAreaOptions.length > 0 &&
+                        hasUnassignedOptions(
+                          staffingAreaOptions,
+                          rhythm.requirements.map(
+                            (requirement) => requirement.scheduleServingAreaId,
+                          ),
+                          (area) => area.id,
+                        )
+
+                      return (
+                        <>
+                          <button
+                            type="button"
+                            className="admin-secondary-button"
+                            onClick={() => addStaffingRow(rhythm.clientId)}
+                            disabled={!canAddStaffingRow}
+                          >
+                            Add staffing row
+                          </button>
+                          {staffingAreaOptions.length === 0 ? (
+                            <p className="admin-help">
+                              Connect a serving area above to assign staffing needs.
+                            </p>
+                          ) : null}
+                          {staffingAreaOptions.length > 0 && !canAddStaffingRow ? (
+                            <p className="admin-help">
+                              Every connected serving area is already on this event.
+                            </p>
+                          ) : null}
+                        </>
+                      )
+                    })()}
                   </li>
                 ))}
               </ul>
@@ -764,22 +914,16 @@ export default function AdminScheduleDetailPage() {
               <button
                 type="button"
                 className="admin-secondary-button"
-                onClick={() => setRhythms((current) => [...current, emptyRhythm()])}
+                onClick={() => {
+                  const next = [...rhythmsRef.current, emptyRhythm()]
+                  rhythmsRef.current = next
+                  setRhythms(next)
+                }}
               >
                 Add event
               </button>
 
               {rhythmsError ? <p className="admin-error">{rhythmsError}</p> : null}
-              <div className="admin-schedule-detail-section__actions">
-                <button
-                  type="button"
-                  className="admin-secondary-button"
-                  disabled={rhythmsSaving}
-                  onClick={() => void saveRhythms()}
-                >
-                  {rhythmsSaving ? 'Saving…' : 'Save events & staffing'}
-                </button>
-              </div>
             </div>
           </section>
         </>
@@ -792,7 +936,7 @@ export default function AdminScheduleDetailPage() {
             <div className="admin-dialog__body">
               <p>
                 “{rhythmDeleteTarget.name || 'Untitled'}” has staffing requirements. Removing it
-                will delete those needs when you save events.
+                will also delete those staffing needs.
               </p>
             </div>
             <div className="admin-dialog__actions">
@@ -800,8 +944,10 @@ export default function AdminScheduleDetailPage() {
                 type="button"
                 className="admin-danger-button"
                 onClick={() => {
-                  setRhythms((current) =>
-                    current.filter((row) => row.clientId !== rhythmDeleteTarget.clientId),
+                  commitRhythms(
+                    rhythmsRef.current.filter(
+                      (row) => row.clientId !== rhythmDeleteTarget.clientId,
+                    ),
                   )
                   setRhythmDeleteTarget(null)
                 }}

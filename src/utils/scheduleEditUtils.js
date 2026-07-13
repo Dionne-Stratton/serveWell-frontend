@@ -119,6 +119,13 @@ export function validateRhythmsLocal(localRhythms, connectedAreaIds) {
         return 'Needed count must be a whole number of at least 1.'
       }
     }
+
+    const assignedAreaIds = rhythm.requirements
+      .map((row) => Number(row.scheduleServingAreaId))
+      .filter((areaId) => Number.isInteger(areaId) && areaId > 0)
+    if (new Set(assignedAreaIds).size !== assignedAreaIds.length) {
+      return 'Each serving area can only appear once per event.'
+    }
   }
 
   return ''
@@ -139,6 +146,33 @@ export function isServingAreaUsedInRhythms(scheduleServingAreaId, localRhythms) 
   }
 
   return false
+}
+
+/** Options for one event staffing-row select; hides areas already used on other rows of that event. */
+export function optionsExcludingValuesUsedElsewhere(
+  options,
+  assignedValues,
+  currentValue,
+  getOptionValue,
+) {
+  const current = String(currentValue ?? '')
+  const usedElsewhere = new Set(
+    (assignedValues ?? [])
+      .map((value) => String(value ?? ''))
+      .filter((value) => value && value !== current),
+  )
+
+  return (options ?? []).filter((option) => !usedElsewhere.has(String(getOptionValue(option))))
+}
+
+export function hasUnassignedOptions(options, assignedValues, getOptionValue) {
+  const used = new Set(
+    (assignedValues ?? [])
+      .map((value) => String(value ?? ''))
+      .filter(Boolean),
+  )
+
+  return (options ?? []).some((option) => !used.has(String(getOptionValue(option))))
 }
 
 export function linkedAreasNotYetConnected(catalogForms, localAreas) {

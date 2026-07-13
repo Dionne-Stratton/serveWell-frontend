@@ -3,6 +3,10 @@ import { ApiError, createAdminSchedule } from '../../api/client'
 import { dayOfWeekOptions, formatScheduleTime, labelDayOfWeek, labelScheduleType, scheduleTypeOptions } from '../../constants/schedule'
 import softBtn from '../../styles/adminSoftButtons.module.css'
 import {
+  hasUnassignedOptions,
+  optionsExcludingValuesUsedElsewhere,
+} from '../../utils/scheduleEditUtils'
+import {
   applyRequirementAreaValue,
   areaOptionLabel,
   buildCreateSchedulePayload,
@@ -497,7 +501,18 @@ function CreateScheduleWizardForm({
                 {formatScheduleTime(rhythm.startTime)}
               </h3>
               <ul className="admin-schedule-wizard__req-list">
-                {rhythm.requirements.map((row, rowIndex) => (
+                {rhythm.requirements.map((row, rowIndex) => {
+                  const assignedValues = rhythm.requirements.map((requirement) =>
+                    requirementAreaValue(requirement),
+                  )
+                  const rowAreaOptions = optionsExcludingValuesUsedElsewhere(
+                    areaSelectOptions,
+                    assignedValues,
+                    requirementAreaValue(row),
+                    (option) => option.value,
+                  )
+
+                  return (
                   <li key={row.clientId} className="admin-schedule-wizard__req-row">
                     <div className="admin-field">
                       <label className="admin-label" htmlFor={`req-area-${rhythmIndex}-${rowIndex}`}>
@@ -526,7 +541,7 @@ function CreateScheduleWizardForm({
                         }}
                       >
                         <option value="">Select…</option>
-                        {areaSelectOptions.map((option) => (
+                        {rowAreaOptions.map((option) => (
                           <option key={option.value} value={option.value}>
                             {option.label}
                           </option>
@@ -598,11 +613,20 @@ function CreateScheduleWizardForm({
                       </div>
                     </div>
                   </li>
-                ))}
+                  )
+                })}
               </ul>
               <button
                 type="button"
                 className="admin-link-button"
+                disabled={
+                  areaSelectOptions.length === 0 ||
+                  !hasUnassignedOptions(
+                    areaSelectOptions,
+                    rhythm.requirements.map((requirement) => requirementAreaValue(requirement)),
+                    (option) => option.value,
+                  )
+                }
                 onClick={() => {
                   const rhythms = state.rhythms.map((r, i) =>
                     i === rhythmIndex
