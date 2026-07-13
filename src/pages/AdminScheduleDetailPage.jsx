@@ -453,7 +453,7 @@ export default function AdminScheduleDetailPage() {
             <div className="admin-page-header__actions">
               <button
                 type="button"
-                className="admin-button admin-button--inline"
+                className="admin-secondary-button"
                 onClick={() =>
                   navigate(adminSchedulesPath(organizationSlug), {
                     state: { createGeneratedFromTemplateId: scheduleId },
@@ -464,7 +464,7 @@ export default function AdminScheduleDetailPage() {
               </button>
               <button
                 type="button"
-                className="admin-button admin-button--inline"
+                className="admin-secondary-button"
                 onClick={() => {
                   setDuplicateError('')
                   setDuplicateOpen(true)
@@ -520,7 +520,7 @@ export default function AdminScheduleDetailPage() {
               <div className="admin-schedule-detail-section__actions">
                 <button
                   type="button"
-                  className="admin-button"
+                  className="admin-secondary-button"
                   disabled={nameSaving}
                   onClick={() => void saveTemplateBasics()}
                 >
@@ -619,7 +619,7 @@ export default function AdminScheduleDetailPage() {
               <div className="admin-schedule-detail-section__actions">
                 <button
                   type="button"
-                  className="admin-button"
+                  className="admin-secondary-button"
                   disabled={areasSaving}
                   onClick={() => void saveServingAreas()}
                 >
@@ -773,7 +773,7 @@ export default function AdminScheduleDetailPage() {
               <div className="admin-schedule-detail-section__actions">
                 <button
                   type="button"
-                  className="admin-button"
+                  className="admin-secondary-button"
                   disabled={rhythmsSaving}
                   onClick={() => void saveRhythms()}
                 >
