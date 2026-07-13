@@ -4731,6 +4731,20 @@
   color: var(--text-h);
 }
 
+.admin-area-inline__info p {
+  margin: 0;
+}
+
+.admin-area-inline__info p + p {
+  margin-top: 0.25rem;
+}
+
+.admin-area-inline__public-note {
+  padding: 0.55rem 0.7rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
 .admin-area-inline__ack {
   margin-bottom: 0.65rem;
 }
@@ -4739,6 +4753,14 @@
   margin: 0 0 0.35rem;
   font-size: 0.88rem;
   line-height: 1.45;
+}
+
+.admin-area-inline__ack-lead p {
+  margin: 0;
+}
+
+.admin-area-inline__ack-lead p + p {
+  margin-top: 0.25rem;
 }
 
 .admin-area-inline .admin-field {

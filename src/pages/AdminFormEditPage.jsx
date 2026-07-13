@@ -491,12 +491,14 @@ export default function AdminFormEditPage() {
             await createAdminRequirement(areaId, {
               requirementType: req.type,
               label: req.label.trim(),
+              description: req.description?.trim() || null,
               requiresConfirmation: req.requiresConfirmation !== false,
               isMandatory: req.isMandatory === true,
             })
           } else {
             await patchAdminRequirement(req.id, {
               label: req.label.trim(),
+              description: req.description?.trim() || null,
               requirementType: req.type,
               requiresConfirmation: req.requiresConfirmation,
               isMandatory: req.isMandatory,
@@ -698,6 +700,7 @@ export default function AdminFormEditPage() {
       id: allocateTempId(),
       type: newRequirementTypes[areaId] ?? 'custom',
       label,
+      description: null,
       requiresConfirmation: true,
       isMandatory: false,
     }
@@ -898,6 +901,10 @@ export default function AdminFormEditPage() {
                         <label className="admin-label" htmlFor={`area-note-${area.id}`}>
                           Note for volunteers
                         </label>
+                        <p className="admin-help">
+                          Shown when someone selects this area on the public form (separate from
+                          the short description next to the area name).
+                        </p>
                         <textarea
                           id={`area-note-${area.id}`}
                           className="admin-textarea"
@@ -937,8 +944,9 @@ export default function AdminFormEditPage() {
                           Volunteer acknowledgements for this area
                         </legend>
                         <p className="admin-help admin-help--nested">
-                          Each line appears on the public form when someone selects this area.
-                          Volunteers check a box to confirm before they submit.
+                          Each acknowledgement shows its label (and optional description) on the
+                          public form when someone selects this area. Volunteers check a box to
+                          confirm before they submit.
                         </p>
                         {(area.requirements ?? []).length === 0 ? (
                           <p className="admin-muted">None yet — add one below.</p>
@@ -959,6 +967,29 @@ export default function AdminFormEditPage() {
                                 onChange={(event) =>
                                   updateRequirement(section.id, area.id, req.id, {
                                     label: event.target.value,
+                                  })
+                                }
+                              />
+                            </div>
+                            <div className="admin-field">
+                              <label
+                                className="admin-label"
+                                htmlFor={`req-desc-${req.id}`}
+                              >
+                                Description (optional)
+                              </label>
+                              <p className="admin-help">
+                                Extra detail under the label on the public form (for example,
+                                scheduling follow-up notes).
+                              </p>
+                              <textarea
+                                id={`req-desc-${req.id}`}
+                                className="admin-textarea"
+                                rows={2}
+                                value={req.description ?? ''}
+                                onChange={(event) =>
+                                  updateRequirement(section.id, area.id, req.id, {
+                                    description: event.target.value,
                                   })
                                 }
                               />

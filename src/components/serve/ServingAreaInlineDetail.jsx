@@ -22,21 +22,33 @@ export default function ServingAreaInlineDetail({
 
   return (
     <div className="serve-area-inline" id={`serve-area-${area.id}`}>
+      {area.publicNote ? (
+        <p className="serve-info-note serve-info-note--area">{area.publicNote}</p>
+      ) : null}
+
       {infoRequirements.map((requirement) => (
-        <p key={requirement.id} className="serve-info-note">
-          <strong>{requirement.label}</strong>
-          {requirement.description ? ` — ${requirement.description}` : null}
-        </p>
+        <div key={requirement.id} className="serve-info-note">
+          <p className="serve-info-note__label">
+            <strong>{requirement.label}</strong>
+          </p>
+          {requirement.description ? (
+            <p className="serve-info-note__desc">{requirement.description}</p>
+          ) : null}
+        </div>
       ))}
 
       {acknowledgmentRequirements.map((requirement) => {
         const errorKey = `confirmation-${area.id}-${requirement.id}`;
         return (
           <div key={requirement.id} className="serve-ack">
-            <p className="serve-ack__info">
-              <strong>{requirement.label}</strong>
-              {requirement.description ? ` — ${requirement.description}` : null}
-            </p>
+            <div className="serve-ack__info">
+              <p className="serve-ack__label">
+                <strong>{requirement.label}</strong>
+              </p>
+              {requirement.description ? (
+                <p className="serve-ack__desc">{requirement.description}</p>
+              ) : null}
+            </div>
             <label className="serve-choice serve-ack__check">
               <input
                 type="checkbox"

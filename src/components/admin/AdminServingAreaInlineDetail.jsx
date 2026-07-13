@@ -24,21 +24,31 @@ export default function AdminServingAreaInlineDetail({
 
   return (
     <div className="admin-area-inline" id={`serve-area-${area.id}`}>
+      {area.publicNote ? (
+        <p className="admin-area-inline__info admin-area-inline__public-note">{area.publicNote}</p>
+      ) : null}
+
       {infoRequirements.map((requirement) => (
-        <p key={requirement.id} className="admin-area-inline__info">
-          <strong>{requirement.label}</strong>
-          {requirement.description ? ` — ${requirement.description}` : null}
-        </p>
+        <div key={requirement.id} className="admin-area-inline__info">
+          <p>
+            <strong>{requirement.label}</strong>
+          </p>
+          {requirement.description ? (
+            <p className="admin-muted">{requirement.description}</p>
+          ) : null}
+        </div>
       ))}
 
       {acknowledgmentRequirements.map((requirement) => {
         const errorKey = `confirmation-${area.id}-${requirement.id}`
         return (
           <div key={requirement.id} className="admin-area-inline__ack">
-            <p className="admin-muted admin-area-inline__ack-lead">
-              <strong>{requirement.label}</strong>
-              {requirement.description ? ` — ${requirement.description}` : null}
-            </p>
+            <div className="admin-muted admin-area-inline__ack-lead">
+              <p>
+                <strong>{requirement.label}</strong>
+              </p>
+              {requirement.description ? <p>{requirement.description}</p> : null}
+            </div>
             <label className="admin-choice admin-choice--inline">
               <input
                 type="checkbox"

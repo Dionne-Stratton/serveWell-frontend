@@ -367,6 +367,26 @@
   color: var(--serve-text);
 }
 
+.serve-info-note--area {
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--serve-heading) 6%, white);
+  border: 1px solid color-mix(in srgb, var(--serve-heading) 18%, white);
+}
+
+.serve-info-note__label,
+.serve-ack__label {
+  margin: 0;
+}
+
+.serve-info-note__desc,
+.serve-ack__desc {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--serve-muted, #5b6472);
+}
+
 .serve-info-note strong {
   color: var(--serve-heading);
 }
