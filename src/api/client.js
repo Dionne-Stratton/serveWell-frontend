@@ -224,6 +224,13 @@ export function registerOrganization(payload) {
   });
 }
 
+export function checkOrganizationSlugAvailability(slug) {
+  const query = new URLSearchParams({ slug: String(slug ?? "") });
+  return apiRequest(`/api/auth/organization-slug-availability?${query}`, {
+    method: "GET",
+  });
+}
+
 export function getCurrentAdmin() {
   return apiRequest("/api/admin/me", { authenticated: true });
 }

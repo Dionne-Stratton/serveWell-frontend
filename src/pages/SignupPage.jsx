@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ApiError } from '../api/client'
+import { ApiError, checkOrganizationSlugAvailability } from '../api/client'
 import { useAdminAuth } from '../auth/useAdminAuth'
 import PageShell from '../components/PageShell'
 import { adminDashboardPath } from '../utils/organizationPaths'
@@ -31,6 +31,8 @@ export default function SignupPage() {
   const [organizationName, setOrganizationName] = useState('')
   const [organizationSlug, setOrganizationSlug] = useState('')
   const [slugEdited, setSlugEdited] = useState(false)
+  const [slugStatus, setSlugStatus] = useState(null)
+  const [slugCheckPending, setSlugCheckPending] = useState(false)
   const [organizationType, setOrganizationType] = useState('church')
   const [contactEmail, setContactEmail] = useState('')
   const [websiteUrl, setWebsiteUrl] = useState('')
@@ -41,16 +43,52 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
+  useEffect(() => {
+    const slug = organizationSlug.trim()
+
+    if (slug.length < 2) {
+      return
+    }
+
+    let cancelled = false
+    const timer = window.setTimeout(async () => {
+      setSlugCheckPending(true)
+
+      try {
+        const data = await checkOrganizationSlugAvailability(slug)
+        if (!cancelled) {
+          setSlugStatus(data ?? null)
+        }
+      } catch {
+        if (!cancelled) {
+          setSlugStatus(null)
+        }
+      } finally {
+        if (!cancelled) {
+          setSlugCheckPending(false)
+        }
+      }
+    }, 350)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [organizationSlug])
+
   function handleOrganizationNameChange(value) {
     setOrganizationName(value)
     if (!slugEdited) {
-      setOrganizationSlug(suggestOrganizationSlug(value))
+      const nextSlug = suggestOrganizationSlug(value)
+      setOrganizationSlug(nextSlug)
+      setSlugStatus(null)
     }
   }
 
   function handleSlugChange(value) {
     setSlugEdited(true)
     setOrganizationSlug(value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
+    setSlugStatus(null)
   }
 
   async function handleSubmit(event) {
@@ -64,6 +102,11 @@ export default function SignupPage() {
 
     if (adminPassword !== adminPasswordConfirm) {
       setError('Passwords do not match.')
+      return
+    }
+
+    if (slugStatus && slugStatus.available === false) {
+      setError(slugStatus.message || 'That URL slug is not available.')
       return
     }
 
@@ -98,6 +141,17 @@ export default function SignupPage() {
       setSubmitting(false)
     }
   }
+
+  const slugHelp =
+    slugCheckPending
+      ? 'Checking whether this URL is available…'
+      : slugStatus?.available === true
+        ? `Available: simplyservewell.com/${slugStatus.slug}`
+        : slugStatus?.available === false
+          ? slugStatus.message
+          : `Your pages will use simplyservewell.com/${organizationSlug || 'your-slug'}… Each church needs its own unique slug (lowercase letters, numbers, hyphens). If your name is common, add a city—for example kairos-austin.`
+
+  const slugHelpIsError = slugStatus?.available === false
 
   return (
     <PageShell
@@ -141,12 +195,16 @@ export default function SignupPage() {
               spellCheck={false}
               value={organizationSlug}
               onChange={(event) => handleSlugChange(event.target.value)}
+              aria-invalid={slugHelpIsError ? true : undefined}
+              aria-describedby="organization-slug-help"
               required
             />
-            <p className="admin-help">
-              Your pages will use simplyservewell.com/
-              {organizationSlug || 'your-slug'}
-              … (lowercase letters, numbers, hyphens).
+            <p
+              id="organization-slug-help"
+              className={slugHelpIsError ? 'admin-error-inline' : 'admin-help'}
+              role={slugHelpIsError ? 'alert' : undefined}
+            >
+              {slugHelp}
             </p>
           </div>
           <div className="admin-field">
@@ -265,7 +323,7 @@ export default function SignupPage() {
         <button
           type="submit"
           className={`admin-button${submitting ? ' admin-button--busy' : ''}`}
-          disabled={submitting}
+          disabled={submitting || slugStatus?.available === false || slugCheckPending}
         >
           {submitting ? 'Creating workspace…' : 'Create workspace'}
         </button>

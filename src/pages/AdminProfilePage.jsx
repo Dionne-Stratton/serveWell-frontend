@@ -42,6 +42,7 @@ export default function AdminProfilePage() {
   const [deletePending, setDeletePending] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [notificationPrefs, setNotificationPrefs] = useState(null)
+  const [notificationServingAreas, setNotificationServingAreas] = useState([])
   const [notifyPrefsSaving, setNotifyPrefsSaving] = useState(false)
   const [notifyPrefsError, setNotifyPrefsError] = useState('')
 
@@ -65,7 +66,12 @@ export default function AdminProfilePage() {
             readyToSchedule: false,
             volunteerUpdated: true,
             adminJoined: data.admin?.role === 'owner',
+            servingAreaScope: 'all',
+            servingAreaIds: [],
           },
+        )
+        setNotificationServingAreas(
+          Array.isArray(data.notificationServingAreas) ? data.notificationServingAreas : [],
         )
       } catch (err) {
         if (!cancelled) {
@@ -86,30 +92,31 @@ export default function AdminProfilePage() {
     }
   }, [demoMode])
 
-  async function handleNotificationPrefChange(key, checked) {
+  async function saveNotificationPreferences(payload, optimistic) {
     if (demoMode || !notificationPrefs) {
       return
     }
 
     const previous = notificationPrefs
-    const next = { ...notificationPrefs, [key]: checked }
-    setNotificationPrefs(next)
+    setNotificationPrefs(optimistic)
     setNotifyPrefsError('')
     setNotifyPrefsSaving(true)
 
     try {
-      const payload =
-        key === 'newSubmissions'
-          ? { newSubmissions: checked }
-          : key === 'adminJoined'
-            ? { adminJoined: checked }
-            : key === 'volunteerUpdated'
-              ? { volunteerUpdated: checked }
-              : { readyToSchedule: checked }
       const data = await patchAdminNotificationPreferences(payload)
-      setNotificationPrefs(data.notificationPreferences ?? next)
+      setNotificationPrefs(data.notificationPreferences ?? optimistic)
+      if (Array.isArray(data.notificationServingAreas)) {
+        setNotificationServingAreas(data.notificationServingAreas)
+      }
       setProfile((current) =>
-        current ? { ...current, notificationPreferences: data.notificationPreferences } : current,
+        current
+          ? {
+              ...current,
+              notificationPreferences: data.notificationPreferences,
+              notificationServingAreas:
+                data.notificationServingAreas ?? current.notificationServingAreas,
+            }
+          : current,
       )
     } catch (err) {
       setNotificationPrefs(previous)
@@ -119,6 +126,61 @@ export default function AdminProfilePage() {
     } finally {
       setNotifyPrefsSaving(false)
     }
+  }
+
+  async function handleNotificationPrefChange(key, checked) {
+    if (!notificationPrefs) {
+      return
+    }
+
+    const next = { ...notificationPrefs, [key]: checked }
+    const payload =
+      key === 'newSubmissions'
+        ? { newSubmissions: checked }
+        : key === 'adminJoined'
+          ? { adminJoined: checked }
+          : key === 'volunteerUpdated'
+            ? { volunteerUpdated: checked }
+            : { readyToSchedule: checked }
+    await saveNotificationPreferences(payload, next)
+  }
+
+  async function handleServingAreaScopeChange(scope) {
+    if (!notificationPrefs) {
+      return
+    }
+
+    const next = {
+      ...notificationPrefs,
+      servingAreaScope: scope,
+      servingAreaIds: scope === 'all' ? [] : notificationPrefs.servingAreaIds ?? [],
+    }
+    await saveNotificationPreferences(
+      {
+        servingAreaScope: scope,
+        ...(scope === 'all' ? { servingAreaIds: [] } : {}),
+      },
+      next,
+    )
+  }
+
+  async function handleServingAreaToggle(areaId, checked) {
+    if (!notificationPrefs) {
+      return
+    }
+
+    const currentIds = Array.isArray(notificationPrefs.servingAreaIds)
+      ? notificationPrefs.servingAreaIds
+      : []
+    const servingAreaIds = checked
+      ? [...new Set([...currentIds, areaId])]
+      : currentIds.filter((id) => id !== areaId)
+    const next = {
+      ...notificationPrefs,
+      servingAreaScope: 'selected',
+      servingAreaIds,
+    }
+    await saveNotificationPreferences({ servingAreaScope: 'selected', servingAreaIds }, next)
   }
 
   async function handleSaveOrganization(payload) {
@@ -254,7 +316,7 @@ export default function AdminProfilePage() {
                       checked={notificationPrefs.newSubmissions}
                       disabled={notifyPrefsSaving}
                       onChange={(event) =>
-                        handleNotificationPrefChange('newSubmissions', event.target.checked)
+                        void handleNotificationPrefChange('newSubmissions', event.target.checked)
                       }
                     />
                     <span>New volunteer submissions</span>
@@ -265,7 +327,7 @@ export default function AdminProfilePage() {
                       checked={notificationPrefs.readyToSchedule}
                       disabled={notifyPrefsSaving}
                       onChange={(event) =>
-                        handleNotificationPrefChange('readyToSchedule', event.target.checked)
+                        void handleNotificationPrefChange('readyToSchedule', event.target.checked)
                       }
                     />
                     <span>Submissions marked ready to schedule</span>
@@ -277,7 +339,7 @@ export default function AdminProfilePage() {
                         checked={notificationPrefs.adminJoined === true}
                         disabled={notifyPrefsSaving}
                         onChange={(event) =>
-                          handleNotificationPrefChange('adminJoined', event.target.checked)
+                          void handleNotificationPrefChange('adminJoined', event.target.checked)
                         }
                       />
                       <span>Invited admin joins your organization</span>
@@ -289,11 +351,81 @@ export default function AdminProfilePage() {
                       checked={notificationPrefs.volunteerUpdated === true}
                       disabled={notifyPrefsSaving}
                       onChange={(event) =>
-                        handleNotificationPrefChange('volunteerUpdated', event.target.checked)
+                        void handleNotificationPrefChange('volunteerUpdated', event.target.checked)
                       }
                     />
                     <span>Volunteer updated their submission</span>
                   </label>
+                </div>
+
+                <div className="admin-profile-notify__scope">
+                  <p className="admin-label">Serving areas for volunteer emails</p>
+                  <p className="admin-help">
+                    Applies to new submissions, ready-to-schedule, and volunteer self-edits. Admin
+                    joined emails are always organization-wide for owners.
+                  </p>
+                  <div className="admin-profile-notify__scope-options">
+                    <label className="admin-choice admin-choice--inline">
+                      <input
+                        type="radio"
+                        name="notify-serving-area-scope"
+                        checked={(notificationPrefs.servingAreaScope ?? 'all') === 'all'}
+                        disabled={notifyPrefsSaving}
+                        onChange={() => void handleServingAreaScopeChange('all')}
+                      />
+                      <span>All serving areas</span>
+                    </label>
+                    <label className="admin-choice admin-choice--inline">
+                      <input
+                        type="radio"
+                        name="notify-serving-area-scope"
+                        checked={notificationPrefs.servingAreaScope === 'selected'}
+                        disabled={notifyPrefsSaving}
+                        onChange={() => void handleServingAreaScopeChange('selected')}
+                      />
+                      <span>Only selected serving areas</span>
+                    </label>
+                  </div>
+                  {notificationPrefs.servingAreaScope === 'selected' ? (
+                    <div className="admin-profile-notify__areas">
+                      {notificationServingAreas.length === 0 ? (
+                        <p className="admin-muted">
+                          No active serving areas yet. Until you create some, you will receive
+                          emails for all areas.
+                        </p>
+                      ) : (
+                        <>
+                          <p className="admin-help">
+                            Select one or more areas you oversee. If none are checked, emails cover
+                            all areas.
+                          </p>
+                          <div className="admin-checkbox-grid">
+                            {notificationServingAreas.map((area) => {
+                              const checked = (
+                                notificationPrefs.servingAreaIds ?? []
+                              ).includes(area.id)
+                              return (
+                                <label
+                                  key={area.id}
+                                  className="admin-choice admin-choice--inline"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    disabled={notifyPrefsSaving}
+                                    onChange={(event) =>
+                                      void handleServingAreaToggle(area.id, event.target.checked)
+                                    }
+                                  />
+                                  <span>{area.name}</span>
+                                </label>
+                              )
+                            })}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
                 {notifyPrefsError ? <p className="admin-error">{notifyPrefsError}</p> : null}
               </>
