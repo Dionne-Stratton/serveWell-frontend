@@ -175,3 +175,9 @@
   font-size: 0.95rem;
 }
 
+.landing-support {
+  margin: 0.75rem 0 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+

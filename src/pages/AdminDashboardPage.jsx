@@ -15,54 +15,13 @@ import {
   adminVolunteersFilteredPath,
   adminFormsPath,
 } from '../utils/organizationPaths'
+import SupportEmailContact from '../components/SupportEmailContact'
 
 const ACTION_STATUSES = [
   { status: 'new', label: 'New' },
   { status: 'follow_up_needed', label: 'Follow-up needed' },
   { status: 'approved_ready_to_schedule', label: 'Ready to Schedule' },
 ]
-
-const SUPPORT_EMAIL = 'support@servewellsystems.com'
-const COPY_FEEDBACK_MS = 2500
-
-function CopyEmailIcon() {
-  return (
-    <svg
-      className="admin-copy-link-btn__icon"
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  )
-}
-
-function CopiedEmailIcon() {
-  return (
-    <svg
-      className="admin-copy-link-btn__icon admin-copy-link-btn__icon--check"
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M20 6 9 17l-5-5" />
-    </svg>
-  )
-}
 
 export default function AdminDashboardPage({
   organizationSlug: organizationSlugProp,
@@ -80,7 +39,6 @@ export default function AdminDashboardPage({
   const [loadError, setLoadError] = useState('')
   const [integrationError, setIntegrationError] = useState('')
   const [integrationActionPending, setIntegrationActionPending] = useState(false)
-  const [supportEmailCopied, setSupportEmailCopied] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -176,18 +134,6 @@ export default function AdminDashboardPage({
       )
     } finally {
       setIntegrationActionPending(false)
-    }
-  }
-
-  async function handleCopySupportEmail() {
-    try {
-      await navigator.clipboard.writeText(SUPPORT_EMAIL)
-      setSupportEmailCopied(true)
-      window.setTimeout(() => {
-        setSupportEmailCopied(false)
-      }, COPY_FEEDBACK_MS)
-    } catch {
-      window.alert('Could not copy to clipboard.')
     }
   }
 

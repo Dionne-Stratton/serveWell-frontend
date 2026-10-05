@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import PageShell from '../components/PageShell'
+import SupportEmailContact from '../components/SupportEmailContact'
 import { demoAdminPath } from '../utils/organizationPaths'
 
 export default function LandingPage() {
@@ -27,6 +28,9 @@ export default function LandingPage() {
       </div>
       <p className="landing-signin">
         Already registered? <Link to="/login">Staff sign in</Link>
+      </p>
+      <p className="landing-support">
+        Questions or suggestions? Email <SupportEmailContact />
       </p>
     </PageShell>
   )
