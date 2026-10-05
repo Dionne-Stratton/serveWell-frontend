@@ -22,7 +22,7 @@ const ACTION_STATUSES = [
   { status: 'approved_ready_to_schedule', label: 'Ready to Schedule' },
 ]
 
-const SUPPORT_EMAIL = 'support@simplyservewell.com'
+const SUPPORT_EMAIL = 'support@servewellsystems.com'
 const COPY_FEEDBACK_MS = 2500
 
 function CopyEmailIcon() {
