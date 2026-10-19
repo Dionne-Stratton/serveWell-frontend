@@ -265,19 +265,7 @@ export default function AdminDashboardPage({
         <p className="admin-dashboard-help__text">
           Have questions, suggestions, or need support? Email:{' '}
           <span className="admin-dashboard-help__email">
-            <a className="admin-dashboard-help__email-link" href={`mailto:${SUPPORT_EMAIL}`}>
-              {SUPPORT_EMAIL}
-            </a>
-            <button
-              type="button"
-              className="admin-copy-link-btn"
-              aria-label={
-                supportEmailCopied ? 'Copied support email' : 'Copy support email address'
-              }
-              onClick={handleCopySupportEmail}
-            >
-              {supportEmailCopied ? <CopiedEmailIcon /> : <CopyEmailIcon />}
-            </button>
+            <SupportEmailContact linkClassName="admin-dashboard-help__email-link" />
           </span>
         </p>
       </section>
