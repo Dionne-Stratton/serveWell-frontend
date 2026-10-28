@@ -21,6 +21,9 @@ import AdminLoginPage from './pages/AdminLoginPage'
 import AdminSubmissionDetailPage from './pages/AdminSubmissionDetailPage'
 import AdminSubmissionEditPage from './pages/AdminSubmissionEditPage'
 import LandingPage from './pages/LandingPage'
+import AboutPage from './pages/AboutPage'
+import PricingPage from './pages/PricingPage'
+import DonatePage from './pages/DonatePage'
 import OrganizationRootRedirect from './pages/OrganizationRootRedirect'
 import ServePage from './pages/ServePage'
 import VolunteerUpdatePage from './pages/VolunteerUpdatePage'
@@ -84,6 +87,9 @@ const router = createBrowserRouter([
     element: <AppRoot />,
     children: [
       { index: true, element: <LandingPage /> },
+      { path: 'about', element: <AboutPage /> },
+      { path: 'pricing', element: <PricingPage /> },
+      { path: 'donate', element: <DonatePage /> },
       { path: 'signup', element: <SignupPage /> },
       { path: 'login', element: <StaffLoginPage /> },
       { path: 'forgot-password', element: <ForgotPasswordPage /> },

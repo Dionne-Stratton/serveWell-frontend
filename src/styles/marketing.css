@@ -1,0 +1,46 @@
+.marketing-site { padding: 1.5rem 0.5rem 2rem; }
+.marketing-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+.marketing-brand { display: inline-flex; align-items: center; gap: 0.6rem; color: var(--text-h); font-size: 1.2rem; font-weight: 700; }
+.marketing-brand img { object-fit: contain; }
+.marketing-nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
+.marketing-nav a { padding: 0.4rem 0; font-size: 0.9rem; }
+.marketing-nav a[aria-current="page"] { color: var(--text-h); text-decoration: underline; text-underline-offset: 0.4rem; }
+.marketing-main:focus { outline: none; }
+.marketing-site a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.marketing-skip { position: absolute; top: 0.5rem; padding: 0.6rem; background: var(--surface); transform: translateY(-200%); z-index: 10; }
+.marketing-skip:focus { transform: none; }
+.marketing-hero { padding: 3.5rem 0 2.5rem; max-width: 43rem; }
+.marketing-eyebrow { color: var(--accent); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.75rem; }
+.marketing-hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.15; letter-spacing: -0.035em; color: var(--text-h); margin: 0 0 1.25rem; }
+.marketing-lede { font-size: 1.1rem; line-height: 1.7; max-width: 39rem; }
+.marketing-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; }
+.marketing-actions .button { text-align: center; }
+.marketing-button-primary, .marketing-button-primary:visited { background: var(--accent); color: var(--bg); }
+.marketing-button-primary:hover { background: var(--accent-hover); color: var(--bg); }
+.marketing-hero-note { margin-top: 1rem; font-size: 0.9rem; }
+.marketing-section { padding: 2rem 0; border-top: 1px solid var(--border); }
+.marketing-section h2 { font-size: 1.5rem; line-height: 1.3; color: var(--text-h); margin-bottom: 1rem; }
+.marketing-section > p + p { margin-top: 1rem; }
+.marketing-section p { line-height: 1.75; }
+.marketing-features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
+.marketing-features h3 { margin: 0 0 0.5rem; font-size: 1.05rem; color: var(--text-h); }
+.marketing-features p { font-size: 0.95rem; }
+.marketing-text-link { display: inline-block; margin-top: 1.25rem; text-decoration: underline; text-underline-offset: 0.2rem; }
+.marketing-demo { padding: 2rem; margin: 1rem 0 2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
+.marketing-demo-list { padding-left: 1.25rem; line-height: 1.7; }
+.marketing-note { font-size: 0.9rem; color: var(--muted); }
+.marketing-steps { padding-left: 1.5rem; }
+.marketing-steps li { padding-left: 0.5rem; margin-bottom: 1.5rem; }
+.marketing-steps li::marker { color: var(--accent); font-weight: 700; }
+.marketing-steps h3 { margin: 0 0 0.5rem; color: var(--text-h); font-size: 1.1rem; }
+.marketing-start .button { margin-top: 1.25rem; }
+.marketing-footer { padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.9rem; }
+.marketing-footer p + p { margin-top: 0.5rem; }
+@media (max-width: 600px) {
+  .marketing-site { padding-inline: 0; }
+  .marketing-header { align-items: flex-start; flex-direction: column; }
+  .marketing-nav { column-gap: 1.1rem; }
+  .marketing-hero { padding-top: 2.5rem; }
+  .marketing-features { grid-template-columns: 1fr; }
+  .marketing-demo { padding: 1.25rem; }
+}
