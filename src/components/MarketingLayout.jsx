@@ -27,6 +27,8 @@ export default function MarketingLayout({ title, children }) {
         <nav className="marketing-nav" aria-label="Main navigation">
           <NavLink to="/" end>Home</NavLink>
           <NavLink to="/about">About</NavLink>
+          <NavLink to="/pricing">Pricing</NavLink>
+          <NavLink to="/donate">Donate</NavLink>
           <Link to={demoAdminPath()}>Try the demo</Link>
           <Link to="/login">Staff sign in</Link>
         </nav>
