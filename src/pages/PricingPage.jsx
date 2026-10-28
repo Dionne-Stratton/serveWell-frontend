@@ -36,7 +36,7 @@ export default function PricingPage() {
 
       <section className="marketing-section" aria-labelledby="pricing-support">
         <h2 id="pricing-support">Want to support the work?</h2>
-        <p>If ServeWell is useful to your organization and you’d like to help support its continued development, voluntary contributions will be welcome. Donation options are coming soon, and contributing is optional.</p>
+        <p>If ServeWell is useful to your organization and you’d like to help support its continued development, voluntary contributions will be welcome. Visit the Donate page for contribution details and availability. Contributing is optional.</p>
         <Link className="marketing-text-link" to="/donate">Learn about supporting ServeWell</Link>
       </section>
     </MarketingLayout>
