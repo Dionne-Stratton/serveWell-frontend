@@ -30,7 +30,7 @@ export default function AboutPage() {
       <section id="demo" className="marketing-section marketing-demo" aria-labelledby="about-demo">
         <p className="marketing-eyebrow">Take a look around</p>
         <h2 id="about-demo">See both sides of ServeWell</h2>
-        <p>You don’t need to create an organization account to explore the demo. Open the staff dashboard to see how volunteer responses, forms, and schedules are organized, or start with the volunteer form to see the experience someone in your church or organization would have.</p>
+        <p>You don’t need to create an organization account to explore the demo. Open the demo dashboard to see how volunteer responses, forms, and schedules are organized, or start with the volunteer form to see the experience someone in your church or organization would have.</p>
         <ul className="marketing-demo-list">
           <li>Explore the dashboard and volunteer responses.</li>
           <li>Preview the volunteer form and see how it is set up.</li>
@@ -38,7 +38,7 @@ export default function AboutPage() {
         </ul>
         <p className="marketing-note">Some demo features are limited: form editing is disabled, and Planning Center connections are available through an organization workspace. If you try submitting the demo form, use sample information rather than anyone’s private details.</p>
         <div className="marketing-actions">
-          <Link className="button marketing-button-primary" to={demoAdminPath()}>Explore the staff demo</Link>
+          <Link className="button marketing-button-primary" to={demoAdminPath()}>Explore the demo</Link>
           <Link className="button button--secondary" to="/demo/volunteer">Try the volunteer form</Link>
         </div>
       </section>
