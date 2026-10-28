@@ -28,9 +28,9 @@ export default function LandingPage() {
 
       <section className="marketing-section marketing-demo" aria-labelledby="landing-demo">
         <h2 id="landing-demo">See how it could work for your church or organization</h2>
-        <p>Take a look around the staff dashboard, explore volunteer responses and scheduling, or try the volunteer form. Start with a look inside before setting up your own workspace.</p>
+        <p>Take a look around the demo dashboard, explore volunteer responses and scheduling, or try the volunteer form. Start with a look inside before setting up your own workspace.</p>
         <div className="marketing-actions">
-          <Link className="button marketing-button-primary" to={demoAdminPath()}>Explore the staff demo</Link>
+          <Link className="button marketing-button-primary" to={demoAdminPath()}>Explore the demo</Link>
           <Link className="button button--secondary" to="/about#demo">What can I try?</Link>
         </div>
       </section>
