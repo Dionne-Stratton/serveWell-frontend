@@ -2,7 +2,7 @@
 
 React + Vite app for ServeWell: marketing site, public volunteer forms, and organization-scoped admin.
 
-For repo/branch deployment notes, see [Progress checklist](../docs/Implementation-Progress-Checklist.md).
+This frontend is a separate repository from the ServeWell API/Cloudflare Worker backend. Coordinate frontend and API contract changes across both repositories, and test database migrations against local D1 before applying them remotely.
 
 ## Prerequisites
 
@@ -32,21 +32,24 @@ Optional:
 | `npm run preview` | Preview production build         |
 | `npm run lint`    | ESLint                           |
 
-## Docs
+## Documentation
 
-Product and API details live in the parent folder:
+The earlier development workspace referenced a sibling `../docs` directory for planning and API documents. Those files are not part of this frontend repository. Check the backend/project documentation and current server implementation for API contracts, D1 schema, migrations, and feature readiness; avoid relying on a frontend-only route description for backend behavior.
 
-- [Documentation index](../docs/README.md)
-- [Implementation plan](../docs/Implementation-Plan.md)
-- [API contract](../docs/API-Contract.md)
-- [Progress checklist](../docs/Implementation-Progress-Checklist.md)
-- [Initial data model](../docs/Initial-Data-Model.md)
+## Public site and beta messaging
+
+The public marketing site uses `src/components/MarketingLayout.jsx` and `src/styles/marketing.css`, with Home, About, Pricing, Donate, demo, and staff sign-in navigation. The landing page has signup and demo calls to action. The Pricing page states that beta access is free and that organizations joining during beta keep the features available at beta end for free; later-added capabilities may be optional paid additions. Future plan prices and beta end date are not yet set.
+
+`/donate` links to hosted PayPal checkout using `PAYPAL_SUPPORT_URL` from `src/constants/donations.js`. Contributions are optional and are not tax-deductible charitable donations. `src/components/SupportEmailContact.jsx` provides support email links on marketing pages.
 
 ## Routes
 
 | Path | Purpose |
 |------|---------|
-| `/` | Marketing landing |
+| `/` | Marketing landing and signup/demo links |
+| `/about` | About ServeWell and its features |
+| `/pricing` | Beta-access promise and future-pricing information |
+| `/donate` | Optional contributions via PayPal |
 | `/signup` | Church registration (creates org + owner admin + default form) |
 | `/login` | Staff login (`organizationSlug` + email + password → org admin) |
 | `/forgot-password` | Request password reset (org slug + email) |
@@ -69,7 +72,7 @@ Product and API details live in the parent folder:
 | `/:organizationSlug/admin` | Admin home (counts, forms, Planning Center connect when API credentials are set) |
 | `/:organizationSlug/admin/import` | Planning Center import v1 (hidden on demo; requires PC connected) |
 | `/:organizationSlug/admin/schedules` | Schedules hub: **Active & upcoming schedules** and **Schedule templates** (create wizard, **Duplicate** on templates). **Create schedule** is disabled until a template exists (hover tip). Demo: `/demo/admin/schedules`. |
-| `/:organizationSlug/admin/schedules/generated/:id` | Generated schedule detail — draft or published, **Publish** / **Send updates**, scheduling summary after create, events with staffing/notes/resources. |
+| `/:organizationSlug/admin/schedules/generated/:id` | Generated schedule detail — draft, published, or archived; publish, send volunteer updates, auto-fill, archive, and review events with staffing/notes/resources. |
 | `/:organizationSlug/admin/schedules/:id` | Schedule **template** detail — **autosave** name/type, serving areas, events & staffing (Saved toast); **Duplicate**; delete; **Create schedule from template**. Staffing dropdowns omit areas already used on that event. |
 | `/:organizationSlug/admin/volunteers` | Volunteer submissions (filters apply on **Apply filters**) |
 | `/:organizationSlug/admin/volunteers/:id` | Volunteer detail — status toolbar, PC sync/import badge, blackout dates, in-sync / stale banner, **Edit submission**, staff notes, **Delete** |
@@ -96,7 +99,9 @@ Unknown paths redirect to `/`.
 
 Demo org forms are read-only on the API; the UI still shows forms for browsing.
 
-## Not implemented (UI placeholders)
+## Feature and documentation notes
 
-- Generated schedule **archive** workflow
-- Broader polish pass (Phase 15 in checklist)
+- Generated schedule **archive** is implemented in the UI: `AdminGeneratedScheduleDetailPage.jsx` calls the archive API and displays `ArchiveGeneratedScheduleDialog.jsx`; archived schedules are read-only. Backend authorization and persistence must be checked in the API repository when changing this workflow.
+- For scheduling, generated schedules, volunteer submissions, forms, admin permissions, Planning Center integration, and email behavior, refer to the actual API implementation and contract before changing frontend calls.
+- The prior `../docs/...` references were written for a sibling-folder workspace layout and are not files contained in this GitHub frontend repository. Consult the corresponding backend/project documentation as available rather than assuming those relative links resolve when browsing this repository alone.
+- Keep this README's route table and feature-status descriptions in sync with `src/App.jsx`, current components, and the backend. Additional polish and future features should not be marked as implemented solely because design notes mention them.
